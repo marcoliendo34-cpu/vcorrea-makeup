@@ -6,8 +6,11 @@ import {
   barraProgreso, activarBarras, placeholderFoto, logo, esc
 } from './componentes.js';
 import { icono, NOMBRES_ICONOS } from './iconos.js';
-import { calcularCupos } from './cupos.js';
-import { formatearFecha, partesFecha, fechaLarga, rangoFechas } from './fechas.js';
+import { calcularCupos, porcentaje, cuposRestantes, estadoCupos } from './cupos.js';
+import { formatearFecha, fechaTarjeta, fechaLarga, rangoFechas } from './fechas.js';
+import {
+  obtenerCursosVigentes, obtenerCursosAnteriores, obtenerCursoPorSlug, buscarCursos
+} from './datos.js';
 
 /* ----------------------------- utilidades ----------------------------- */
 
@@ -224,20 +227,24 @@ const htmlBarras = seccion(`
     }).join('')}
   </div>`, { id: 't-barras' });
 
+const htmlCursos = seccion(`
+  ${tituloSeccion({ etiqueta: 'Verificación', titulo: 'Lógica de cupos con los cursos de ejemplo', id: 't-cursos' })}
+  <div id="guia-cursos"><p class="texto-secundario">Cargando cursos…</p></div>`, { crema: true, id: 't-cursos' });
+
 const htmlPlaceholders = seccion(`
   ${tituloSeccion({ etiqueta: 'Componente', titulo: 'Placeholder de imagen', id: 't-fotos' })}
   <div class="guia-rejilla guia-rejilla--3">
     <div>${placeholderFoto({ descripcion: 'Verónica maquillando a una alumna', proporcion: '16 / 9' })}<span class="guia-rotulo">16:9 · hero y portadas</span></div>
     <div>${placeholderFoto({ descripcion: 'Retrato de Verónica', proporcion: '4 / 5' })}<span class="guia-rotulo">4:5 · retratos y tarjetas</span></div>
     <div>${placeholderFoto({ descripcion: 'Detalle de maquillaje de ojos', proporcion: '1 / 1' })}<span class="guia-rotulo">1:1 · galería</span></div>
-  </div>`, { crema: true, id: 't-fotos' });
+  </div>`, { id: 't-fotos' });
 
 const htmlIconos = seccion(`
   ${tituloSeccion({ etiqueta: 'Componente', titulo: 'Íconos', id: 't-iconos' })}
   <p class="texto-secundario" style="margin-bottom:var(--e-8)">Propios, lineales, trazo 1.5.</p>
   <div class="guia-iconos">
     ${NOMBRES_ICONOS.map((n) => `<div class="guia-icono">${icono(n)}<span>${n}</span></div>`).join('')}
-  </div>`, { id: 't-iconos' });
+  </div>`, { crema: true, id: 't-iconos' });
 
 const ejemplo = '2026-11-15';
 const htmlReglas = seccion(`
@@ -247,7 +254,7 @@ const htmlReglas = seccion(`
       <h3 class="guia-subtitulo">Fechas</h3>
       <table class="guia-tabla">
         <tr><th>Fecha estándar</th><td>${formatearFecha(ejemplo)}</td></tr>
-        <tr><th>Insignia de tarjeta</th><td>${(({ dia, mes, anio }) => `${dia} · ${mes} · ${anio}`)(partesFecha(ejemplo))}</td></tr>
+        <tr><th>Insignia de tarjeta</th><td>${(({ dia, mesAnio }) => `${dia} / ${mesAnio}`)(fechaTarjeta(ejemplo))}</td></tr>
         <tr><th>Rango mismo mes</th><td>${rangoFechas('2026-11-15', '2026-11-16')}</td></tr>
         <tr><th>Rango entre meses</th><td>${rangoFechas('2026-11-30', '2026-12-02')}</td></tr>
         <tr><th>Texto largo (WhatsApp)</th><td>${fechaLarga(ejemplo)}</td></tr>
@@ -261,7 +268,7 @@ const htmlReglas = seccion(`
         Puntos de quiebre: 640 · 768 · 1024 · 1280.
       </p>
     </div>
-  </div>`, { crema: true, id: 't-reglas' });
+  </div>`, { id: 't-reglas' });
 
 /* ------------------------------- montaje ------------------------------ */
 
@@ -270,7 +277,7 @@ document.querySelector('[data-logo-pie]').innerHTML = logo({ version: 'apilado',
 
 document.getElementById('guia').innerHTML = [
   htmlLogos, htmlPaleta, htmlTipografia, htmlTitulos, htmlBotones,
-  htmlInsignias, htmlBarras, htmlPlaceholders, htmlIconos, htmlReglas
+  htmlInsignias, htmlBarras, htmlCursos, htmlPlaceholders, htmlIconos, htmlReglas
 ].join('');
 
 // Tamaño real de cada nivel al ancho actual
@@ -288,3 +295,86 @@ document.fonts.ready.then(() => {
 });
 
 activarBarras();
+
+/* ------------------- verificación con cursos de ejemplo ------------------- */
+
+const ESPERADO = {
+  'automaquillaje-esencial': { porcentaje: 50, restantes: 6, estado: 'disponible' },
+  'maquillaje-social-profesional': { porcentaje: 87, restantes: 2, estado: 'ultimos' },
+  'masterclass-novias-y-eventos': { porcentaje: 100, restantes: 0, estado: 'agotado' }
+};
+const NOMBRE_ESTADO = { disponible: 'Disponible', ultimos: 'Últimos cupos', agotado: 'Agotado' };
+const marca = (ok) => ok
+  ? `<span class="guia-ok">${icono('check', { tamano: 16 })} Correcto</span>`
+  : `<span class="guia-error">${icono('cerrar', { tamano: 16 })} Revisar</span>`;
+
+async function verificarCursos() {
+  const [vigentes, anteriores, porSlug, ...busquedas] = await Promise.all([
+    obtenerCursosVigentes(),
+    obtenerCursosAnteriores(),
+    obtenerCursoPorSlug('maquillaje-social-profesional'),
+    buscarCursos('MAQUILLAJE SOCIAL'),
+    buscarCursos('novias'),
+    buscarCursos('basico'),
+    buscarCursos('colorimetria'),
+    buscarCursos('', { modalidad: 'online' }),
+    buscarCursos('', { nivel: 'Avanzado', estado: 'todos' })
+  ]);
+  const consultas = [
+    ['"MAQUILLAJE SOCIAL"', busquedas[0]],
+    ['"novias"', busquedas[1]],
+    ['"basico" (sin acento)', busquedas[2]],
+    ['"colorimetria" (tema del pensum)', busquedas[3]],
+    ['filtro modalidad "online"', busquedas[4]],
+    ['filtro nivel "Avanzado", vigentes y finalizados', busquedas[5]]
+  ];
+
+  const filas = vigentes.map((c) => {
+    const e = ESPERADO[c.slug];
+    const pct = porcentaje(c), rest = cuposRestantes(c), est = estadoCupos(c);
+    const ok = e && e.porcentaje === pct && e.restantes === rest && e.estado === est;
+    return `
+      <tr>
+        <td data-etiqueta="Curso"><strong>${esc(c.nombre)}</strong><br>
+          <span class="texto-secundario">${esc(c.nivel)} · ${rangoFechas(c.fechaInicio, c.fechaFin)}</span></td>
+        <td data-etiqueta="Inscritas">${c.inscritas} de ${c.cupos}</td>
+        <td data-etiqueta="%">${pct}%</td>
+        <td data-etiqueta="Restantes">${esc(calcularCupos(c.inscritas, c.cupos).textoRestantes)}</td>
+        <td data-etiqueta="Estado">${est === 'disponible' ? `<span class="texto-secundario">${NOMBRE_ESTADO[est]}</span>` : insignia(est)}</td>
+        <td data-etiqueta="Esperado">${marca(ok)}</td>
+      </tr>`;
+  }).join('');
+
+  document.getElementById('guia-cursos').innerHTML = `
+    <div class="guia-tarjeta guia-tabla-cursos">
+      <h3 class="guia-subtitulo">Cursos vigentes (ordenados por fecha)</h3>
+      <table class="guia-tabla guia-tabla--apilable">
+        <thead><tr><th>Curso</th><th>Inscritas</th><th>%</th><th>Restantes</th><th>Estado</th><th>Esperado</th></tr></thead>
+        <tbody>${filas}</tbody>
+      </table>
+    </div>
+
+    <div class="guia-bloque guia-rejilla guia-rejilla--2">
+      <div class="guia-tarjeta">
+        <h3 class="guia-subtitulo">Búsqueda sin mayúsculas ni acentos</h3>
+        <table class="guia-tabla">
+          ${consultas.map(([q, r]) => `<tr><th>${esc(q)}</th><td>${r.length ? r.map((c) => esc(c.nombre)).join('<br>') : '<span class="texto-secundario">Sin resultados</span>'}</td></tr>`).join('')}
+        </table>
+      </div>
+      <div class="guia-tarjeta">
+        <h3 class="guia-subtitulo">Cursos anteriores (más reciente primero)</h3>
+        <table class="guia-tabla">
+          ${anteriores.map((c) => `<tr><th>${esc(c.nombre)}</th><td>${rangoFechas(c.fechaInicio, c.fechaFin)} · ${c.egresadas} egresadas</td></tr>`).join('')}
+        </table>
+        <h3 class="guia-subtitulo" style="margin-top:var(--e-8)">Curso por slug</h3>
+        <table class="guia-tabla">
+          <tr><th>maquillaje-social-profesional</th><td>${porSlug ? esc(porSlug.nombre) : 'No encontrado'}</td></tr>
+        </table>
+      </div>
+    </div>`;
+}
+
+verificarCursos().catch((e) => {
+  console.error(e);
+  document.getElementById('guia-cursos').innerHTML = '<p class="guia-error">No se pudieron cargar los cursos.</p>';
+});

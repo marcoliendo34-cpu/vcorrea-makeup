@@ -113,6 +113,25 @@
     .guia-tabla th, .guia-tabla td { text-align: left; padding: var(--e-3) 0; border-bottom: var(--borde); vertical-align: top; }
     .guia-tabla th { font-weight: 500; color: var(--gris-calido); width: 45%; padding-right: var(--e-4); }
 
+    /* Verificación de cursos */
+    .guia-ok, .guia-error { display: inline-flex; align-items: center; gap: 4px; font-weight: 500; white-space: nowrap; }
+    .guia-ok { color: var(--dorado-profundo); }
+    .guia-error { color: #9B2C2C; }
+    .guia-tabla--apilable th { width: auto; }
+    .guia-tabla--apilable td { padding-right: var(--e-4); }
+    @media (max-width: 639px) {
+      .guia-tabla--apilable thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+      .guia-tabla--apilable tr { display: block; padding-block: var(--e-4); border-bottom: var(--borde); }
+      .guia-tabla--apilable td {
+        display: flex; justify-content: space-between; align-items: center; gap: var(--e-4);
+        padding: var(--e-1) 0; border: 0; text-align: right;
+      }
+      .guia-tabla--apilable td:first-child { display: block; text-align: left; padding-bottom: var(--e-2); }
+      .guia-tabla--apilable td:not(:first-child)::before {
+        content: attr(data-etiqueta); color: var(--gris-calido); text-align: left;
+      }
+    }
+
     .guia-pie { padding-block: var(--e-12); border-top: var(--borde); text-align: center; }
   </style>
 </head>

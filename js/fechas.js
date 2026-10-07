@@ -26,6 +26,19 @@ export function partesFecha(valor) {
   return { dia: String(f.getDate()).padStart(2, '0'), mes: MESES[f.getMonth()], anio: String(f.getFullYear()) };
 }
 
+/**
+ * Formato corto para la insignia de fecha de las tarjetas:
+ * { dia: '15', mesAnio: 'NOV 2026' } (el mes se guarda en mayúsculas para
+ * que la insignia no dependa de CSS).
+ */
+export function fechaTarjeta(valor) {
+  const f = leerFecha(valor);
+  return {
+    dia: String(f.getDate()).padStart(2, '0'),
+    mesAnio: `${MESES[f.getMonth()].toUpperCase()} ${f.getFullYear()}`
+  };
+}
+
 /** "sábado 15 de noviembre de 2026" (para textos largos y WhatsApp) */
 export function fechaLarga(valor) {
   const f = leerFecha(valor);
