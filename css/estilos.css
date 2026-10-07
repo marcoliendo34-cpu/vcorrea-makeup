@@ -1,0 +1,506 @@
+/* ==========================================================================
+   Vcorrea Makeup — estilos.css
+   Tokens y componentes. Mobile first: se escribe para 375px y se amplía con
+   min-width en 640, 768, 1024 y 1280px. Reglas completas en BRIEF.md.
+
+   Fuentes: cada página carga Cormorant Garamond y Jost en su <head> con
+   preconnect y display=swap (ver guia-de-estilo.html como modelo).
+   ========================================================================== */
+
+/* -------------------------------------------------------------------------
+   1. Tokens
+   ------------------------------------------------------------------------- */
+:root {
+  /* Paleta */
+  --blanco: #FFFFFF;          /* fondo principal */
+  --crema: #F5EFE6;           /* secciones alternas y tarjetas */
+  --beige: #E8DCC8;           /* bordes finos y fondo de barras */
+  --dorado: #B8975A;          /* líneas, barras, detalles. NUNCA texto pequeño */
+  --dorado-profundo: #7A5C30; /* botón principal, enlaces, textos destacados */
+  --tinta: #2B2622;           /* títulos y texto principal */
+  --gris-calido: #6B625A;     /* texto secundario */
+
+  /* Familias (con respaldo parecido mientras carga Google Fonts) */
+  --fuente-titulos: "Cormorant Garamond", "Cormorant", Garamond, "EB Garamond", Georgia, "Times New Roman", serif;
+  --fuente-texto: "Jost", "Futura", "Century Gothic", "Avenir Next", system-ui, -apple-system, "Segoe UI", sans-serif;
+
+  /* Escala tipográfica (fluida entre 375 y 1280px) */
+  --t-display: clamp(2.75rem, 2.05rem + 2.99vw, 4.5rem);   /* 44 → 72 */
+  --t-h1: clamp(2.25rem, 1.8rem + 1.92vw, 3.5rem);         /* 36 → 56 */
+  --t-h2: clamp(1.875rem, 1.6rem + 1.15vw, 2.625rem);      /* 30 → 42 */
+  --t-h3: clamp(1.5rem, 1.38rem + 0.5vw, 1.875rem);        /* 24 → 30 */
+  --t-h4: clamp(1.25rem, 1.2rem + 0.21vw, 1.375rem);       /* 20 → 22 */
+  --t-cuerpo-grande: 1.125rem;                             /* 18 */
+  --t-cuerpo: 1rem;                                        /* 16 */
+  --t-pequeno: 0.875rem;                                   /* 14 */
+  --t-etiqueta: 0.75rem;                                   /* 12 */
+  --t-mini: 0.6875rem;                                     /* 11 */
+
+  /* Espaciado (base 4px) */
+  --e-1: 0.25rem;  --e-2: 0.5rem;  --e-3: 0.75rem; --e-4: 1rem;
+  --e-5: 1.25rem;  --e-6: 1.5rem;  --e-8: 2rem;    --e-10: 2.5rem;
+  --e-12: 3rem;    --e-16: 4rem;   --e-20: 5rem;   --e-24: 6rem;
+  --seccion: clamp(4rem, 3rem + 4vw, 7rem);  /* aire vertical entre secciones */
+
+  /* Formas */
+  --radio-tarjeta: 16px;
+  --radio-boton: 10px;
+  --radio-pildora: 999px;
+  --borde: 1px solid var(--beige);
+
+  /* Sombras casi imperceptibles */
+  --sombra-suave: 0 1px 2px rgba(43, 38, 34, 0.04), 0 8px 24px rgba(43, 38, 34, 0.04);
+  --sombra-elevada: 0 2px 4px rgba(43, 38, 34, 0.05), 0 16px 40px rgba(43, 38, 34, 0.07);
+
+  /* Movimiento: 200 a 300 ms */
+  --dur-rapida: 200ms;
+  --dur: 240ms;
+  --dur-lenta: 300ms;
+  --curva: cubic-bezier(0.2, 0.6, 0.2, 1);
+
+  /* Contenedor */
+  --contenedor: 1200px;
+  --margen-lateral: 20px;
+
+  /* Áreas táctiles */
+  --tactil: 44px;
+}
+
+@media (min-width: 1024px) {
+  :root { --margen-lateral: 32px; }
+}
+
+/* -------------------------------------------------------------------------
+   2. Base
+   ------------------------------------------------------------------------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--blanco);
+  color: var(--tinta);
+  font-family: var(--fuente-texto);
+  font-size: var(--t-cuerpo);
+  font-weight: 400;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip; /* red de seguridad: nunca scroll horizontal */
+}
+
+img, svg, video, picture { display: block; max-width: 100%; }
+img { height: auto; }
+
+h1, h2, h3, h4, h5, h6 {
+  margin: 0;
+  font-family: var(--fuente-titulos);
+  font-weight: 400;
+  line-height: 1.12;
+  letter-spacing: -0.005em;
+  color: var(--tinta);
+  text-wrap: balance;
+}
+h1 { font-size: var(--t-h1); font-weight: 300; }
+h2 { font-size: var(--t-h2); }
+h3 { font-size: var(--t-h3); }
+h4 { font-size: var(--t-h4); font-weight: 500; }
+
+p { margin: 0; text-wrap: pretty; }
+
+a {
+  color: var(--dorado-profundo);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  text-decoration-color: color-mix(in srgb, var(--dorado-profundo) 40%, transparent);
+  transition: color var(--dur) var(--curva), text-decoration-color var(--dur) var(--curva);
+}
+a:hover { text-decoration-color: currentColor; }
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+/* Foco visible en dorado profundo */
+:focus-visible {
+  outline: 2px solid var(--dorado-profundo);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+::selection { background: var(--beige); color: var(--tinta); }
+
+.solo-lectores {
+  position: absolute !important;
+  width: 1px; height: 1px;
+  padding: 0; margin: -1px;
+  overflow: hidden; clip: rect(0 0 0 0);
+  white-space: nowrap; border: 0;
+}
+
+/* Utilidades de texto */
+.texto-secundario { color: var(--gris-calido); }
+.texto-destacado { color: var(--dorado-profundo); }
+.texto-grande { font-size: var(--t-cuerpo-grande); font-weight: 300; line-height: 1.6; }
+.texto-pequeno { font-size: var(--t-pequeno); }
+.display {
+  font-family: var(--fuente-titulos);
+  font-size: var(--t-display);
+  font-weight: 300;
+  line-height: 1.05;
+  letter-spacing: -0.01em;
+}
+
+/* -------------------------------------------------------------------------
+   3. Contenedor y secciones
+   ------------------------------------------------------------------------- */
+.contenedor {
+  width: 100%;
+  max-width: calc(var(--contenedor) + var(--margen-lateral) * 2);
+  margin-inline: auto;
+  padding-inline: var(--margen-lateral);
+}
+
+.seccion { padding-block: var(--seccion); }
+.seccion--crema { background: var(--crema); }
+
+/* -------------------------------------------------------------------------
+   4. Etiqueta (eyebrow)
+   ------------------------------------------------------------------------- */
+.etiqueta {
+  display: inline-block;
+  margin: 0;
+  font-family: var(--fuente-texto);
+  font-size: var(--t-etiqueta);
+  font-weight: 500;
+  line-height: 1.4;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--dorado-profundo);
+}
+.etiqueta--gris { color: var(--gris-calido); }
+.etiqueta--clara { color: var(--crema); }
+
+/* -------------------------------------------------------------------------
+   5. Título de sección: etiqueta + título + línea dorada de 48px
+      y enlace opcional a la derecha ("Ver todos")
+   ------------------------------------------------------------------------- */
+.titulo-seccion {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--e-4);
+  margin-bottom: var(--e-10);
+}
+.titulo-seccion__texto { min-width: 0; }
+.titulo-seccion .etiqueta { margin-bottom: var(--e-3); }
+.titulo-seccion__titulo { margin: 0; }
+.titulo-seccion__titulo::after {
+  content: "";
+  display: block;
+  width: 48px;
+  height: 2px;
+  margin-top: var(--e-5);
+  background: var(--dorado);
+  border-radius: 2px;
+}
+.titulo-seccion__enlace { flex-shrink: 0; }
+.titulo-seccion--centrado { justify-content: center; text-align: center; }
+.titulo-seccion--centrado .titulo-seccion__titulo::after { margin-inline: auto; }
+
+@media (min-width: 768px) {
+  .titulo-seccion { margin-bottom: var(--e-12); }
+}
+
+/* -------------------------------------------------------------------------
+   6. Botones
+      Variantes: principal, secundario, claro (sobre fotos), texto.
+      Tamaños: normal y grande. Estado desactivado.
+   ------------------------------------------------------------------------- */
+.boton {
+  --boton-fondo: transparent;
+  --boton-texto: var(--tinta);
+  --boton-borde: transparent;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--e-2);
+  min-height: var(--tactil);
+  padding: 0 var(--e-6);
+  border: 1px solid var(--boton-borde);
+  border-radius: var(--radio-boton);
+  background: var(--boton-fondo);
+  color: var(--boton-texto);
+  font-family: var(--fuente-texto);
+  font-size: 0.9375rem;
+  font-weight: 500;
+  line-height: 1.2;
+  letter-spacing: 0.02em;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+  transition:
+    background-color var(--dur) var(--curva),
+    color var(--dur) var(--curva),
+    border-color var(--dur) var(--curva),
+    transform var(--dur-rapida) var(--curva);
+}
+.boton svg { width: 18px; height: 18px; flex-shrink: 0; }
+.boton:active:not(:disabled):not([aria-disabled="true"]) { transform: translateY(1px); }
+
+.boton--principal {
+  --boton-fondo: var(--dorado-profundo);
+  --boton-texto: var(--blanco);
+  --boton-borde: var(--dorado-profundo);
+}
+.boton--principal:hover { --boton-fondo: var(--tinta); --boton-borde: var(--tinta); }
+
+.boton--secundario {
+  --boton-texto: var(--tinta);
+  --boton-borde: var(--tinta);
+}
+.boton--secundario:hover { --boton-fondo: var(--tinta); --boton-texto: var(--blanco); }
+
+.boton--claro {
+  --boton-fondo: var(--blanco);
+  --boton-texto: var(--tinta);
+  --boton-borde: var(--blanco);
+}
+.boton--claro:hover { --boton-fondo: var(--crema); --boton-borde: var(--crema); }
+
+.boton--texto {
+  --boton-texto: var(--dorado-profundo);
+  padding-inline: var(--e-1);
+  border-radius: 6px;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.3em;
+  text-decoration-color: transparent;
+}
+.boton--texto:hover { text-decoration-color: currentColor; }
+.boton--texto svg { transition: transform var(--dur) var(--curva); }
+.boton--texto:hover svg { transform: translateX(3px); }
+
+.boton--grande {
+  min-height: 52px;
+  padding: 0 var(--e-8);
+  font-size: 1rem;
+}
+.boton--texto.boton--grande { padding-inline: var(--e-1); }
+
+.boton--bloque { display: flex; width: 100%; }
+
+.boton:disabled,
+.boton[aria-disabled="true"] {
+  --boton-fondo: var(--crema);
+  --boton-texto: var(--gris-calido);
+  --boton-borde: var(--beige);
+  cursor: not-allowed;
+  text-decoration: none;
+}
+.boton--texto:disabled,
+.boton--texto[aria-disabled="true"] { --boton-fondo: transparent; --boton-borde: transparent; }
+
+/* Botón cuadrado solo con ícono (ej. guardar) */
+.boton--icono { width: var(--tactil); padding: 0; }
+.boton--icono.boton--grande { width: 52px; }
+
+/* -------------------------------------------------------------------------
+   7. Insignias
+   ------------------------------------------------------------------------- */
+.insignia {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radio-pildora);
+  font-family: var(--fuente-texto);
+  font-size: var(--t-mini);
+  font-weight: 500;
+  line-height: 1.3;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+.insignia::before {
+  content: "";
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+.insignia--sin-punto::before { display: none; }
+
+/* Cupos */
+.insignia--ultimos   { background: var(--tinta);  color: var(--crema); }
+.insignia--agotado   { background: var(--blanco); color: var(--gris-calido); border-color: var(--beige); }
+.insignia--finalizado { background: var(--crema); color: var(--gris-calido); border-color: var(--beige); }
+
+/* Estados de inscripción */
+.insignia--pendiente  { background: var(--crema); color: var(--dorado-profundo); border-color: var(--dorado); }
+.insignia--confirmada { background: var(--dorado-profundo); color: var(--blanco); }
+
+/* -------------------------------------------------------------------------
+   8. Barra de progreso de inscripción
+   ------------------------------------------------------------------------- */
+.progreso { display: grid; gap: var(--e-2); }
+
+.progreso__barra {
+  position: relative;
+  height: 6px;
+  border-radius: var(--radio-pildora);
+  background: var(--beige);
+  overflow: hidden;
+}
+.progreso__relleno {
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 100%;
+  border-radius: inherit;
+  background: var(--dorado);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform var(--dur-lenta) var(--curva);
+}
+.progreso.es-visible .progreso__relleno { transform: scaleX(var(--valor, 0)); }
+
+.progreso__datos {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--e-1) var(--e-4);
+  font-size: var(--t-pequeno);
+  line-height: 1.4;
+  color: var(--gris-calido);
+}
+.progreso__porcentaje strong { font-weight: 500; color: var(--tinta); }
+.progreso__restantes { color: var(--dorado-profundo); font-weight: 500; }
+.progreso--agotado .progreso__restantes { color: var(--gris-calido); }
+
+/* -------------------------------------------------------------------------
+   9. Placeholder de imagen
+   ------------------------------------------------------------------------- */
+.placeholder-foto {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: var(--proporcion, 4 / 3);
+  padding: var(--e-6);
+  background: var(--crema);
+  border: var(--borde);
+  border-radius: var(--radio-tarjeta);
+  color: var(--gris-calido);
+  text-align: center;
+}
+.placeholder-foto__texto {
+  max-width: 28ch;
+  font-family: var(--fuente-titulos);
+  font-size: var(--t-cuerpo-grande);
+  font-style: italic;
+  font-weight: 400;
+  line-height: 1.4;
+}
+.placeholder-foto--sin-borde { border: 0; border-radius: 0; }
+
+/* -------------------------------------------------------------------------
+   10. Logotipo tipográfico
+       Horizontal (header): monograma + nombre/MAKEUP al lado.
+       Apilado (footer): monograma arriba, nombre y MAKEUP centrados.
+   ------------------------------------------------------------------------- */
+.logo {
+  --logo-color: var(--tinta);
+  --logo-acento: var(--dorado);
+  display: inline-flex;
+  align-items: center;
+  gap: var(--e-3);
+  color: var(--logo-color);
+  text-decoration: none;
+  line-height: 1;
+}
+.logo--blanco { --logo-color: var(--blanco); --logo-acento: var(--blanco); }
+
+.logo__monograma {
+  display: grid;
+  place-items: center;
+  width: 40px; height: 40px;
+  border: 1px solid var(--logo-acento);
+  border-radius: 50%;
+  font-family: var(--fuente-titulos);
+  font-size: 1.0625rem;
+  font-weight: 400;
+  letter-spacing: 0.04em;
+  color: var(--logo-color);
+}
+.logo__texto { display: grid; gap: 5px; }
+.logo__nombre {
+  font-family: var(--fuente-titulos);
+  font-size: 1.5rem;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+.logo__sub {
+  font-family: var(--fuente-texto);
+  font-size: 0.625rem;
+  font-weight: 400;
+  letter-spacing: 0.35em;
+  /* compensa el espaciado final para que quede alineado */
+  margin-right: -0.35em;
+}
+
+.logo--apilado {
+  flex-direction: column;
+  gap: var(--e-4);
+  text-align: center;
+}
+.logo--apilado .logo__monograma { width: 56px; height: 56px; font-size: 1.375rem; }
+.logo--apilado .logo__texto { justify-items: center; gap: 8px; }
+.logo--apilado .logo__nombre { font-size: 2rem; }
+.logo--apilado .logo__sub { font-size: 0.6875rem; }
+
+/* En el header a 375px se oculta el monograma si el espacio no alcanza */
+@media (max-width: 359px) {
+  .logo--horizontal .logo__monograma { display: none; }
+}
+
+/* -------------------------------------------------------------------------
+   11. Íconos
+   ------------------------------------------------------------------------- */
+.icono {
+  width: 24px; height: 24px;
+  flex-shrink: 0;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.5;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* -------------------------------------------------------------------------
+   12. Animación de aparición
+   ------------------------------------------------------------------------- */
+@keyframes aparecer {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: none; }
+}
+
+/* -------------------------------------------------------------------------
+   13. Movimiento reducido
+   ------------------------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

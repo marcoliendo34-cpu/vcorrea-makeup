@@ -1,0 +1,150 @@
+<!doctype html>
+<html lang="es-VE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Guía de estilo · Verónica Correa Makeup</title>
+  <meta name="description" content="Guía de estilo temporal de la web de Verónica Correa Makeup.">
+  <meta name="theme-color" content="#FFFFFF">
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&family=Jost:wght@300;400;500&display=swap">
+
+  <link rel="stylesheet" href="/css/estilos.css">
+
+  <!-- Estilos solo de esta página temporal (no forman parte del sistema) -->
+  <style>
+    .guia-cabecera { border-bottom: var(--borde); }
+    .guia-cabecera__fila {
+      display: flex; align-items: center; justify-content: space-between;
+      gap: var(--e-4); min-height: 76px;
+    }
+    .guia-intro { padding-block: var(--e-16) var(--e-12); }
+    .guia-intro .display { margin-block: var(--e-4) var(--e-5); }
+    .guia-intro p { max-width: 56ch; }
+    .guia-nota {
+      margin-top: var(--e-6); padding: var(--e-4) var(--e-5);
+      background: var(--crema); border: var(--borde); border-radius: var(--radio-boton);
+      font-size: var(--t-pequeno); color: var(--gris-calido);
+    }
+    .guia-subtitulo { font-size: var(--t-h4); margin-bottom: var(--e-5); }
+    :where(.guia-rejilla, .guia-bloque, .guia-tarjeta) + .guia-bloque { margin-top: var(--e-12); }
+    .guia-rejilla { display: grid; gap: var(--e-4); }
+    @media (min-width: 640px) { .guia-rejilla--2 { grid-template-columns: repeat(2, 1fr); } }
+    @media (min-width: 1024px) {
+      .guia-rejilla--3 { grid-template-columns: repeat(3, 1fr); }
+      .guia-rejilla--4 { grid-template-columns: repeat(4, 1fr); }
+    }
+    @media (min-width: 640px) and (max-width: 1023px) {
+      .guia-rejilla--3, .guia-rejilla--4 { grid-template-columns: repeat(2, 1fr); }
+    }
+    .guia-tarjeta {
+      background: var(--blanco); border: var(--borde); border-radius: var(--radio-tarjeta);
+      padding: var(--e-6);
+    }
+    .guia-tarjeta--crema { background: var(--crema); }
+    .guia-tarjeta--tinta { background: var(--tinta); border-color: var(--tinta); }
+    .guia-rotulo {
+      display: block; margin-top: var(--e-4);
+      font-size: var(--t-etiqueta); color: var(--gris-calido); letter-spacing: 0.04em;
+    }
+    .guia-tarjeta--tinta .guia-rotulo { color: var(--beige); }
+
+    /* Logos */
+    .guia-logo { display: grid; place-items: center; min-height: 168px; }
+
+    /* Paleta */
+    .muestra { overflow: hidden; padding: 0; }
+    .muestra__color { height: 96px; border-bottom: var(--borde); }
+    .muestra__datos { padding: var(--e-4) var(--e-5) var(--e-5); display: grid; gap: 2px; }
+    .muestra__nombre { font-family: var(--fuente-titulos); font-size: var(--t-h4); font-weight: 500; }
+    .muestra__codigo { font-size: var(--t-pequeno); color: var(--gris-calido); font-variant-numeric: tabular-nums; }
+    .muestra__uso { margin-top: var(--e-2); font-size: var(--t-pequeno); line-height: 1.5; }
+    .muestra__contraste { margin-top: var(--e-2); font-size: var(--t-etiqueta); color: var(--gris-calido); }
+
+    /* Tipografía */
+    .tipo-fila {
+      display: grid; gap: var(--e-2); padding-block: var(--e-6);
+      border-bottom: var(--borde);
+    }
+    .tipo-fila:first-child { padding-top: 0; }
+    @media (min-width: 1024px) {
+      .tipo-fila { grid-template-columns: 220px 1fr; align-items: baseline; gap: var(--e-8); }
+    }
+    .tipo-fila__dato { font-size: var(--t-etiqueta); color: var(--gris-calido); line-height: 1.5; }
+    .tipo-fila__dato strong { display: block; color: var(--tinta); font-weight: 500; letter-spacing: 0.04em; }
+    .tipo-pesos { display: grid; gap: var(--e-3); }
+    .tipo-pesos span { display: block; }
+
+    /* Botones */
+    .guia-fila-botones { display: flex; flex-wrap: wrap; gap: var(--e-3); align-items: center; }
+    .guia-fila-botones + .guia-fila-botones { margin-top: var(--e-4); }
+
+    /* Insignias */
+    .guia-insignias { display: flex; flex-wrap: wrap; gap: var(--e-3); }
+
+    /* Barras */
+    .guia-barra { display: grid; gap: var(--e-4); }
+    .guia-barra__cabeza { display: flex; justify-content: space-between; align-items: center; gap: var(--e-3); min-height: 30px; }
+    .guia-barra__cifras { font-size: var(--t-pequeno); color: var(--gris-calido); }
+
+    /* Íconos */
+    .guia-iconos { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: var(--e-3); }
+    .guia-icono {
+      display: grid; justify-items: center; gap: var(--e-2);
+      padding: var(--e-4) var(--e-2); border: var(--borde); border-radius: var(--radio-boton);
+      font-size: var(--t-mini); color: var(--gris-calido); text-align: center; word-break: break-word;
+    }
+    .guia-icono svg { color: var(--tinta); }
+
+    /* Contenedor */
+    .guia-contenedor {
+      height: 56px; border: 1px dashed var(--dorado); border-radius: var(--radio-boton);
+      display: grid; place-items: center; font-size: var(--t-pequeno); color: var(--gris-calido);
+    }
+
+    /* Fechas */
+    .guia-tabla { width: 100%; border-collapse: collapse; font-size: var(--t-pequeno); }
+    .guia-tabla th, .guia-tabla td { text-align: left; padding: var(--e-3) 0; border-bottom: var(--borde); vertical-align: top; }
+    .guia-tabla th { font-weight: 500; color: var(--gris-calido); width: 45%; padding-right: var(--e-4); }
+
+    .guia-pie { padding-block: var(--e-12); border-top: var(--borde); text-align: center; }
+  </style>
+</head>
+<body>
+  <header class="guia-cabecera">
+    <div class="contenedor guia-cabecera__fila">
+      <div data-logo-cabecera></div>
+      <p class="etiqueta etiqueta--gris">Temporal</p>
+    </div>
+  </header>
+
+  <main id="contenido">
+    <div class="contenedor guia-intro">
+      <p class="etiqueta">Sistema visual</p>
+      <h1 class="display">Guía de estilo</h1>
+      <p class="texto-grande texto-secundario">
+        Paleta, tipografía y componentes base de la web de Verónica Correa Makeup.
+        Esta página es temporal: sirve para aprobar el sistema antes de construir las páginas.
+      </p>
+      <p class="guia-nota" data-aviso-fuentes>
+        Las tipografías se cargan desde Google Fonts. Si ves letras distintas a Cormorant Garamond y Jost,
+        es la fuente de respaldo mientras cargan.
+      </p>
+    </div>
+
+    <div id="guia"></div>
+  </main>
+
+  <footer class="guia-pie">
+    <div class="contenedor" data-logo-pie></div>
+  </footer>
+
+  <script type="module" src="/js/guia-de-estilo.js"></script>
+</body>
+</html>

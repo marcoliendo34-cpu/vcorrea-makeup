@@ -1,0 +1,14 @@
+# Sistema
+.DS_Store
+Thumbs.db
+
+# Vercel y secretos
+.vercel
+.env*
+
+# Python (herramientas)
+__pycache__/
+*.pyc
+
+# Salida de herramientas/capturas.py (se regenera en cada paso)
+herramientas/capturas/

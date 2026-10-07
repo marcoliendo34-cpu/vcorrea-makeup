@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <title>Verónica Correa Makeup</title>
+  <rect width="64" height="64" rx="14" fill="#F5EFE6"/>
+  <g fill="#7A5C30" transform="translate(32 32) scale(1.1) translate(-31.5 -31.5)">
+    <path d="M10.5 18.5H15.9L22.5 39.1L29.9 18.5H32L22.1 45.5H20.7Z"/>
+    <path d="M8.3 17.2h9.8v1.3h-9.8Z"/>
+    <path d="M27.9 17.2h6.1v1.3h-6.1Z"/>
+    <path d="M51.37 21.28A13.6 13.6 0 1 0 51.37 42.72L51.34 41.12A10.8 11.9 0 1 1 51.34 22.88Z"/>
+  </g>
+</svg>

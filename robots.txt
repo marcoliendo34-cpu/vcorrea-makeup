@@ -1,0 +1,3 @@
+# Vista previa: no indexar nada mientras la clienta aprueba la interfaz.
+User-agent: *
+Disallow: /
