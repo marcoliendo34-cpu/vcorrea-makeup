@@ -14,6 +14,11 @@ Uso (desde la raíz del repositorio):
   python3 herramientas/capturas.py / /cursos /cursos/ejemplo --anchos 375,1280
   python3 herramientas/capturas.py /guia-de-estilo --remoto https://vcorrea-makeup.vercel.app
 
+Estados especiales (captura solo la pantalla visible, con un sufijo en el nombre):
+  --clic "[data-abrir-menu]" --sufijo menu       abre el menú móvil antes de capturar
+  --desplazar 600 --sufijo bajando               baja 600 px (header sólido en Inicio)
+  --sesion                                       simula una alumna con sesión iniciada
+
 Sin --remoto levanta un servidor local que imita a Vercel:
 URLs limpias (/cursos → cursos.html), /cursos/:slug → curso.html y 404.html.
 
@@ -127,9 +132,15 @@ JS_FUENTES = """
 """
 
 
-def nombre_archivo(ruta, ancho):
+def nombre_archivo(ruta, ancho, sufijo=''):
     limpio = ruta.strip('/').replace('/', '_') or 'inicio'
-    return f'{limpio}-{ancho}.png'
+    return f'{limpio}-{ancho}{"-" + sufijo if sufijo else ""}.png'
+
+
+SESION_DEMO = '''localStorage.setItem('vcorrea:sesion', JSON.stringify({
+  alumna: { nombre: 'Valentina', apellido: 'Rojas', correo: 'valentina@ejemplo.com' },
+  desde: new Date().toISOString()
+}));'''
 
 
 def recorrer(pagina):
@@ -145,7 +156,7 @@ def recorrer(pagina):
     pagina.wait_for_timeout(450)
 
 
-def auditar(rutas, anchos, base, salida):
+def auditar(rutas, anchos, base, salida, clic=None, desplazar=0, sesion=False, sufijo='', escribir=None):
     salida.mkdir(parents=True, exist_ok=True)
     problemas = 0
     sin_fuentes = False
@@ -157,6 +168,8 @@ def auditar(rutas, anchos, base, salida):
                 ctx = nav.new_context(viewport={'width': ancho, 'height': 900},
                                       device_scale_factor=2 if ancho < 768 else 1,
                                       locale='es-VE')
+                if sesion:
+                    ctx.add_init_script(SESION_DEMO)
                 pg = ctx.new_page()
                 errores, fallidos = [], []
                 def en_consola(m, errores=errores):
@@ -175,10 +188,25 @@ def auditar(rutas, anchos, base, salida):
                 resp = pg.goto(base.rstrip('/') + ruta, wait_until='load', timeout=30000)
                 estado = resp.status if resp else '—'
                 recorrer(pg)
+                es_404 = pg.evaluate("document.body.dataset.pagina") == '404'
+                if es_404 and estado == 404:
+                    # Página de error a propósito: el 404 del documento es lo esperado.
+                    estado = '404 (página de error)'
+                    errores = [e for e in errores if 'status of 404' not in e]
                 desborde = pg.evaluate(JS_DESBORDE)
                 fuentes = pg.evaluate(JS_FUENTES)
-                archivo = salida / nombre_archivo(ruta, ancho)
-                pg.screenshot(path=str(archivo), full_page=True)
+                archivo = salida / nombre_archivo(ruta, ancho, sufijo)
+                especial = bool(clic or desplazar or escribir)
+                if desplazar:
+                    pg.evaluate(f"window.scrollTo({{top: {desplazar}, behavior: 'instant'}})")
+                    pg.wait_for_timeout(450)
+                if clic:
+                    pg.locator(clic).first.click()
+                    pg.wait_for_timeout(500)
+                if escribir:
+                    pg.keyboard.type(escribir, delay=40)
+                    pg.wait_for_timeout(500)
+                pg.screenshot(path=str(archivo), full_page=not especial)
                 ctx.close()
 
                 propios = [u for u in fallidos if not any(f in u for f in FUENTES_GOOGLE)]
@@ -188,7 +216,7 @@ def auditar(rutas, anchos, base, salida):
                     sin_fuentes = True
 
                 hay_desborde = desborde['total'] > desborde['ancho']
-                ok = estado == 200 and not errores and not propios and not hay_desborde
+                ok = estado in (200, '404 (página de error)') and not errores and not propios and not hay_desborde
                 problemas += 0 if ok else 1
                 marca = '✓' if ok else '✗'
                 print(f'  {marca} {ancho:>4}px  HTTP {estado}  →  {archivo.relative_to(RAIZ)}')
@@ -214,6 +242,11 @@ def main():
     ap.add_argument('--anchos', default='375,768,1280', help='Anchos en px separados por coma')
     ap.add_argument('--remoto', help='URL base publicada (si no, se usa un servidor local)')
     ap.add_argument('--salida', default=str(SALIDA), help='Carpeta de capturas')
+    ap.add_argument('--clic', help='Selector a pulsar antes de capturar (ej. "[data-abrir-menu]")')
+    ap.add_argument('--escribir', help='Texto a escribir después del clic (ej. en el buscador)')
+    ap.add_argument('--desplazar', type=int, default=0, help='Píxeles a bajar antes de capturar')
+    ap.add_argument('--sesion', action='store_true', help='Simular alumna con sesión iniciada')
+    ap.add_argument('--sufijo', default='', help='Sufijo para el nombre del archivo')
     a = ap.parse_args()
 
     anchos = [int(x) for x in a.anchos.split(',') if x.strip()]
@@ -223,7 +256,8 @@ def main():
     if not base:
         srv, base = iniciar_servidor()
     try:
-        problemas = auditar(rutas, anchos, base, Path(a.salida))
+        problemas = auditar(rutas, anchos, base, Path(a.salida), clic=a.clic, desplazar=a.desplazar,
+                            sesion=a.sesion, sufijo=a.sufijo, escribir=a.escribir)
     finally:
         if srv:
             srv.shutdown()
