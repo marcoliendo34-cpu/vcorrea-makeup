@@ -9,7 +9,7 @@
 
 import { CONFIG } from './config.js';
 import { CURSOS } from '../data/cursos.js';
-import { GALERIA } from '../data/galeria.js';
+import { GALERIA, CATEGORIAS_GALERIA } from '../data/galeria.js';
 
 /** @typedef {import('../data/cursos.js').Curso} Curso */
 /** @typedef {import('../data/galeria.js').FotoGaleria} FotoGaleria */
@@ -151,15 +151,36 @@ export async function obtenerOpcionesDeFiltro() {
 }
 
 /**
- * Fotos de la galería.
+ * Rutas de una foto de la galería (convención en data/galeria.js).
+ * @param {FotoGaleria} f
+ * @returns {FotoGaleria & {miniatura: string|null, grande: string|null}}
+ */
+function conRutas(f) {
+  return {
+    ...f,
+    miniatura: f.archivo ? `/fotos/galeria/${f.archivo}-600.webp` : null,
+    grande: f.archivo ? `/fotos/galeria/${f.archivo}-1200.webp` : null
+  };
+}
+
+/**
+ * Fotos de la galería, con sus rutas de miniatura (600 px) y grande (1200 px).
  * @param {object} [op]
  * @param {boolean} [op.soloDestacadas]  Solo las marcadas para el avance de Inicio.
+ * @param {string} [op.categoria]        'social' | 'novias' | 'editorial' | 'alumnas'
  * @param {number} [op.limite]
- * @returns {Promise<FotoGaleria[]>}
  */
-export async function obtenerGaleria({ soloDestacadas = false, limite } = {}) {
-  const fotos = (await fuente().galeria()).filter((f) => !soloDestacadas || f.destacada);
+export async function obtenerGaleria({ soloDestacadas = false, categoria, limite } = {}) {
+  const fotos = (await fuente().galeria())
+    .filter((f) => !soloDestacadas || f.destacada)
+    .filter((f) => !categoria || categoria === 'todas' || f.categoria === categoria)
+    .map(conRutas);
   return limite ? fotos.slice(0, limite) : fotos;
+}
+
+/** Categorías de la galería para los chips: [{ id, nombre }]. */
+export async function obtenerCategoriasGaleria() {
+  return copiar(CATEGORIAS_GALERIA);
 }
 
 export const modo = () => CONFIG.modoDatos;

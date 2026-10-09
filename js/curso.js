@@ -8,14 +8,19 @@
 
 import {
   iniciarPagina, esc, boton, insignia, barraProgreso, placeholderFoto, urlWhatsApp,
-  ajustarWhatsApp, activarBarras, activarApariciones, textoDuracion, formatearPrecio
+  ajustarWhatsApp, activarBarras, activarApariciones, formatearPrecio
 } from './componentes.js';
+import {
+  encabezado, datosFicha, htmlFicha, htmlSobre, htmlIncluye, htmlPensum, htmlPracticas,
+  htmlRequisitos, htmlCertificado, htmlMiniGaleria, fotosParaVisor
+} from './detalle-curso.js';
+import { abrirVisor } from './visor.js';
 import { icono } from './iconos.js';
 import { obtenerCursoPorSlug } from './datos.js';
 import { cuposDeCurso } from './cupos.js';
 import { formatearFecha, rangoFechas } from './fechas.js';
 import { CONFIG } from './config.js';
-import { inscribirse, mensajeAvisame, mensajeDudas } from './inscripcion.js';
+import { inscribirse, mensajeAvisame, mensajeDudas, mensajeRepetir } from './inscripcion.js';
 
 const MARCA = 'Verónica Correa Makeup';
 
@@ -67,15 +72,6 @@ function estadoDe(curso) {
   };
 }
 
-const lista = (items, clase = 'lista-marcas') =>
-  `<ul class="${clase}">${items.map((t) => `<li>${icono('check', { tamano: 18, clase: 'lista-marcas__marca' })}<span>${esc(t)}</span></li>`).join('')}</ul>`;
-
-const encabezado = ({ etiqueta, titulo, id }) => `
-  <header class="curso-seccion__encabezado">
-    ${etiqueta ? `<p class="etiqueta">${esc(etiqueta)}</p>` : ''}
-    <h2${id ? ` id="${id}"` : ''}>${esc(titulo)}</h2>
-  </header>`;
-
 /** Botones de acción. `lugar` = 'resumen' | 'cierre' | 'barra'. */
 function acciones(curso, est, lugar) {
   const tamano = lugar === 'barra' ? 'normal' : 'grande';
@@ -83,6 +79,13 @@ function acciones(curso, est, lugar) {
     return boton({
       texto: 'Inscribirme', href: '#inscripcion', icono: 'flecha-derecha', tamano, bloque: lugar !== 'barra',
       atributos: { 'data-inscribirme': '' }
+    });
+  }
+  if (est.finalizado) {
+    return boton({
+      texto: 'Quiero que se repita', href: urlWhatsApp(mensajeRepetir(curso)), variante: 'secundario',
+      iconoIzquierda: 'whatsapp', tamano, bloque: lugar !== 'barra',
+      atributos: { target: '_blank', rel: 'noopener' }
     });
   }
   const avisame = boton({
@@ -128,41 +131,15 @@ function htmlPortada(curso, est) {
   </section>`;
 }
 
-function htmlIndice() {
+function htmlIndice(ids) {
   return `
   <nav class="curso-indice" aria-label="Secciones del curso" data-indice>
     <div class="contenedor">
       <ul class="curso-indice__lista" data-indice-lista>
-        ${INDICE.map((s) => `<li><a class="chip chip--indice" href="#${s.id}" data-indice-enlace="${s.id}">${esc(s.texto)}</a></li>`).join('')}
+        ${INDICE.filter((s) => ids.includes(s.id)).map((s) => `<li><a class="chip chip--indice" href="#${s.id}" data-indice-enlace="${s.id}">${esc(s.texto)}</a></li>`).join('')}
       </ul>
     </div>
   </nav>`;
-}
-
-function datosFicha(curso) {
-  return [
-    { icono: 'calendario', etiqueta: 'Inicio', valor: formatearFecha(curso.fechaInicio), detalle: curso.fechaFin !== curso.fechaInicio ? `Termina el ${formatearFecha(curso.fechaFin)}` : '' },
-    { icono: 'reloj', etiqueta: 'Días y horario', valor: curso.dias, detalle: curso.horario },
-    { icono: 'duracion', etiqueta: 'Duración', valor: textoDuracion(curso.semanas) },
-    { icono: 'clases', etiqueta: 'Clases', valor: curso.totalClases === 1 ? '1 clase' : `${curso.totalClases} clases` },
-    { icono: curso.modalidad === 'Online' ? 'video' : 'ubicacion', etiqueta: 'Modalidad', valor: curso.modalidad, detalle: curso.ubicacion },
-    { icono: 'nivel', etiqueta: 'Nivel', valor: curso.nivel }
-  ];
-}
-
-function htmlFicha(curso) {
-  return `
-  <section class="curso-seccion" id="detalles" aria-labelledby="t-detalles" data-aparecer>
-    ${encabezado({ etiqueta: 'Ficha rápida', titulo: 'Detalles del curso', id: 't-detalles' })}
-    <dl class="ficha">
-      ${datosFicha(curso).map((d) => `
-        <div class="ficha__item">
-          <span class="ficha__icono">${icono(d.icono, { tamano: 22 })}</span>
-          <dt>${esc(d.etiqueta)}</dt>
-          <dd><span class="ficha__valor">${esc(d.valor)}</span>${d.detalle ? `<span class="ficha__detalle">${esc(d.detalle)}</span>` : ''}</dd>
-        </div>`).join('')}
-    </dl>
-  </section>`;
 }
 
 function htmlCupos(curso, est) {
@@ -179,76 +156,12 @@ function htmlCupos(curso, est) {
   </section>`;
 }
 
-function htmlSobre(curso) {
+function htmlGaleriaCurso(curso) {
+  if (!curso.galeria?.length) return '';
   return `
-  <section class="curso-seccion" aria-labelledby="t-sobre" data-aparecer>
-    ${encabezado({ titulo: 'Sobre el curso', id: 't-sobre' })}
-    <p class="curso-seccion__intro">${esc(curso.descripcion)}</p>
-    ${curso.dirigidoA?.length ? `<h3 class="curso-seccion__subtitulo">Dirigido a</h3>${lista(curso.dirigidoA)}` : ''}
-  </section>`;
-}
-
-function htmlIncluye(curso) {
-  return `
-  <section class="curso-seccion" id="incluye" aria-labelledby="t-incluye" data-aparecer>
-    ${encabezado({ titulo: 'Qué incluye', id: 't-incluye' })}
-    ${lista(curso.incluye, 'lista-marcas lista-marcas--columnas')}
-  </section>`;
-}
-
-function htmlPensum(curso) {
-  const semanas = curso.pensum.map((s, i) => `
-    <details class="acordeon__item"${i === 0 ? ' open' : ''}>
-      <summary class="acordeon__resumen">
-        <span class="acordeon__titulo"><span class="acordeon__numero">Semana ${s.semana}</span> · ${esc(s.titulo)}</span>
-        <span class="acordeon__meta">${s.temas.length === 1 ? '1 tema' : `${s.temas.length} temas`}</span>
-        ${icono('chevron-abajo', { tamano: 20, clase: 'acordeon__flecha' })}
-      </summary>
-      <div class="acordeon__contenido">
-        <ul class="lista-temas">${s.temas.map((t) => `<li>${esc(t)}</li>`).join('')}</ul>
-      </div>
-    </details>`).join('');
-  return `
-  <section class="curso-seccion" id="pensum" aria-labelledby="t-pensum" data-aparecer>
-    ${encabezado({ etiqueta: `${textoDuracion(curso.semanas)} · ${curso.totalClases} clases`, titulo: 'Pensum', id: 't-pensum' })}
-    <div class="acordeon">${semanas}</div>
-  </section>`;
-}
-
-function htmlPracticas(curso) {
-  if (!curso.practicas?.length) return '';
-  return `
-  <section class="curso-seccion" id="practicas" aria-labelledby="t-practicas" data-aparecer>
-    ${encabezado({ titulo: 'Prácticas', id: 't-practicas' })}
-    <ul class="practicas">
-      ${curso.practicas.map((p) => `
-        <li class="practica">
-          <h3>${esc(p.titulo)}</h3>
-          <p>${esc(p.descripcion)}</p>
-          ${p.requiereModelo ? `<p class="practica__modelo">${icono('usuario', { tamano: 18 })}<span>Trae tu modelo</span></p>` : ''}
-        </li>`).join('')}
-    </ul>
-  </section>`;
-}
-
-function htmlRequisitos(curso) {
-  if (!curso.requisitos?.length) return '';
-  return `
-  <section class="curso-seccion" aria-labelledby="t-requisitos" data-aparecer>
-    ${encabezado({ titulo: 'Requisitos y qué traer', id: 't-requisitos' })}
-    <ul class="lista-puntos">${curso.requisitos.map((r) => `<li>${esc(r)}</li>`).join('')}</ul>
-  </section>`;
-}
-
-function htmlCertificado(curso) {
-  if (!curso.certificado?.incluye) return '';
-  return `
-  <section class="curso-certificado" aria-labelledby="t-certificado" data-aparecer>
-    <span class="curso-certificado__icono">${icono('certificado', { tamano: 24 })}</span>
-    <div>
-      <h2 id="t-certificado">Certificado</h2>
-      <p>${esc(curso.certificado.descripcion)}</p>
-    </div>
+  <section class="curso-seccion" aria-labelledby="t-galeria" data-aparecer>
+    ${encabezado({ titulo: 'Fotos del curso', id: 't-galeria' })}
+    ${htmlMiniGaleria(curso, { max: 6 })}
   </section>`;
 }
 
@@ -353,17 +266,19 @@ function htmlBarra(curso, est) {
 
 function htmlCierre(curso, est) {
   const titulo = est.abierto ? 'Reserva tu cupo'
-    : est.finalizado ? 'Este curso ya terminó' : 'Este curso está agotado';
+    : est.finalizado ? '¿Quieres que se repita?' : 'Este curso está agotado';
   const texto = est.abierto
     ? `Inicia el ${formatearFecha(curso.fechaInicio)} · ${est.cupos.textoRestantes.charAt(0).toLowerCase()}${est.cupos.textoRestantes.slice(1)}.`
-    : 'Escríbele a Verónica y te avisa cuando abra la próxima edición.';
+    : est.finalizado
+      ? 'Este curso ya terminó. Escríbele a Verónica si te gustaría que abra una nueva edición.'
+      : 'Escríbele a Verónica y te avisa cuando abra la próxima edición.';
   return `
   <section class="seccion seccion--crema seccion--cierre" aria-labelledby="t-cierre" data-cierre>
     <div class="contenedor cierre">
       <p class="etiqueta">${esc(curso.nombre)}</p>
       <h2 id="t-cierre">${titulo}</h2>
       <p>${esc(texto)}</p>
-      <div class="cierre__acciones">${acciones(curso, est, 'cierre')}</div>
+      <div class="cierre__acciones">${est.finalizado ? acciones(curso, est, 'cierre').replace('boton--secundario', 'boton--principal') : acciones(curso, est, 'cierre')}</div>
       <a class="cierre__dudas" href="${urlWhatsApp(mensajeDudas(curso))}" target="_blank" rel="noopener">¿Tienes dudas? Escríbele a Verónica</a>
     </div>
   </section>`;
@@ -473,35 +388,45 @@ if (!curso) {
   const est = estadoDe(curso);
   if (!document.body.dataset.slug) document.title = `${curso.nombre} · ${MARCA}`;
   main.removeAttribute('aria-busy');
+  // Curso finalizado = modo lectura: sin precio, sin inscripción y sin barra fija.
+  const lectura = est.finalizado;
+  const secciones = [
+    htmlFicha(curso),
+    htmlCupos(curso, est),
+    htmlSobre(curso),
+    htmlIncluye(curso),
+    htmlPensum(curso),
+    htmlPracticas(curso),
+    htmlGaleriaCurso(curso),
+    htmlRequisitos(curso),
+    htmlCertificado(curso),
+    lectura ? '' : htmlInversion(curso),
+    lectura ? '' : htmlInscripcion(),
+    lectura ? '' : htmlPagos(),
+    lectura ? '' : htmlPreguntas()
+  ].join('');
+  const ids = INDICE.map((x) => x.id).filter((id) => secciones.includes(`id="${id}"`));
+
   main.innerHTML = `
     ${htmlPortada(curso, est)}
-    ${htmlIndice()}
+    ${htmlIndice(ids)}
     <div class="contenedor curso-cuerpo">
-      <div class="curso-contenido">
-        ${htmlFicha(curso)}
-        ${htmlCupos(curso, est)}
-        ${htmlSobre(curso)}
-        ${htmlIncluye(curso)}
-        ${htmlPensum(curso)}
-        ${htmlPracticas(curso)}
-        ${htmlRequisitos(curso)}
-        ${htmlCertificado(curso)}
-        ${htmlInversion(curso)}
-        ${htmlInscripcion()}
-        ${htmlPagos()}
-        ${htmlPreguntas()}
-      </div>
+      <div class="curso-contenido">${secciones}</div>
       ${htmlResumen(curso, est)}
     </div>
-    ${htmlBarra(curso, est)}
+    ${lectura ? '' : htmlBarra(curso, est)}
     ${htmlCierre(curso, est)}`;
 
   iniciarPagina({ pagina: 'curso' });
   activarBarras(main);
   activarApariciones(main);
   activarIndice();
-  activarBarra();
+  if (!lectura) activarBarra();
   activarInscripcion(curso);
+  main.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-mini-galeria]');
+    if (b) abrirVisor(fotosParaVisor(curso), Number(b.dataset.indice), b);
+  });
 
   // Si se llegó con un ancla (ej. desde "Inscribirme" en una tarjeta), ir a ella
   // ahora que el contenido existe.

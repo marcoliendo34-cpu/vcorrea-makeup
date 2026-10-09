@@ -57,11 +57,14 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 │   ├── fechas.js            formato de fechas
 │   ├── sesion.js            sesión simulada con localStorage
 │   ├── inscripcion.js       flujo "Inscribirme" → WhatsApp
+│   ├── detalle-curso.js     secciones de la ficha del curso reutilizables (ficha y cursos anteriores)
+│   ├── visor.js             visor de fotos a pantalla completa (galería y cursos anteriores)
 │   └── <un archivo por página>   ej. inicio.js, cursos.js, curso.js…
 ├── data/
 │   ├── cursos.js
 │   └── galeria.js
-├── fotos/                   imágenes en WebP
+├── cursos/                  una página por curso, generada (NO editar a mano)
+├── fotos/                   imágenes en WebP (galería: /fotos/galeria/{archivo}-600 y -1200)
 ├── referencias/             capturas de Hipereventos (NO se publican)
 ├── herramientas/            scripts que solo corren en el espacio de trabajo:
 │                            capturas, auditoría, generador de páginas por curso
@@ -87,6 +90,8 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
   - Encabezado `X-Robots-Tag: noindex` mientras dure la vista previa.
   - `404.html` como página de error.
 - `.vercelignore`: excluye `BRIEF.md`, `/referencias` y `/herramientas`.
+- `robots.txt`: bloquea a los buscadores durante la vista previa, pero deja pasar a los lectores de enlaces (WhatsApp, Meta, etc.) para que las vistas previas al compartir funcionen.
+- Páginas por curso: `herramientas/generar_cursos.py` crea `cursos/[slug].html` con título, descripción e imagen Open Graph propios. Se ejecuta cada vez que cambian los cursos o `curso.html`. Los cursos finalizados se muestran en modo lectura (sin precio ni inscripción).
 
 ---
 

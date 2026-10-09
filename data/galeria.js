@@ -1,27 +1,44 @@
 // Galería de ejemplo para la vista previa (modo demo).
 // Las páginas NUNCA leen este archivo directamente: piden los datos a js/datos.js.
-// Mientras no lleguen las fotos reales, `src` es null y se muestra el
-// placeholder crema con "Foto: {alt}".
+//
+// Fotos: cada foto se guarda en dos tamaños WebP dentro de /fotos/galeria/
+//   {archivo}-600.webp   miniatura del mosaico (600 px de ancho)
+//   {archivo}-1200.webp  versión grande del visor (1200 px de ancho)
+// Mientras `archivo` sea null se muestra el placeholder crema con "Foto: {alt}".
+// `ancho` y `alto` son la proporción de la foto original: reservan su espacio
+// en el mosaico para que la página no salte mientras cargan.
+
+/** Categorías de los chips, en orden. */
+export const CATEGORIAS_GALERIA = [
+  { id: 'social', nombre: 'Social' },
+  { id: 'novias', nombre: 'Novias' },
+  { id: 'editorial', nombre: 'Editorial' },
+  { id: 'alumnas', nombre: 'Trabajos de alumnas' }
+];
 
 /**
  * @typedef {Object} FotoGaleria
  * @property {string} id
- * @property {string|null} src       Ruta en /fotos (WebP, máx. 1200 px) o null.
- * @property {string|null} miniatura Ruta en /fotos (WebP, 600 px) o null.
- * @property {string} alt            Descripción de la foto (alt y texto del placeholder).
- * @property {string} categoria      Ej. "Novias", "Social", "Clases".
- * @property {boolean} destacada     true para mostrarla en el avance de Inicio.
+ * @property {string|null} archivo  Nombre base en /fotos/galeria (sin tamaño ni extensión) o null.
+ * @property {'social'|'novias'|'editorial'|'alumnas'} categoria
+ * @property {string} alt           Texto alternativo (y del placeholder).
+ * @property {number} ancho         Proporción de la foto: ancho…
+ * @property {number} alto          …y alto (ej. 4 y 5 para vertical 4:5).
+ * @property {boolean} destacada    true para mostrarla en el avance de Inicio.
  */
 
 /** @type {FotoGaleria[]} */
 export const GALERIA = [
-  { id: 'novia-luminosa', src: null, miniatura: null, alt: 'Maquillaje de novia con piel luminosa', categoria: 'Novias', destacada: true },
-  { id: 'ojos-ahumados', src: null, miniatura: null, alt: 'Detalle de ojos ahumados', categoria: 'Social', destacada: true },
-  { id: 'alumnas-en-clase', src: null, miniatura: null, alt: 'Alumnas practicando en clase', categoria: 'Clases', destacada: true },
-  { id: 'labios-nude', src: null, miniatura: null, alt: 'Labios en tono nude', categoria: 'Social', destacada: true },
-  { id: 'brochas', src: null, miniatura: null, alt: 'Kit de brochas sobre la mesa', categoria: 'Clases', destacada: true },
-  { id: 'noche-glam', src: null, miniatura: null, alt: 'Maquillaje de noche glam', categoria: 'Social', destacada: true },
-  { id: 'piel-natural', src: null, miniatura: null, alt: 'Maquillaje natural de día', categoria: 'Social', destacada: false },
-  { id: 'novia-clasica', src: null, miniatura: null, alt: 'Novia clásica con labios rojos', categoria: 'Novias', destacada: false },
-  { id: 'demostracion', src: null, miniatura: null, alt: 'Verónica haciendo una demostración', categoria: 'Clases', destacada: false }
+  { id: 'novia-luminosa', archivo: null, categoria: 'novias', alt: 'Maquillaje de novia con piel luminosa', ancho: 4, alto: 5, destacada: true },
+  { id: 'ojos-ahumados', archivo: null, categoria: 'social', alt: 'Detalle de ojos ahumados', ancho: 1, alto: 1, destacada: true },
+  { id: 'alumnas-en-clase', archivo: null, categoria: 'alumnas', alt: 'Alumnas practicando en clase', ancho: 4, alto: 3, destacada: true },
+  { id: 'labios-nude', archivo: null, categoria: 'social', alt: 'Labios en tono nude', ancho: 4, alto: 5, destacada: true },
+  { id: 'editorial-color', archivo: null, categoria: 'editorial', alt: 'Maquillaje editorial con color', ancho: 2, alto: 3, destacada: true },
+  { id: 'noche-glam', archivo: null, categoria: 'social', alt: 'Maquillaje de noche glam', ancho: 3, alto: 4, destacada: true },
+  { id: 'novia-clasica', archivo: null, categoria: 'novias', alt: 'Novia clásica con labios rojos', ancho: 3, alto: 4, destacada: false },
+  { id: 'trabajo-alumna-1', archivo: null, categoria: 'alumnas', alt: 'Trabajo final de una alumna: maquillaje de día', ancho: 4, alto: 5, destacada: false },
+  { id: 'editorial-mirada', archivo: null, categoria: 'editorial', alt: 'Mirada gráfica para sesión editorial', ancho: 1, alto: 1, destacada: false },
+  { id: 'piel-natural', archivo: null, categoria: 'social', alt: 'Maquillaje natural de día', ancho: 4, alto: 5, destacada: false },
+  { id: 'novia-detalle', archivo: null, categoria: 'novias', alt: 'Detalle de pestañas y piel de novia', ancho: 4, alto: 3, destacada: false },
+  { id: 'trabajo-alumna-2', archivo: null, categoria: 'alumnas', alt: 'Trabajo final de una alumna: maquillaje de noche', ancho: 2, alto: 3, destacada: false }
 ];

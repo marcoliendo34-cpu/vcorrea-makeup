@@ -23,15 +23,21 @@
     <div class="contenedor encabezado-pagina">
       <p class="etiqueta">Trayectoria</p>
       <h1>Cursos anteriores</h1>
-      <p class="encabezado-pagina__intro">[EJEMPLO] Formaciones que ya terminaron y las alumnas que egresaron.</p>
+      <p class="encabezado-pagina__intro">[EJEMPLO] Formaciones que ya terminaron, con sus egresadas y algunos momentos de clase.</p>
     </div>
-    <section class="seccion">
+    <section class="seccion" aria-label="Cursos finalizados">
       <div class="contenedor">
-        <div class="pendiente">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5 19.5 9.5 11 18a3.5 3.5 0 0 1-5-5Z"/><path d="m12.5 6.5 5 5"/><path d="M6 13c-1.5 1.5-1.5 4-2 6.5 2.5-.5 5-.5 6.5-2"/></svg>
-          <p class="pendiente__titulo">Sección en preparación</p>
-          <p>Aquí irá el listado de cursos finalizados.</p>
-        </div>
+        <ul class="anteriores" data-anteriores>
+          <li class="sin-resultados">Cargando cursos…</li>
+        </ul>
+      </div>
+    </section>
+    <section class="seccion seccion--crema seccion--cierre" aria-labelledby="titulo-cierre">
+      <div class="contenedor cierre" data-aparecer>
+        <p class="etiqueta">Nuevas ediciones</p>
+        <h2 id="titulo-cierre">¿Quieres que se repita alguno?</h2>
+        <p>Escríbele a Verónica y cuéntale cuál te gustaría tomar.</p>
+        <div data-boton-cierre></div>
       </div>
     </section>
   </main>

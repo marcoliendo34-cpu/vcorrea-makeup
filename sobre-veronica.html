@@ -20,18 +20,93 @@
 </head>
 <body data-pagina="sobre-veronica">
   <main id="contenido" tabindex="-1">
-    <div class="contenedor encabezado-pagina">
-      <p class="etiqueta">Conoce a</p>
-      <h1>Sobre Verónica</h1>
-      <p class="encabezado-pagina__intro">[EJEMPLO] Maquilladora profesional y formadora. Su historia, su forma de enseñar y lo que la inspira.</p>
-    </div>
-    <section class="seccion">
-      <div class="contenedor">
-        <div class="pendiente">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5 19.5 9.5 11 18a3.5 3.5 0 0 1-5-5Z"/><path d="m12.5 6.5 5 5"/><path d="M6 13c-1.5 1.5-1.5 4-2 6.5 2.5-.5 5-.5 6.5-2"/></svg>
-          <p class="pendiente__titulo">Sección en preparación</p>
-          <p>Aquí irán la foto de Verónica, su historia y su forma de enseñar.</p>
+    <!-- Presentación -->
+    <section class="sobre-portada" aria-labelledby="titulo-sobre">
+      <div class="contenedor sobre-portada__grid">
+        <div class="sobre-portada__retrato" data-retrato></div>
+        <div class="sobre-portada__texto">
+          <p class="etiqueta">Sobre Verónica</p>
+          <h1 id="titulo-sobre">Verónica Correa</h1>
+          <p class="sobre-portada__rol">Maquilladora profesional y formadora</p>
+          <p class="sobre-portada__intro">[EJEMPLO] Enseña a maquillar con técnica y con calma, para que cada alumna salga de clase sabiendo qué hizo y por qué.</p>
         </div>
+      </div>
+    </section>
+
+    <!-- Historia -->
+    <section class="seccion" aria-labelledby="titulo-historia">
+      <div class="contenedor sobre-lectura" data-aparecer>
+        <p class="etiqueta">Su historia</p>
+        <h2 id="titulo-historia">Del gusto por el detalle a la enseñanza</h2>
+        <p>[EJEMPLO] Primer párrafo de la historia de Verónica: cómo descubrió el maquillaje, qué la llevó a formarse y qué es lo que más disfruta de su trabajo. Este texto se reemplaza por su historia real.</p>
+        <p>[EJEMPLO] Segundo párrafo: el camino profesional. Los tipos de trabajo que ha hecho (social, novias, editorial) y lo que aprendió de cada uno, sin cifras ni nombres hasta que ella los confirme.</p>
+        <p>[EJEMPLO] Tercer párrafo: por qué decidió enseñar y qué quiere que se lleve cada alumna de sus cursos. Un cierre cercano, en primera o tercera persona según prefiera Verónica.</p>
+      </div>
+    </section>
+
+    <!-- Forma de enseñar -->
+    <section class="seccion seccion--crema" aria-labelledby="titulo-ensenar">
+      <div class="contenedor">
+        <div class="titulo-seccion" data-aparecer>
+          <div class="titulo-seccion__texto">
+            <p class="etiqueta">Su forma de enseñar</p>
+            <h2 class="titulo-seccion__titulo" id="titulo-ensenar">Aprender haciendo, con acompañamiento</h2>
+          </div>
+        </div>
+        <ul class="beneficios beneficios--tres" data-aparecer>
+          <li class="beneficio">
+            <span class="beneficio__icono" data-icono="clases"></span>
+            <h3>Paso a paso</h3>
+            <p>[EJEMPLO] Cada técnica se explica desde la base, con demostración en vivo antes de practicar.</p>
+          </li>
+          <li class="beneficio">
+            <span class="beneficio__icono" data-icono="pincel"></span>
+            <h3>Práctica desde el primer día</h3>
+            <p>[EJEMPLO] La teoría justa y mucha práctica, sobre tu rostro o sobre modelo, con correcciones en el momento.</p>
+          </li>
+          <li class="beneficio">
+            <span class="beneficio__icono" data-icono="usuarias"></span>
+            <h3>Cerca de cada alumna</h3>
+            <p>[EJEMPLO] Grupos pequeños para que nadie se quede con dudas y cada una avance a su ritmo.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Formación y certificaciones -->
+    <section class="seccion" aria-labelledby="titulo-formacion">
+      <div class="contenedor sobre-lectura" data-aparecer>
+        <p class="etiqueta">Formación y certificaciones</p>
+        <h2 id="titulo-formacion">Su preparación</h2>
+        <p class="sobre-nota">Espacios por completar con los datos reales de Verónica.</p>
+        <ul class="formacion">
+          <li class="formacion__item">
+            <span class="formacion__anio">[AÑO]</span>
+            <div><p class="formacion__nombre">[EJEMPLO] Nombre del curso o certificación</p><p class="formacion__lugar">[Institución o academia] · [Ciudad o país]</p></div>
+          </li>
+          <li class="formacion__item">
+            <span class="formacion__anio">[AÑO]</span>
+            <div><p class="formacion__nombre">[EJEMPLO] Nombre del curso o certificación</p><p class="formacion__lugar">[Institución o academia] · [Ciudad o país]</p></div>
+          </li>
+          <li class="formacion__item">
+            <span class="formacion__anio">[AÑO]</span>
+            <div><p class="formacion__nombre">[EJEMPLO] Nombre del curso o certificación</p><p class="formacion__lugar">[Institución o academia] · [Ciudad o país]</p></div>
+          </li>
+          <li class="formacion__item">
+            <span class="formacion__anio">[AÑO]</span>
+            <div><p class="formacion__nombre">[EJEMPLO] Especialización (novias, editorial, etc.)</p><p class="formacion__lugar">[Institución o academia] · [Ciudad o país]</p></div>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- Cierre -->
+    <section class="seccion seccion--crema seccion--cierre" aria-labelledby="titulo-cierre">
+      <div class="contenedor cierre" data-aparecer>
+        <p class="etiqueta">Aprende con Verónica</p>
+        <h2 id="titulo-cierre">¿Lista para tu próximo curso?</h2>
+        <p>[EJEMPLO] Elige la formación que va con tu nivel y reserva tu cupo.</p>
+        <a class="boton boton--principal boton--grande" href="/cursos"><span>Ver próximos cursos</span><span class="boton__icono" data-icono="flecha-derecha" data-tamano="18" aria-hidden="true"></span></a>
       </div>
     </section>
   </main>

@@ -39,3 +39,10 @@ export function mensajeAvisame(curso) {
 export function mensajeDudas(curso) {
   return `Hola Verónica, tengo dudas sobre el curso ${curso.nombre}.`;
 }
+
+/** Mensaje de WhatsApp para pedir que se repita un curso finalizado. */
+export function mensajeRepetir(curso) {
+  return curso
+    ? `Hola Verónica, me gustaría que repitieras el curso ${curso.nombre}.`
+    : 'Hola Verónica, vi tus cursos anteriores y me gustaría que repitieras alguno.';
+}

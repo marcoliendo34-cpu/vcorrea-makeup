@@ -64,7 +64,8 @@
  * @property {number} precioUSD       Solo se muestra en la ficha del curso, después de lo que incluye.
  * @property {string|null} condicionesPago  Texto opcional (ej. pago en dos partes).
  * @property {'vigente'|'finalizado'} estado
- * @property {Foto[]} galeria         Fotos opcionales del curso.
+ * @property {Foto[]} galeria         Fotos opcionales del curso (mini galería en Cursos anteriores).
+ *                                    `src` es la versión grande (1200 px) y `miniatura`, opcional, la de 600 px.
  * @property {number|null} egresadas  Cantidad de egresadas. Solo cursos finalizados; null en vigentes.
  */
 
@@ -277,7 +278,11 @@ export const CURSOS = [
     precioUSD: 90,
     condicionesPago: null,
     estado: 'finalizado',
-    galeria: [],
+    galeria: [
+      { src: null, alt: 'Alumnas preparando la piel en clase' },
+      { src: null, alt: 'Detalle de piel satinada' },
+      { src: null, alt: 'Grupo de egresadas de Pieles Perfectas' }
+    ],
     egresadas: 12
   },
 
@@ -311,7 +316,11 @@ export const CURSOS = [
     precioUSD: 150,
     condicionesPago: null,
     estado: 'finalizado',
-    galeria: [],
+    galeria: [
+      { src: null, alt: 'Smokey eye terminado por una alumna' },
+      { src: null, alt: 'Colocación de pestañas en clase' },
+      { src: null, alt: 'Grupo de egresadas de Ojos de Impacto' }
+    ],
     egresadas: 9
   },
 
@@ -348,7 +357,11 @@ export const CURSOS = [
     precioUSD: 80,
     condicionesPago: null,
     estado: 'finalizado',
-    galeria: [],
+    galeria: [
+      { src: null, alt: 'Alumnas maquillándose frente al espejo' },
+      { src: null, alt: 'Revisión de neceser en clase' },
+      { src: null, alt: 'Grupo de egresadas de Automaquillaje' }
+    ],
     egresadas: 11
   }
 ];

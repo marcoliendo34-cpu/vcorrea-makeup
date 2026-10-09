@@ -23,14 +23,36 @@
     <div class="contenedor encabezado-pagina">
       <p class="etiqueta">Hablemos</p>
       <h1>Contacto</h1>
-      <p class="encabezado-pagina__intro">[EJEMPLO] ¿Tienes dudas sobre un curso? Escríbeme y te respondo personalmente.</p>
+      <p class="encabezado-pagina__intro">[EJEMPLO] ¿Tienes dudas sobre un curso o quieres saber cuál te conviene? Escríbeme y te respondo personalmente.</p>
     </div>
-    <section class="seccion">
-      <div class="contenedor">
-        <div class="pendiente">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5 19.5 9.5 11 18a3.5 3.5 0 0 1-5-5Z"/><path d="m12.5 6.5 5 5"/><path d="M6 13c-1.5 1.5-1.5 4-2 6.5 2.5-.5 5-.5 6.5-2"/></svg>
-          <p class="pendiente__titulo">Sección en preparación</p>
-          <p>Aquí irán WhatsApp, redes y preguntas frecuentes.</p>
+    <section class="seccion" aria-label="Formas de contacto">
+      <div class="contenedor contacto">
+        <div class="contacto__canales" data-canales data-aparecer></div>
+        <div class="contacto__formulario" data-aparecer>
+          <h2 class="contacto__titulo">Escríbele desde aquí</h2>
+          <p class="contacto__ayuda">Completa estos datos y se abrirá WhatsApp con tu mensaje listo para enviar. No guardamos nada en la web.</p>
+          <form class="formulario" novalidate data-formulario-contacto>
+            <div class="campo">
+              <label class="campo__etiqueta" for="contacto-nombre">Nombre</label>
+              <input class="campo__control" id="contacto-nombre" name="nombre" type="text" autocomplete="given-name" required maxlength="60" aria-describedby="contacto-nombre-error">
+              <p class="campo__error" id="contacto-nombre-error" hidden></p>
+            </div>
+            <div class="campo">
+              <label class="campo__etiqueta" for="contacto-telefono">Teléfono</label>
+              <input class="campo__control" id="contacto-telefono" name="telefono" type="tel" inputmode="tel" autocomplete="tel" placeholder="0414-1234567" required maxlength="20" aria-describedby="contacto-telefono-ayuda contacto-telefono-error">
+              <p class="campo__ayuda" id="contacto-telefono-ayuda">Teléfono venezolano, para que Verónica pueda responderte.</p>
+              <p class="campo__error" id="contacto-telefono-error" hidden></p>
+            </div>
+            <div class="campo">
+              <label class="campo__etiqueta" for="contacto-mensaje">Mensaje</label>
+              <textarea class="campo__control" id="contacto-mensaje" name="mensaje" rows="5" required maxlength="800" aria-describedby="contacto-mensaje-error"></textarea>
+              <p class="campo__error" id="contacto-mensaje-error" hidden></p>
+            </div>
+            <button class="boton boton--principal boton--grande boton--bloque" type="submit">
+              <span class="boton__icono" data-icono="whatsapp" data-tamano="18" aria-hidden="true"></span><span>Enviar por WhatsApp</span>
+            </button>
+            <p class="formulario__resultado" role="status" data-resultado hidden></p>
+          </form>
         </div>
       </div>
     </section>

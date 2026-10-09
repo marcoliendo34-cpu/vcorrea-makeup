@@ -87,8 +87,8 @@ async function pintarGaleria() {
   const fotos = await obtenerGaleria({ soloDestacadas: true, limite: 6 });
   document.querySelector('[data-mosaico]').innerHTML = fotos.map((f) => `
     <li class="mosaico__item">
-      ${f.src
-        ? `<img src="${esc(f.miniatura || f.src)}" alt="${esc(f.alt)}" loading="lazy" decoding="async">`
+      ${f.miniatura
+        ? `<img src="${esc(f.miniatura)}" alt="${esc(f.alt)}" width="600" height="${Math.round(600 * f.alto / f.ancho)}" loading="lazy" decoding="async">`
         : placeholderFoto({ descripcion: f.alt, sinBorde: true })}
     </li>`).join('');
 }

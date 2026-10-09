@@ -27,8 +27,14 @@ export const CONFIG = {
     tiktok: null
   },
 
-  correo: null,       // [POR DEFINIR]
+  correo: null,       // [POR DEFINIR] ej. 'hola@vcorreamakeup.com'. Si es null, no se muestra.
   ciudad: null,       // [POR DEFINIR]
+
+  // Atención (página de contacto). [EJEMPLO] Confirmar con Verónica.
+  atencion: {
+    zona: '[EJEMPLO] Caracas, Venezuela. Cursos online para todo el país',
+    horario: '[EJEMPLO] Lunes a sábado, de 9:00 a. m. a 6:00 p. m.'
+  },
 
   moneda: 'USD',
 

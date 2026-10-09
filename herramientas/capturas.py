@@ -147,6 +147,13 @@ JS_CORTES = """
   for (let n = recorre.nextNode(); n; n = recorre.nextNode()) {
     const el = n.parentElement;
     if (!el || el.closest('.solo-lectores, svg, script, style')) continue;
+    // Contenido de un desplegable cerrado (<details>): oculto a propósito, no cortado
+    let oculto = false;
+    for (let d = el.closest('details'); d; d = d.parentElement && d.parentElement.closest('details')) {
+      const resumen = d.querySelector(':scope > summary');
+      if (!d.open && !(resumen && resumen.contains(el))) { oculto = true; break; }
+    }
+    if (oculto) continue;
     const st = getComputedStyle(el);
     if (st.visibility === 'hidden' || st.display === 'none') continue;
     rango.selectNodeContents(n);

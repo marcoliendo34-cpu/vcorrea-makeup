@@ -23,15 +23,13 @@
     <div class="contenedor encabezado-pagina">
       <p class="etiqueta">Portafolio</p>
       <h1>Galería</h1>
-      <p class="encabezado-pagina__intro">[EJEMPLO] Trabajos de Verónica y de sus alumnas, y momentos de clase.</p>
+      <p class="encabezado-pagina__intro">[EJEMPLO] Trabajos de Verónica y de sus alumnas: maquillaje social, novias y editorial.</p>
     </div>
-    <section class="seccion">
+    <section class="seccion seccion--galeria" aria-label="Fotos de la galería">
       <div class="contenedor">
-        <div class="pendiente">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5 19.5 9.5 11 18a3.5 3.5 0 0 1-5-5Z"/><path d="m12.5 6.5 5 5"/><path d="M6 13c-1.5 1.5-1.5 4-2 6.5 2.5-.5 5-.5 6.5-2"/></svg>
-          <p class="pendiente__titulo">Sección en preparación</p>
-          <p>Aquí irá la galería de fotos.</p>
-        </div>
+        <div class="filtros filtros--izquierda" role="group" aria-label="Filtrar fotos por categoría" data-chips-galeria></div>
+        <p class="galeria__estado" aria-live="polite" data-estado-galeria></p>
+        <ul class="masonry" data-masonry></ul>
       </div>
     </section>
   </main>
