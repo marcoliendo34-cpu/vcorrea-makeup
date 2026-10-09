@@ -59,8 +59,11 @@ class ManejadorVercel(http.server.SimpleHTTPRequestHandler):
             return None
         if ruta == '/':
             return 'index.html'
-        if re.fullmatch(r'/cursos/[^/]+/?', ruta):
-            return 'curso.html'
+        m = re.fullmatch(r'/cursos/([^/.]+)/?', ruta)
+        if m:
+            # Como Vercel: primero el archivo real (página generada), si no, la reescritura
+            generada = f'cursos/{m.group(1)}.html'
+            return generada if (RAIZ / generada).is_file() else 'curso.html'
         ruta = ruta.rstrip('/')
         archivo = RAIZ / ruta.lstrip('/')
         if archivo.is_file():
@@ -151,6 +154,8 @@ JS_CORTES = """
     if (!t.width || !t.height) continue;
     for (let p = el; p && p !== document.documentElement; p = p.parentElement) {
       const sp = getComputedStyle(p);
+      // Dentro de una fila con scroll propio (ej. el índice del curso) el texto se desplaza, no se corta
+      if (/(auto|scroll)/.test(sp.overflowX) || /(auto|scroll)/.test(sp.overflowY)) break;
       const cx = /(hidden|clip)/.test(sp.overflowX), cy = /(hidden|clip)/.test(sp.overflowY);
       const tieneTextoCortado = sp.textOverflow === 'ellipsis' && p.scrollWidth > p.clientWidth + 1;
       if (!cx && !cy && !tieneTextoCortado) continue;

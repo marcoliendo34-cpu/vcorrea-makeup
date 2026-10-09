@@ -1,3 +1,17 @@
-# Vista previa: no indexar nada mientras la clienta aprueba la interfaz.
+# Vista previa: los buscadores no indexan nada mientras la clienta aprueba la
+# interfaz (además, cada respuesta lleva X-Robots-Tag: noindex).
+# Los lectores de enlaces de WhatsApp, Instagram/Facebook y similares sí pueden
+# leer las páginas, para que los cursos se vean bien al compartirlos.
+
+User-agent: facebookexternalhit
+User-agent: Facebot
+User-agent: meta-externalagent
+User-agent: WhatsApp
+User-agent: Twitterbot
+User-agent: TelegramBot
+User-agent: Slackbot-LinkExpanding
+User-agent: LinkedInBot
+Allow: /
+
 User-agent: *
 Disallow: /

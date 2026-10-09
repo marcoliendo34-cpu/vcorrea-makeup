@@ -39,6 +39,7 @@
  * @typedef {Object} Curso
  * @property {string} slug            Identificador de la URL: /cursos/{slug}. Minúsculas, sin acentos, con guiones.
  * @property {string} nombre
+ * @property {string} [nombreCorto]  Para la barra fija del móvil. Si falta, se usa `nombre`.
  * @property {string} subtitulo       Una línea que resume el curso.
  * @property {string} categoria       Ej. "Automaquillaje", "Maquillaje social", "Novias y eventos".
  * @property {'Básico'|'Intermedio'|'Avanzado'} nivel
@@ -75,6 +76,7 @@ export const CURSOS = [
   {
     slug: 'automaquillaje-esencial',
     nombre: 'Automaquillaje Esencial',
+    nombreCorto: 'Automaquillaje',
     subtitulo: 'Aprende a maquillarte para el día a día con tus propios productos',
     categoria: 'Automaquillaje',
     nivel: 'Básico',
@@ -129,6 +131,7 @@ export const CURSOS = [
   {
     slug: 'masterclass-novias-y-eventos',
     nombre: 'Masterclass Novias y Eventos',
+    nombreCorto: 'Novias y Eventos',
     subtitulo: 'Una semana intensiva para dominar el maquillaje nupcial de larga duración',
     categoria: 'Novias y eventos',
     nivel: 'Avanzado',
@@ -158,7 +161,7 @@ export const CURSOS = [
       'Certificado de especialización'
     ],
     pensum: [
-      { semana: 1, titulo: 'Semana intensiva', temas: ['Pieles de larga duración y a prueba de llanto', 'Maquillaje para fotografía con flash y video', 'Novia clásica, natural y glam', 'Pestañas postizas y peinado: cómo coordinar', 'Prueba de maquillaje, precios y agenda del día de la boda'] }
+      { semana: 1, titulo: 'La novia de principio a fin', temas: ['Pieles de larga duración y a prueba de llanto', 'Maquillaje para fotografía con flash y video', 'Novia clásica, natural y glam', 'Pestañas postizas y peinado: cómo coordinar', 'Prueba de maquillaje, precios y agenda del día de la boda'] }
     ],
     practicas: [
       { titulo: 'Novia natural', descripcion: 'Maquillaje completo con revisión de la piel a las 4 horas.', requiereModelo: true },
@@ -171,7 +174,7 @@ export const CURSOS = [
     ],
     certificado: { incluye: true, descripcion: 'Certificado de especialización en maquillaje de novias y eventos.' },
     precioUSD: 180,
-    condicionesPago: 'Se reserva el cupo con el 50 % y el resto se paga el primer día. [EJEMPLO]',
+    condicionesPago: 'Se reserva el cupo con el 50 % y el resto se paga el primer día. [EJEMPLO]',
     estado: 'vigente',
     galeria: [],
     egresadas: null
@@ -180,6 +183,7 @@ export const CURSOS = [
   {
     slug: 'maquillaje-social-profesional',
     nombre: 'Maquillaje Social Profesional',
+    nombreCorto: 'Maquillaje Social',
     subtitulo: 'Formación completa para empezar a maquillar a clientas',
     categoria: 'Maquillaje social',
     nivel: 'Intermedio',
@@ -231,7 +235,7 @@ export const CURSOS = [
     ],
     certificado: { incluye: true, descripcion: 'Certificado de formación en maquillaje social profesional.' },
     precioUSD: 250,
-    condicionesPago: 'Puede pagarse en dos partes: 50 % para reservar y 50 % en la semana 4. [EJEMPLO]',
+    condicionesPago: 'Puede pagarse en dos partes: 50 % para reservar y 50 % en la semana 4. [EJEMPLO]',
     estado: 'vigente',
     galeria: [],
     egresadas: null
@@ -243,6 +247,7 @@ export const CURSOS = [
   {
     slug: 'pieles-perfectas-2026',
     nombre: 'Pieles Perfectas',
+    nombreCorto: 'Pieles Perfectas',
     subtitulo: 'Taller de preparación, corrección y acabados de piel',
     categoria: 'Maquillaje social',
     nivel: 'Intermedio',
@@ -279,6 +284,7 @@ export const CURSOS = [
   {
     slug: 'ojos-de-impacto-2026',
     nombre: 'Ojos de Impacto',
+    nombreCorto: 'Ojos de Impacto',
     subtitulo: 'Masterclass de smokey eye, cut crease y pestañas',
     categoria: 'Maquillaje social',
     nivel: 'Avanzado',
@@ -297,7 +303,7 @@ export const CURSOS = [
     dirigidoA: ['Maquilladoras con experiencia que quieren dominar los ojos'],
     incluye: ['5 clases presenciales', 'Pestañas para práctica', 'Certificado de participación'],
     pensum: [
-      { semana: 1, titulo: 'Semana intensiva', temas: ['Morfología del ojo', 'Difuminados', 'Cut crease', 'Smokey eye', 'Pestañas postizas'] }
+      { semana: 1, titulo: 'La mirada de impacto', temas: ['Morfología del ojo', 'Difuminados', 'Cut crease', 'Smokey eye', 'Pestañas postizas'] }
     ],
     practicas: [{ titulo: 'Smokey eye sobre modelo', descripcion: 'Trabajo final fotografiado.', requiereModelo: true }],
     requisitos: ['Experiencia previa en maquillaje', 'Kit personal de brochas'],
@@ -312,6 +318,7 @@ export const CURSOS = [
   {
     slug: 'automaquillaje-esencial-julio-2026',
     nombre: 'Automaquillaje Esencial',
+    nombreCorto: 'Automaquillaje',
     subtitulo: 'Edición de julio',
     categoria: 'Automaquillaje',
     nivel: 'Básico',

@@ -141,16 +141,20 @@ export function insigniaCupos(inscritas, cupos) {
  * Barra de 6px que se llena al entrar en pantalla (ver activarBarras()).
  * Texto: "Inscripciones · 87%" y "Quedan 2 cupos".
  */
-export function barraProgreso({ inscritas, cupos, mostrarRestantes = true }) {
+export function barraProgreso({ inscritas, cupos, mostrarRestantes = true, grande = false }) {
   const c = calcularCupos(inscritas, cupos);
+  const ocupadas = Math.min(Math.max(0, Number(inscritas) || 0), cupos);
+  const izquierda = grande
+    ? `<span class="progreso__porcentaje"><strong>${ocupadas} de ${cupos}</strong> cupos ocupados</span>`
+    : `<span class="progreso__porcentaje">Inscripciones · <strong>${c.porcentaje}%</strong></span>`;
   return `
-    <div class="progreso progreso--${c.estado}" style="--valor:${c.porcentaje / 100}">
+    <div class="progreso progreso--${c.estado}${grande ? ' progreso--grande' : ''}" style="--valor:${c.porcentaje / 100}">
       <div class="progreso__barra" role="progressbar" aria-valuemin="0" aria-valuemax="100"
-           aria-valuenow="${c.porcentaje}" aria-label="Inscripciones">
+           aria-valuenow="${c.porcentaje}" aria-valuetext="${c.porcentaje}% de los cupos ocupados" aria-label="Inscripciones">
         <div class="progreso__relleno"></div>
       </div>
       <div class="progreso__datos">
-        <span class="progreso__porcentaje">Inscripciones · <strong>${c.porcentaje}%</strong></span>
+        ${izquierda}
         ${mostrarRestantes ? `<span class="progreso__restantes">${esc(c.textoRestantes)}</span>` : ''}
       </div>
     </div>`;
@@ -202,7 +206,10 @@ export function placeholderFoto({ descripcion, proporcion = '4 / 3', sinBorde = 
 /** Quita las marcas [EJEMPLO] / [POR DEFINIR] en textos muy cortos (línea de ubicación). */
 const sinMarcas = (texto) => String(texto ?? '').replace(/\s*\[(EJEMPLO|POR DEFINIR)\]\s*/g, ' ').trim();
 
-const textoDuracion = (semanas) => (semanas === 1 ? '1 semana' : `${semanas} semanas`);
+export const textoDuracion = (semanas) => (semanas === 1 ? '1 semana' : `${semanas} semanas`);
+
+/** Precio en USD: 180 → "$180", 1250 → "$1.250". Solo se usa en la ficha del curso. */
+export const formatearPrecio = (monto) => `$${Number(monto).toLocaleString('es-VE')}`;
 
 /**
  * Tarjeta de un curso: portada 4:3, insignia de cupos, fecha, datos clave,
