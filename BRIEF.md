@@ -60,6 +60,7 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 │   ├── detalle-curso.js     secciones de la ficha del curso reutilizables (ficha y cursos anteriores)
 │   ├── visor.js             visor de fotos a pantalla completa (galería y cursos anteriores)
 │   ├── formularios.js       validación en vivo y ayudas de formularios (registro, ingreso)
+│   ├── admin.js             panel de la administradora (rutas con #)
 │   └── <un archivo por página>   ej. inicio.js, cursos.js, curso.js…
 ├── data/
 │   ├── cursos.js
@@ -80,7 +81,11 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 - **Header, footer y botón de WhatsApp** se dibujan desde `js/componentes.js`, para que sean idénticos en todas las páginas. Ninguna página los escribe a mano.
 - **Acceso a datos centralizado en `js/datos.js`.** Las páginas nunca leen `data/*.js` directamente; siempre piden a `datos.js`. En la fase 2 se cambia la fuente a Supabase sin tocar las páginas.
 - **Modo demo permanente:** aunque exista Supabase, siempre debe haber un modo demo con datos locales para poder hacer capturas en el espacio de trabajo.
-- **Sesión de alumna simulada** con `localStorage` en `js/sesion.js`, con la misma forma que tendrá Supabase: `registrar(datos)`, `ingresar(correo, contrasena)`, `salir()`, `usuarioActual()` y el evento `cambio-de-sesion`. En la demo no se guardan contraseñas. Cuenta demo: alumna@demo.com / demo1234.
+- **Sesión de alumna simulada** con `localStorage` en `js/sesion.js`, con la misma forma que tendrá Supabase: `registrar(datos)`, `ingresar(correo, contrasena)`, `salir()`, `usuarioActual()` y el evento `cambio-de-sesion`. En la demo no se guardan contraseñas. Cuentas demo (contraseña demo1234):
+  - alumna@demo.com, rol `alumna`.
+  - admin@demo.com, rol `admin`.
+- **Roles:** `alumna` (por defecto) y `admin` (Verónica). Las cuentas nuevas siempre son de alumna. En la demo el rol vive en el navegador, así que el panel es solo una maqueta. En la fase 2, Supabase hace cumplir el rol con RLS.
+- **Datos de ejemplo** (8 alumnas e inscripciones ficticias) en `js/sesion.js`. Se recargan al subir `VERSION_SEMILLA`, y el panel tiene el botón "Restablecer datos de ejemplo".
 - **Datos de contacto, redes y métodos de pago** solo en `js/config.js`. Ningún número, usuario de red o dato de pago escrito en otro archivo.
 
 ### Vercel
@@ -158,7 +163,7 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 | `/registro` | registro.html | Crear cuenta de alumna |
 | `/ingresar` | ingresar.html | Iniciar sesión |
 | `/mi-cuenta` | mi-cuenta.html | Datos de la alumna y sus inscripciones |
-| `/admin` | admin.html | Maqueta del panel de administradora |
+| `/admin` | admin.html | Panel de la administradora (solo rol admin; noindex, sin header público ni botón flotante) |
 | `/privacidad` | privacidad.html | Texto provisional |
 | (cualquier otra) | 404.html | Página no encontrada |
 
@@ -173,6 +178,7 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 - Etiqueta **"Últimos cupos"** desde 80% hasta 99%.
 - **"Agotado"** al 100%: botón desactivado con el texto **"Cupos agotados"**.
 - Todo este cálculo vive en `js/cupos.js`.
+- **Inscritas de un curso** = `inscritasFuera` (cupos ocupados por fuera de la web, dato del curso) + inscripciones **confirmadas** en la web. Lo calcula `js/datos.js`. Las pendientes no ocupan cupo.
 
 ### Precio
 
@@ -185,7 +191,27 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 - **Sin sesión:** lleva a `/registro` y, al terminar, regresa al curso.
 - **Con sesión:** registra la inscripción como **"Pendiente de confirmación"** y abre WhatsApp (`wa.me`) con un mensaje prellenado.
 - Verónica concreta la inscripción por WhatsApp.
-- **Estados de una inscripción:** Pendiente de confirmación · Confirmada · Finalizado.
+- **Estados de una inscripción:**
+  - Pendiente de confirmación.
+  - Confirmada.
+  - Cancelada: la cancela la administradora. Si la alumna vuelve a pedir el curso, la inscripción pasa otra vez a pendiente.
+  - Finalizado: no se guarda; se muestra cuando el curso ya terminó.
+
+### Panel de administradora (`/admin`)
+
+- **Acceso:** sin sesión lleva a `/ingresar?volver=/admin`; una cuenta sin rol admin va al inicio.
+- **Secciones:**
+  - **Resumen:** cursos vigentes, inscritas confirmadas, pendientes por confirmar, cupos libres y la lista "Pendientes por confirmar".
+  - **Cursos:** la lista de cursos. Cada curso abre sus inscritas, con filtro por estado, buscador por nombre o cédula y "Exportar lista".
+  - **Alumnas:** listado general con buscador.
+- **Acciones sobre una inscripción:**
+  - "WhatsApp" abre el chat con la alumna.
+  - "Confirmar" está bloqueado si el curso no tiene cupos.
+  - "Cancelar" pide confirmación.
+  - Confirmar o cancelar cambia el % en todo el sitio.
+- **CSV:** UTF-8 con BOM, separado por `;` y con fechas dd/mm/aaaa, para Excel en español. Lleva solo las inscritas de la web.
+- **Crear y editar cursos** lo hace el desarrollador. En el panel, esos botones solo muestran "La carga de cursos la gestiona tu desarrollador".
+- **Diseño:** misma identidad, más compacta. En móvil tiene barra superior y pestañas abajo; desde 1024px, menú lateral. Las listas se ven como tabla desde 1280px.
 
 ### Registro
 

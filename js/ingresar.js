@@ -1,6 +1,6 @@
 // Página: ingresar.html — iniciar sesión.
 // SIMULADO: en la vista previa cualquier contraseña de 8 o más caracteres vale
-// para un correo registrado (ver js/sesion.js). Cuenta demo: alumna@demo.com.
+// para un correo registrado (ver js/sesion.js). Cuentas demo: alumna@demo.com y admin@demo.com (rol admin → /admin).
 import { iniciarPagina, esc } from './componentes.js';
 import { icono } from './iconos.js';
 import { ingresar, usuarioEnCache, MIN_CONTRASENA } from './sesion.js';
@@ -9,7 +9,7 @@ import {
   validacionEnVivo, validarTodos, activarMostrarContrasena, reglas, destinoTrasEntrar, conservarParametros
 } from './formularios.js';
 
-if (usuarioEnCache()) location.replace(destinoTrasEntrar());
+if (usuarioEnCache()) location.replace(destinoTrasEntrar(usuarioEnCache()));
 
 iniciarPagina();
 
@@ -48,9 +48,9 @@ form.addEventListener('submit', async (e) => {
   if (!validarTodos([form.correo, form.contrasena], validar)) return;
   boton.disabled = true;
   boton.querySelector('span').textContent = 'Entrando…';
-  const { error } = await ingresar(form.correo.value, form.contrasena.value);
+  const { usuario, error } = await ingresar(form.correo.value, form.contrasena.value);
   if (!error) {
-    location.assign(destinoTrasEntrar());
+    location.assign(destinoTrasEntrar(usuario));
     return;
   }
   boton.disabled = false;

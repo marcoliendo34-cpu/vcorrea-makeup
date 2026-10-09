@@ -10,7 +10,8 @@
 import { CONFIG } from './config.js';
 import { CURSOS } from '../data/cursos.js';
 import { GALERIA, CATEGORIAS_GALERIA } from '../data/galeria.js';
-import { usuarioActual, almacen, CLAVES } from './sesion.js';
+import { usuarioActual, esAdmin, almacen, CLAVES } from './sesion.js';
+import { calcularCupos } from './cupos.js';
 
 /** @typedef {import('../data/cursos.js').Curso} Curso */
 /** @typedef {import('../data/galeria.js').FotoGaleria} FotoGaleria */
@@ -58,8 +59,16 @@ function textoBuscable(curso) {
 /* ------------------------------------------------------------------ */
 
 const fuenteDemo = {
+  /** Cursos con `inscritas` = inscritasFuera + inscripciones confirmadas (localStorage). */
   async cursos() {
-    return copiar(CURSOS);
+    const confirmadas = {};
+    leerInscripciones()
+      .filter((i) => i.estado === 'confirmada')
+      .forEach((i) => { confirmadas[i.cursoSlug] = (confirmadas[i.cursoSlug] || 0) + 1; });
+    return copiar(CURSOS).map((c) => ({
+      ...c,
+      inscritas: (c.inscritasFuera || 0) + (c.estado === 'finalizado' ? 0 : confirmadas[c.slug] || 0)
+    }));
   },
   async galeria() {
     return copiar(GALERIA);
@@ -195,7 +204,8 @@ export async function obtenerCategoriasGaleria() {
  * @property {string} id
  * @property {string} alumnaId
  * @property {string} cursoSlug
- * @property {'pendiente'|'confirmada'|'finalizado'} estado
+ * @property {'pendiente'|'confirmada'|'cancelada'} estado
+ *           ('finalizado' solo se muestra: lo calcula obtenerMisInscripciones)
  * @property {string} creada  Fecha ISO.
  */
 
@@ -203,10 +213,11 @@ export async function obtenerCategoriasGaleria() {
 export const ESTADOS_INSCRIPCION = {
   pendiente: 'Pendiente de confirmación',
   confirmada: 'Confirmada',
+  cancelada: 'Cancelada',
   finalizado: 'Finalizado'
 };
 
-const leerInscripciones = () => almacen.leer(CLAVES.inscripciones, []);
+function leerInscripciones() { return almacen.leer(CLAVES.inscripciones, []); }
 
 /**
  * Inscripciones de la alumna con sesión, con su curso, ordenadas por fecha de
@@ -241,8 +252,16 @@ export async function obtenerInscripcion(cursoSlug) {
 export async function crearInscripcion(cursoSlug) {
   const usuario = await usuarioActual();
   if (!usuario) return { inscripcion: null, nueva: false, error: 'sin-sesion' };
+  if (esAdmin(usuario)) return { inscripcion: null, nueva: false, error: 'admin' };
   const todas = leerInscripciones();
   const existente = todas.find((i) => i.alumnaId === usuario.id && i.cursoSlug === cursoSlug);
+  if (existente?.estado === 'cancelada') {
+    // Si la habían cancelado y vuelve a pedirla, queda pendiente otra vez.
+    existente.estado = 'pendiente';
+    existente.creada = new Date().toISOString();
+    if (!almacen.escribir(CLAVES.inscripciones, todas)) return { inscripcion: null, nueva: false, error: 'almacenamiento' };
+    return { inscripcion: existente, nueva: true, error: null };
+  }
   if (existente) return { inscripcion: existente, nueva: false, error: null };
   const inscripcion = {
     id: `insc-${Date.now().toString(36)}`,
@@ -255,6 +274,147 @@ export async function crearInscripcion(cursoSlug) {
     return { inscripcion: null, nueva: false, error: 'almacenamiento' };
   }
   return { inscripcion, nueva: true, error: null };
+}
+
+/* ------------------------------------------------------------------ */
+/* Panel de administradora (/admin)                                    */
+/* ------------------------------------------------------------------ */
+// Solo para la cuenta con rol "admin". Demo: lee y escribe localStorage.
+// Fase 2: consultas a Supabase protegidas con RLS (solo el rol admin puede
+// leer todas las inscripciones y cambiar su estado).
+
+/**
+ * @typedef {Object} AlumnaPanel
+ * @property {string} id
+ * @property {string} nombre
+ * @property {string} apellido
+ * @property {string} cedula
+ * @property {string} telefono
+ * @property {string} correo
+ * @property {string|null} instagram
+ * @property {string} creada
+ */
+
+/**
+ * @typedef {Inscripcion & {alumna: AlumnaPanel|null, curso: Curso|null}} InscripcionPanel
+ */
+
+async function exigirAdmin() {
+  if (!esAdmin(await usuarioActual())) throw new Error('[datos] Esta función es solo para la administradora.');
+}
+
+const leerAlumnas = () => almacen.leer(CLAVES.alumnas, []).filter((a) => a.rol !== 'admin');
+
+const porFechaSolicitud = (a, b) => (a.creada || '').localeCompare(b.creada || '');
+
+/** Une cada inscripción con su alumna y su curso. */
+async function inscripcionesCompletas() {
+  const [cursos, alumnas] = [await fuente().cursos(), leerAlumnas()];
+  return leerInscripciones().map((i) => ({
+    ...copiar(i),
+    alumna: alumnas.find((a) => a.id === i.alumnaId) || null,
+    curso: cursos.find((c) => c.slug === i.cursoSlug) || null
+  })).filter((i) => i.alumna && i.curso);
+}
+
+/**
+ * Cursos para el panel: vigentes (del más próximo) y luego finalizados, con
+ * sus conteos y el cálculo de cupos.
+ * @returns {Promise<Array<Curso & {conteo:{confirmadas:number, pendientes:number, canceladas:number, fuera:number}, cuposCalc: ReturnType<typeof calcularCupos>}>>}
+ */
+export async function obtenerCursosAdmin() {
+  await exigirAdmin();
+  const cursos = await fuente().cursos();
+  const inscripciones = leerInscripciones();
+  const contar = (slug, estado) => inscripciones.filter((i) => i.cursoSlug === slug && i.estado === estado).length;
+  const conDatos = (c) => ({
+    ...c,
+    conteo: {
+      confirmadas: c.estado === 'finalizado' ? 0 : contar(c.slug, 'confirmada'),
+      pendientes: c.estado === 'finalizado' ? 0 : contar(c.slug, 'pendiente'),
+      canceladas: contar(c.slug, 'cancelada'),
+      fuera: c.inscritasFuera || 0
+    },
+    cuposCalc: calcularCupos(c.inscritas, c.cupos)
+  });
+  return [
+    ...cursos.filter((c) => c.estado === 'vigente').sort(porFechaAsc),
+    ...cursos.filter((c) => c.estado === 'finalizado').sort(porFechaDesc)
+  ].map(conDatos);
+}
+
+/**
+ * Los 4 indicadores del resumen (solo cursos vigentes).
+ * @returns {Promise<{cursosVigentes:number, confirmadas:number, pendientes:number, cuposLibres:number}>}
+ */
+export async function obtenerResumenAdmin() {
+  const vigentes = (await obtenerCursosAdmin()).filter((c) => c.estado === 'vigente');
+  return {
+    cursosVigentes: vigentes.length,
+    confirmadas: vigentes.reduce((s, c) => s + Math.min(c.inscritas, c.cupos), 0),
+    pendientes: vigentes.reduce((s, c) => s + c.conteo.pendientes, 0),
+    cuposLibres: vigentes.reduce((s, c) => s + c.cuposCalc.restantes, 0)
+  };
+}
+
+/**
+ * Solicitudes pendientes de los cursos vigentes, de la más antigua a la más nueva.
+ * @returns {Promise<InscripcionPanel[]>}
+ */
+export async function obtenerPendientes() {
+  await exigirAdmin();
+  return (await inscripcionesCompletas())
+    .filter((i) => i.estado === 'pendiente' && i.curso.estado === 'vigente')
+    .sort(porFechaSolicitud);
+}
+
+/**
+ * Inscritas de un curso (todas las de la web, cualquier estado), la más nueva primero.
+ * @returns {Promise<InscripcionPanel[]>}
+ */
+export async function obtenerInscritasDeCurso(cursoSlug) {
+  await exigirAdmin();
+  return (await inscripcionesCompletas())
+    .filter((i) => i.cursoSlug === cursoSlug)
+    .sort((a, b) => porFechaSolicitud(b, a));
+}
+
+/**
+ * Todas las alumnas con cuenta, por nombre, con sus inscripciones.
+ * @returns {Promise<Array<AlumnaPanel & {inscripciones: InscripcionPanel[]}>>}
+ */
+export async function obtenerAlumnas() {
+  await exigirAdmin();
+  const inscripciones = await inscripcionesCompletas();
+  return leerAlumnas()
+    .map((a) => ({ ...copiar(a), inscripciones: inscripciones.filter((i) => i.alumnaId === a.id) }))
+    .sort((a, b) => `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`, 'es'));
+}
+
+/**
+ * Confirma o cancela una inscripción (o la vuelve a confirmar).
+ * Al confirmar se ocupa un cupo: el % del curso sube en todo el sitio.
+ * @param {string} id
+ * @param {'confirmada'|'cancelada'|'pendiente'} estado
+ * @returns {Promise<{inscripcion: Inscripcion|null, error: null|'no-existe'|'sin-cupos'|'curso-finalizado'|'almacenamiento'}>}
+ */
+export async function cambiarEstadoInscripcion(id, estado) {
+  await exigirAdmin();
+  if (!['confirmada', 'cancelada', 'pendiente'].includes(estado)) throw new Error(`[datos] Estado inválido: ${estado}`);
+  const todas = leerInscripciones();
+  const inscripcion = todas.find((i) => i.id === id);
+  if (!inscripcion) return { inscripcion: null, error: 'no-existe' };
+  if (inscripcion.estado === estado) return { inscripcion: copiar(inscripcion), error: null };
+
+  const curso = (await fuente().cursos()).find((c) => c.slug === inscripcion.cursoSlug);
+  if (!curso || curso.estado === 'finalizado') return { inscripcion: null, error: 'curso-finalizado' };
+  if (estado === 'confirmada' && calcularCupos(curso.inscritas, curso.cupos).restantes === 0) {
+    return { inscripcion: null, error: 'sin-cupos' };
+  }
+  inscripcion.estado = estado;
+  inscripcion.actualizada = new Date().toISOString();
+  if (!almacen.escribir(CLAVES.inscripciones, todas)) return { inscripcion: null, error: 'almacenamiento' };
+  return { inscripcion: copiar(inscripcion), error: null };
 }
 
 export const modo = () => CONFIG.modoDatos;

@@ -17,7 +17,8 @@ Uso (desde la raíz del repositorio):
 Estados especiales (captura solo la pantalla visible, con un sufijo en el nombre):
   --clic "[data-abrir-menu]" --sufijo menu       abre el menú móvil antes de capturar
   --desplazar 600 --sufijo bajando               baja 600 px (header sólido en Inicio)
-  --sesion                                       entra con la cuenta demo (alumna@demo.com)
+  --sesion [admin]                               entra con la cuenta demo (alumna@demo.com o, con
+                                                 'admin', admin@demo.com)
 
 Sin --remoto levanta un servidor local que imita a Vercel:
 URLs limpias (/cursos → cursos.html), /cursos/:slug → curso.html y 404.html.
@@ -195,9 +196,11 @@ def nombre_archivo(ruta, ancho, sufijo=''):
     return f'{limpio}-{ancho}{"-" + sufijo if sufijo else ""}.png'
 
 
-SESION_DEMO = '''localStorage.setItem('vcorrea:sesion', JSON.stringify({
-  usuarioId: 'alumna-demo', desde: new Date().toISOString()
-}));'''
+def script_sesion(rol):
+    usuario = 'admin-demo' if rol == 'admin' else 'alumna-demo'
+    return f'''localStorage.setItem('vcorrea:sesion', JSON.stringify({{
+  usuarioId: '{usuario}', desde: new Date().toISOString()
+}}));'''
 
 
 def recorrer(pagina):
@@ -226,7 +229,7 @@ def auditar(rutas, anchos, base, salida, clic=None, desplazar=0, sesion=False, s
                                       device_scale_factor=2 if ancho < 768 else 1,
                                       locale='es-VE')
                 if sesion:
-                    ctx.add_init_script(SESION_DEMO)
+                    ctx.add_init_script(script_sesion(sesion))
                 pg = ctx.new_page()
                 errores, fallidos = [], []
                 def en_consola(m, errores=errores):
@@ -305,7 +308,8 @@ def main():
     ap.add_argument('--clic', help='Selector a pulsar antes de capturar (ej. "[data-abrir-menu]")')
     ap.add_argument('--escribir', help='Texto a escribir después del clic (ej. en el buscador)')
     ap.add_argument('--desplazar', type=int, default=0, help='Píxeles a bajar antes de capturar')
-    ap.add_argument('--sesion', action='store_true', help='Simular alumna con sesión iniciada')
+    ap.add_argument('--sesion', nargs='?', const='alumna', default=None, choices=['alumna', 'admin'],
+                    help='Simular sesión iniciada (alumna por defecto, o admin)')
     ap.add_argument('--sufijo', default='', help='Sufijo para el nombre del archivo')
     a = ap.parse_args()
 

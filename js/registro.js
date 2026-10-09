@@ -11,7 +11,7 @@ import {
 } from './formularios.js';
 
 // Con sesión no tiene sentido registrarse otra vez
-if (usuarioEnCache()) location.replace(destinoTrasEntrar());
+if (usuarioEnCache()) location.replace(destinoTrasEntrar(usuarioEnCache()));
 
 iniciarPagina();
 

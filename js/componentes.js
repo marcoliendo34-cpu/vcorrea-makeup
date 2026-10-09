@@ -6,7 +6,7 @@
 import { CONFIG } from './config.js';
 import { icono } from './iconos.js';
 import { calcularCupos, cuposDeCurso } from './cupos.js';
-import { usuarioEnCache, inicialDe, EVENTO as EVENTO_SESION } from './sesion.js';
+import { usuarioEnCache, inicialDe, esAdmin, EVENTO as EVENTO_SESION } from './sesion.js';
 import { buscarCursos, obtenerCursosVigentes, normalizar, ESTADOS_INSCRIPCION } from './datos.js';
 import { formatearFecha, fechaTarjeta } from './fechas.js';
 
@@ -114,7 +114,8 @@ const INSIGNIAS = {
   agotado: 'Agotado',
   finalizado: ESTADOS_INSCRIPCION.finalizado,
   pendiente: ESTADOS_INSCRIPCION.pendiente,
-  confirmada: ESTADOS_INSCRIPCION.confirmada
+  confirmada: ESTADOS_INSCRIPCION.confirmada,
+  cancelada: ESTADOS_INSCRIPCION.cancelada
 };
 
 /**
@@ -457,6 +458,15 @@ export function logo({ version = 'horizontal', color = 'tinta', href = '/' } = {
 /* ------------------------------------------------------------------ */
 
 /** URL de wa.me con mensaje prellenado opcional. */
+/**
+ * Enlace de WhatsApp a OTRO número (ej. el panel le escribe a una alumna).
+ * @param {string} telefono  Internacional, ej. '+584141234567'.
+ */
+export function urlWhatsAppA(telefono, mensaje = '') {
+  const base = `https://wa.me/${String(telefono || '').replace(/\D/g, '')}`;
+  return mensaje ? `${base}?text=${encodeURIComponent(mensaje)}` : base;
+}
+
 export function urlWhatsApp(mensaje = '') {
   const base = `https://wa.me/${CONFIG.whatsapp.numero}`;
   return mensaje ? `${base}?text=${encodeURIComponent(mensaje)}` : base;
@@ -487,11 +497,15 @@ const actual = (id, activa) => (id === activa ? ' aria-current="page"' : '');
 /* Header                                                              */
 /* ------------------------------------------------------------------ */
 
+/** La administradora va a su panel; las alumnas, a Mi cuenta. */
+const destinoCuenta = (u) => (esAdmin(u) ? { href: '/admin', texto: 'Panel' } : { href: '/mi-cuenta', texto: 'Mi cuenta' });
+
 function htmlCuenta(usuario) {
+  const d = destinoCuenta(usuario);
   return `
-    <a class="cuenta" href="/mi-cuenta">
+    <a class="cuenta" href="${d.href}">
       <span class="cuenta__inicial" aria-hidden="true">${esc(inicialDe(usuario))}</span>
-      <span>Mi cuenta</span>
+      <span>${d.texto}</span>
     </a>`;
 }
 
@@ -506,7 +520,7 @@ const CUENTA = {
          ${boton({ texto: 'Registrarme', href: '/registro', tamano: 'grande', bloque: true })}
        </div>`),
   pie: (u) => `<li><a href="/cursos">Próximos cursos</a></li>${u
-    ? '<li><a href="/mi-cuenta">Mi cuenta</a></li>'
+    ? `<li><a href="${destinoCuenta(u).href}">${destinoCuenta(u).texto}</a></li>`
     : '<li><a href="/registro">Registrarme</a></li><li><a href="/ingresar">Iniciar sesión</a></li>'}`
 };
 

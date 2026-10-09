@@ -11,7 +11,7 @@
 // Verónica confirma el cupo por WhatsApp.
 
 import { abrirVentana, boton, urlWhatsApp, esc } from './componentes.js';
-import { usuarioEnCache, telefonoVisible } from './sesion.js';
+import { usuarioEnCache, telefonoVisible, esAdmin } from './sesion.js';
 import { crearInscripcion, obtenerInscripcion, ESTADOS_INSCRIPCION } from './datos.js';
 import { cuposDeCurso } from './cupos.js';
 import { formatearFecha } from './fechas.js';
@@ -104,7 +104,7 @@ function ventanaInfo(curso, { titulo, texto, acciones }) {
  *   toque de la alumna, así que WhatsApp se abre con un botón (los navegadores
  *   bloquean las ventanas que se abren solas).
  * @param {object|null} [op.previa]  Inscripción previa ya leída (null si no hay).
- * @returns {Promise<{resultado:'sin-sesion'|'cerrado'|'confirmada'|'whatsapp', url?:string}>}
+ * @returns {Promise<{resultado:'sin-sesion'|'cerrado'|'confirmada'|'whatsapp', url?:string}>}  ('cerrado' también para la cuenta admin)
  */
 export async function inscribirse(curso, opciones = {}) {
   const { automatico = false } = opciones;
@@ -113,6 +113,14 @@ export async function inscribirse(curso, opciones = {}) {
   if (!usuario) {
     ventanaSinCuenta(curso);
     return { resultado: 'sin-sesion' };
+  }
+  if (esAdmin(usuario)) {
+    ventanaInfo(curso, {
+      titulo: 'Estás en la cuenta de administradora',
+      texto: 'Las inscripciones se hacen desde una cuenta de alumna. Las solicitudes de este curso las ves en tu panel.',
+      acciones: boton({ texto: 'Ir al panel', href: `/admin#cursos/${encodeURIComponent(curso.slug)}`, tamano: 'grande', bloque: true })
+    });
+    return { resultado: 'cerrado' };
   }
 
   const cupos = cuposDeCurso(curso);

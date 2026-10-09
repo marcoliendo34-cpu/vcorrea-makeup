@@ -53,7 +53,13 @@
  * @property {number} semanas
  * @property {number} totalClases
  * @property {number} cupos           Cupos totales.
- * @property {number} inscritas       Inscripciones confirmadas.
+ * @property {number} inscritasFuera  Cupos ya ocupados por inscritas confirmadas que NO están
+ *                                   en la lista de la web (inscritas por WhatsApp antes de
+ *                                   abrir la web, por ejemplo). js/datos.js le suma las
+ *                                   inscripciones confirmadas en el panel y entrega el total
+ *                                   como `inscritas`. En los cursos finalizados es el total.
+ * @property {number} [inscritas]     Total de inscritas confirmadas. NO va en este archivo:
+ *                                   lo calcula js/datos.js (inscritasFuera + confirmadas).
  * @property {string} descripcion
  * @property {string[]} dirigidoA
  * @property {string[]} incluye
@@ -91,7 +97,7 @@ export const CURSOS = [
     semanas: 4,
     totalClases: 4,
     cupos: 12,
-    inscritas: 6,
+    inscritasFuera: 4,
     descripcion: '[EJEMPLO] Un curso pensado para que pierdas el miedo a maquillarte. Partimos de cero: cómo preparar la piel, elegir el tono de base correcto y lograr un maquillaje natural y duradero en menos de 15 minutos, usando los productos que ya tienes en casa.',
     dirigidoA: [
       'Mujeres que quieren aprender a maquillarse desde cero',
@@ -146,7 +152,7 @@ export const CURSOS = [
     semanas: 1,
     totalClases: 5,
     cupos: 10,
-    inscritas: 10,
+    inscritasFuera: 9,
     descripcion: '[EJEMPLO] Formación intensiva para maquilladoras que quieren especializarse en novias y eventos. Trabajamos pieles que resisten 12 horas, fotografía con flash, prueba de maquillaje con la clienta y cómo organizar la agenda del gran día.',
     dirigidoA: [
       'Maquilladoras con experiencia en maquillaje social',
@@ -198,7 +204,7 @@ export const CURSOS = [
     semanas: 8,
     totalClases: 16,
     cupos: 15,
-    inscritas: 13,
+    inscritasFuera: 11,
     descripcion: '[EJEMPLO] La formación para quienes quieren maquillar a otras personas. Aprendes a leer cada rostro, corregir con color y luz, y crear maquillajes de día, de noche y para eventos con acabado profesional, además de cómo atender y cobrar a tus primeras clientas.',
     dirigidoA: [
       'Quienes quieren empezar a trabajar como maquilladoras',
@@ -262,7 +268,7 @@ export const CURSOS = [
     semanas: 4,
     totalClases: 4,
     cupos: 12,
-    inscritas: 12,
+    inscritasFuera: 12,
     descripcion: '[EJEMPLO] Taller enfocado solo en la piel: preparación, corrección con color, acabados mate, satinado y luminoso, y cómo hacer que el maquillaje dure en el clima de Caracas.',
     dirigidoA: ['Maquilladoras que quieren perfeccionar la piel', 'Egresadas de cursos básicos'],
     incluye: ['4 clases presenciales', 'Productos para usar en clase', 'Certificado de participación'],
@@ -303,7 +309,7 @@ export const CURSOS = [
     semanas: 1,
     totalClases: 5,
     cupos: 10,
-    inscritas: 9,
+    inscritasFuera: 9,
     descripcion: '[EJEMPLO] Semana intensiva dedicada a la mirada: difuminados limpios, cut crease, smokey eye en distintos colores y colocación de pestañas para todo tipo de ojo.',
     dirigidoA: ['Maquilladoras con experiencia que quieren dominar los ojos'],
     incluye: ['5 clases presenciales', 'Pestañas para práctica', 'Certificado de participación'],
@@ -341,7 +347,7 @@ export const CURSOS = [
     semanas: 4,
     totalClases: 4,
     cupos: 12,
-    inscritas: 11,
+    inscritasFuera: 11,
     descripcion: '[EJEMPLO] Edición presencial del curso de automaquillaje: piel, cejas, ojos y labios para el día a día, con tus propios productos.',
     dirigidoA: ['Mujeres que quieren aprender a maquillarse desde cero'],
     incluye: ['4 clases presenciales', 'Revisión de neceser', 'Certificado de participación'],

@@ -40,6 +40,7 @@ const TRAZOS = {
   video: '<rect x="3.25" y="6.5" width="12.5" height="11" rx="2.25"/><path d="m15.75 10.5 5-2.75v8.5l-5-2.75"/>',
   nivel: '<path d="M6 19.5v-4"/><path d="M12 19.5v-8"/><path d="M18 19.5v-12"/>',
   tarjeta: '<rect x="3" y="5.75" width="18" height="12.5" rx="2.25"/><path d="M3 9.75h18"/><path d="M6.5 14.75h4"/>',
+  descargar: '<path d="M12 3.75v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4.75 15.5v2.75c0 .97.78 1.75 1.75 1.75h11c.97 0 1.75-.78 1.75-1.75V15.5"/>',
   billete: '<rect x="3" y="6.5" width="18" height="11" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 9.5v.01"/><path d="M17.5 14.5v.01"/>'
 };
 

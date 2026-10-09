@@ -1,12 +1,13 @@
 // Página: mi-cuenta.html — solo con sesión (si no, va a /ingresar).
 import { iniciarPagina, esc, boton, insignia, urlWhatsApp } from './componentes.js';
 import { icono } from './iconos.js';
-import { usuarioEnCache, usuarioActual, salir, EVENTO } from './sesion.js';
+import { usuarioEnCache, usuarioActual, salir, esAdmin, EVENTO } from './sesion.js';
 import { obtenerMisInscripciones } from './datos.js';
 import { formatearFecha } from './fechas.js';
 import { mensajeSeguimiento } from './inscripcion.js';
 
 if (!usuarioEnCache()) location.replace('/ingresar?volver=/mi-cuenta');
+else if (esAdmin(usuarioEnCache())) location.replace('/admin');  // la administradora usa su panel
 
 iniciarPagina();
 

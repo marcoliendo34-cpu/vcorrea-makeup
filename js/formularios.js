@@ -108,14 +108,18 @@ export function soloDigitos(campo, maximo) {
   });
 }
 
-/** Destino seguro después de entrar: solo rutas internas del sitio. */
-export function destinoTrasEntrar() {
+/**
+ * Destino seguro después de entrar: solo rutas internas del sitio.
+ * La administradora va a /admin salvo que venga de otra página.
+ * @param {{rol?: string}|null} [usuario]
+ */
+export function destinoTrasEntrar(usuario = null) {
   const p = new URLSearchParams(location.search);
   const curso = p.get('curso');
   if (curso && /^[a-z0-9-]+$/.test(curso)) return `/cursos/${curso}?inscribirme=1`;
   const volver = p.get('volver');
-  if (volver && /^\/(?!\/)[\w\-/?=&.]*$/.test(volver)) return volver;
-  return '/mi-cuenta';
+  if (volver && /^\/(?!\/)[\w\-/?=&.#]*$/.test(volver)) return volver;
+  return usuario?.rol === 'admin' ? '/admin' : '/mi-cuenta';
 }
 
 /** Mantiene ?curso / ?volver al pasar entre registro e ingreso. */
