@@ -59,6 +59,7 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 │   ├── inscripcion.js       flujo "Inscribirme" → WhatsApp
 │   ├── detalle-curso.js     secciones de la ficha del curso reutilizables (ficha y cursos anteriores)
 │   ├── visor.js             visor de fotos a pantalla completa (galería y cursos anteriores)
+│   ├── formularios.js       validación en vivo y ayudas de formularios (registro, ingreso)
 │   └── <un archivo por página>   ej. inicio.js, cursos.js, curso.js…
 ├── data/
 │   ├── cursos.js
@@ -79,7 +80,7 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 - **Header, footer y botón de WhatsApp** se dibujan desde `js/componentes.js`, para que sean idénticos en todas las páginas. Ninguna página los escribe a mano.
 - **Acceso a datos centralizado en `js/datos.js`.** Las páginas nunca leen `data/*.js` directamente; siempre piden a `datos.js`. En la fase 2 se cambia la fuente a Supabase sin tocar las páginas.
 - **Modo demo permanente:** aunque exista Supabase, siempre debe haber un modo demo con datos locales para poder hacer capturas en el espacio de trabajo.
-- **Sesión de alumna simulada** con `localStorage` en `js/sesion.js`.
+- **Sesión de alumna simulada** con `localStorage` en `js/sesion.js`, con la misma forma que tendrá Supabase: `registrar(datos)`, `ingresar(correo, contrasena)`, `salir()`, `usuarioActual()` y el evento `cambio-de-sesion`. En la demo no se guardan contraseñas. Cuenta demo: alumna@demo.com / demo1234.
 - **Datos de contacto, redes y métodos de pago** solo en `js/config.js`. Ningún número, usuario de red o dato de pago escrito en otro archivo.
 
 ### Vercel

@@ -6,9 +6,8 @@
 import { CONFIG } from './config.js';
 import { icono } from './iconos.js';
 import { calcularCupos, cuposDeCurso } from './cupos.js';
-import { ESTADOS_INSCRIPCION } from './inscripcion.js';
-import { obtenerSesion, inicialAlumna } from './sesion.js';
-import { buscarCursos, obtenerCursosVigentes, normalizar } from './datos.js';
+import { usuarioEnCache, inicialDe, EVENTO as EVENTO_SESION } from './sesion.js';
+import { buscarCursos, obtenerCursosVigentes, normalizar, ESTADOS_INSCRIPCION } from './datos.js';
 import { formatearFecha, fechaTarjeta } from './fechas.js';
 
 /** Escapa texto para insertarlo en HTML. */
@@ -235,7 +234,7 @@ export function tarjetaCurso(curso, { nivelTitulo = 3 } = {}) {
   const accion = c.estado === 'agotado'
     ? boton({ texto: 'Cupos agotados', desactivado: true, bloque: true })
     : boton({
-        texto: 'Inscribirme', icono: 'flecha-derecha', href: `${url}#inscripcion`, bloque: true,
+        texto: 'Inscribirme', icono: 'flecha-derecha', href: `${url}?inscribirme=1`, bloque: true,
         atributos: { 'aria-label': `Inscribirme en ${curso.nombre}` }
       });
 
@@ -345,6 +344,47 @@ export function activarTarjetas() {
 }
 
 /* ------------------------------------------------------------------ */
+/* Ventana (diálogo modal)                                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Ventana elegante sobre la página (usa <dialog>: Esc cierra, el foco queda
+ * dentro y vuelve al botón que la abrió). En móvil sube desde abajo.
+ * @param {object} op
+ * @param {string} [op.icono]     Ícono decorativo arriba.
+ * @param {string} [op.etiqueta]  Texto pequeño en mayúsculas.
+ * @param {string} op.titulo
+ * @param {string} [op.texto]     HTML permitido (ya escapado por quien llama).
+ * @param {string} [op.acciones]  HTML de botones.
+ * @returns {HTMLDialogElement}
+ */
+export function abrirVentana({ icono: nombreIcono, etiqueta: eyebrow, titulo, texto = '', acciones = '' }) {
+  let d = document.querySelector('dialog[data-ventana]');
+  if (!d) {
+    d = document.createElement('dialog');
+    d.className = 'ventana';
+    d.dataset.ventana = '';
+    d.setAttribute('aria-labelledby', 'ventana-titulo');
+    document.body.append(d);
+    d.addEventListener('click', (e) => { if (e.target === d || e.target.closest('[data-cerrar-ventana]')) d.close(); });
+    d.addEventListener('close', () => document.documentElement.classList.remove('sin-scroll'));
+  }
+  d.innerHTML = `
+    <div class="ventana__caja">
+      ${nombreIcono ? `<span class="ventana__icono">${icono(nombreIcono, { tamano: 26 })}</span>` : ''}
+      ${eyebrow ? `<p class="etiqueta">${esc(eyebrow)}</p>` : ''}
+      <h2 class="ventana__titulo" id="ventana-titulo">${esc(titulo)}</h2>
+      ${texto ? `<div class="ventana__texto">${texto}</div>` : ''}
+      ${acciones ? `<div class="ventana__acciones">${acciones}</div>` : ''}
+      <button class="ventana__cerrar" type="button" data-cerrar-ventana aria-label="Cerrar">${icono('cerrar', { tamano: 22 })}</button>
+    </div>`;
+  if (!d.open) d.showModal();
+  document.documentElement.classList.add('sin-scroll');
+  pintarIconos(d);
+  return d;
+}
+
+/* ------------------------------------------------------------------ */
 /* Íconos escritos en el HTML                                          */
 /* ------------------------------------------------------------------ */
 
@@ -447,22 +487,40 @@ const actual = (id, activa) => (id === activa ? ' aria-current="page"' : '');
 /* Header                                                              */
 /* ------------------------------------------------------------------ */
 
-function htmlCuenta(sesion) {
+function htmlCuenta(usuario) {
   return `
     <a class="cuenta" href="/mi-cuenta">
-      <span class="cuenta__inicial" aria-hidden="true">${esc(inicialAlumna(sesion))}</span>
+      <span class="cuenta__inicial" aria-hidden="true">${esc(inicialDe(usuario))}</span>
       <span>Mi cuenta</span>
     </a>`;
+}
+
+/** Zonas que cambian con la sesión (se vuelven a dibujar con el evento "cambio-de-sesion"). */
+const CUENTA = {
+  header: (u) => (u ? htmlCuenta(u)
+    : `<a class="header__enlace-texto" href="/ingresar">Iniciar sesión</a>
+       ${boton({ texto: 'Registrarme', href: '/registro' })}`),
+  menu: (u) => (u ? htmlCuenta(u)
+    : `<div class="menu-movil__botones">
+         ${boton({ texto: 'Iniciar sesión', href: '/ingresar', variante: 'secundario', tamano: 'grande', bloque: true })}
+         ${boton({ texto: 'Registrarme', href: '/registro', tamano: 'grande', bloque: true })}
+       </div>`),
+  pie: (u) => `<li><a href="/cursos">Próximos cursos</a></li>${u
+    ? '<li><a href="/mi-cuenta">Mi cuenta</a></li>'
+    : '<li><a href="/registro">Registrarme</a></li><li><a href="/ingresar">Iniciar sesión</a></li>'}`
+};
+
+function pintarCuenta(usuario) {
+  document.querySelectorAll('[data-cuenta]').forEach((zona) => {
+    zona.innerHTML = CUENTA[zona.dataset.cuenta](usuario);
+  });
 }
 
 function htmlHeader(activa, sesion) {
   const enlaces = NAVEGACION.map((n) => `
         <li><a class="header__enlace" href="${n.href}"${actual(n.id, activa)}>${esc(n.texto)}</a></li>`).join('');
 
-  const acciones = sesion
-    ? htmlCuenta(sesion)
-    : `<a class="header__enlace-texto" href="/ingresar">Iniciar sesión</a>
-       ${boton({ texto: 'Registrarme', href: '/registro' })}`;
+  const acciones = CUENTA.header(sesion);
 
   return `
   <a class="saltar" href="#contenido">Saltar al contenido</a>
@@ -478,7 +536,7 @@ function htmlHeader(activa, sesion) {
                 aria-label="Buscar cursos" aria-haspopup="dialog" aria-controls="buscador">
           ${icono('buscar', { tamano: 22 })}
         </button>
-        <div class="header__escritorio">${acciones}</div>
+        <div class="header__escritorio" data-cuenta="header">${acciones}</div>
         <button class="header__icono header__abrir-menu" type="button" data-abrir-menu
                 aria-label="Abrir menú" aria-haspopup="dialog" aria-expanded="false" aria-controls="menu-movil">
           ${icono('menu', { tamano: 24 })}
@@ -496,12 +554,7 @@ function htmlMenuMovil(activa, sesion) {
   const enlaces = NAVEGACION.map((n) => `
         <li><a class="menu-movil__enlace" href="${n.href}"${actual(n.id, activa)}>${esc(n.texto)}</a></li>`).join('');
 
-  const acciones = sesion
-    ? htmlCuenta(sesion)
-    : `<div class="menu-movil__botones">
-         ${boton({ texto: 'Iniciar sesión', href: '/ingresar', variante: 'secundario', tamano: 'grande', bloque: true })}
-         ${boton({ texto: 'Registrarme', href: '/registro', tamano: 'grande', bloque: true })}
-       </div>`;
+  const acciones = `<div data-cuenta="menu">${CUENTA.menu(sesion)}</div>`;
 
   return `
   <div class="capa menu-movil" id="menu-movil" role="dialog" aria-modal="true" aria-label="Menú" data-menu>
@@ -603,10 +656,6 @@ function htmlRedes() {
 function htmlFooter(sesion) {
   const anio = new Date().getFullYear();
   const ig = CONFIG.redes.instagram;
-  const cuenta = sesion
-    ? `<li><a href="/mi-cuenta">Mi cuenta</a></li>`
-    : `<li><a href="/registro">Registrarme</a></li>
-       <li><a href="/ingresar">Iniciar sesión</a></li>`;
 
   return `
   <footer class="pie">
@@ -625,10 +674,7 @@ function htmlFooter(sesion) {
         </div>
         <div class="pie__columna">
           <h2>Alumnas</h2>
-          <ul class="pie__lista">
-            <li><a href="/cursos">Próximos cursos</a></li>
-            ${cuenta}
-          </ul>
+          <ul class="pie__lista" data-cuenta="pie">${CUENTA.pie(sesion)}</ul>
         </div>
         <div class="pie__columna pie__contacto">
           <h2>Contacto</h2>
@@ -794,7 +840,7 @@ function activarHeaderSobreFoto(header) {
  */
 export function iniciarPagina({ pagina = document.body.dataset.pagina, whatsapp = true } = {}) {
   const activa = ACTIVA_EQUIVALENTE[pagina] || pagina;
-  const sesion = obtenerSesion();
+  const sesion = usuarioEnCache();
 
   document.body.insertAdjacentHTML('afterbegin', htmlHeader(activa, sesion) + htmlMenuMovil(activa, sesion) + htmlBuscador());
   document.body.insertAdjacentHTML('beforeend', htmlFooter(sesion) + (whatsapp ? htmlWhatsApp() : ''));
@@ -808,6 +854,8 @@ export function iniciarPagina({ pagina = document.body.dataset.pagina, whatsapp 
     if (e.key === 'Escape' && capaAbierta) { e.preventDefault(); cerrarCapa(); }
     atraparFoco(e);
   });
+  // El header, el menú y el footer siguen a la sesión (entrar, salir, otra pestaña)
+  window.addEventListener(EVENTO_SESION, (e) => pintarCuenta(e.detail?.usuario ?? usuarioEnCache()));
   pintarIconos();
   activarBarras();
   activarApariciones();

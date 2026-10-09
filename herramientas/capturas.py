@@ -17,7 +17,7 @@ Uso (desde la raíz del repositorio):
 Estados especiales (captura solo la pantalla visible, con un sufijo en el nombre):
   --clic "[data-abrir-menu]" --sufijo menu       abre el menú móvil antes de capturar
   --desplazar 600 --sufijo bajando               baja 600 px (header sólido en Inicio)
-  --sesion                                       simula una alumna con sesión iniciada
+  --sesion                                       entra con la cuenta demo (alumna@demo.com)
 
 Sin --remoto levanta un servidor local que imita a Vercel:
 URLs limpias (/cursos → cursos.html), /cursos/:slug → curso.html y 404.html.
@@ -196,8 +196,7 @@ def nombre_archivo(ruta, ancho, sufijo=''):
 
 
 SESION_DEMO = '''localStorage.setItem('vcorrea:sesion', JSON.stringify({
-  alumna: { nombre: 'Valentina', apellido: 'Rojas', correo: 'valentina@ejemplo.com' },
-  desde: new Date().toISOString()
+  usuarioId: 'alumna-demo', desde: new Date().toISOString()
 }));'''
 
 

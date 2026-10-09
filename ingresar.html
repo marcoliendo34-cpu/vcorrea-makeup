@@ -20,17 +20,38 @@
 </head>
 <body data-pagina="ingresar">
   <main id="contenido" tabindex="-1">
-    <div class="contenedor encabezado-pagina">
-      <p class="etiqueta">Alumnas</p>
-      <h1>Iniciar sesión</h1>
-      <p class="encabezado-pagina__intro">Ingresa con tu correo y contraseña.</p>
-    </div>
-    <section class="seccion">
-      <div class="contenedor">
-        <div class="pendiente">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5 19.5 9.5 11 18a3.5 3.5 0 0 1-5-5Z"/><path d="m12.5 6.5 5 5"/><path d="M6 13c-1.5 1.5-1.5 4-2 6.5 2.5-.5 5-.5 6.5-2"/></svg>
-          <p class="pendiente__titulo">Sección en preparación</p>
-          <p>Aquí irá el formulario para ingresar.</p>
+    <section class="acceso" aria-labelledby="titulo-ingresar">
+      <div class="contenedor acceso__contenedor">
+        <div class="acceso__caja">
+          <p class="etiqueta">Alumnas</p>
+          <h1 id="titulo-ingresar">Inicia sesión</h1>
+          <p class="acceso__intro">Entra para solicitar tu inscripción y ver tus cursos.</p>
+          <p class="acceso__curso" data-curso-contexto hidden></p>
+
+          <form class="formulario" novalidate data-ingresar>
+            <div class="campo">
+              <label class="campo__etiqueta" for="ingresar-correo">Correo</label>
+              <input class="campo__control" id="ingresar-correo" name="correo" type="email" inputmode="email" autocomplete="email" required aria-describedby="ingresar-correo-error">
+              <p class="campo__error" id="ingresar-correo-error" hidden></p>
+            </div>
+            <div class="campo">
+              <div class="campo__cabeza">
+                <label class="campo__etiqueta" for="ingresar-contrasena">Contraseña</label>
+                <button class="campo__enlace" type="button" data-olvido aria-controls="aviso-olvido">¿Olvidaste tu contraseña?</button>
+              </div>
+              <div class="campo__grupo">
+                <input class="campo__control" id="ingresar-contrasena" name="contrasena" type="password" autocomplete="current-password" required aria-describedby="ingresar-contrasena-error">
+                <button class="campo__ojo" type="button" data-mostrar-contrasena="ingresar-contrasena"></button>
+              </div>
+              <p class="campo__error" id="ingresar-contrasena-error" hidden></p>
+              <p class="campo__aviso" id="aviso-olvido" role="status" data-aviso-olvido hidden>Disponible pronto. Mientras tanto, escríbele a Verónica por WhatsApp y te ayuda.</p>
+            </div>
+            <p class="formulario__resultado formulario__resultado--error" role="alert" data-error-general hidden></p>
+            <button class="boton boton--principal boton--grande boton--bloque" type="submit"><span>Ingresar</span></button>
+          </form>
+
+          <p class="acceso__alterno">¿No tienes cuenta? <a href="/registro" data-enlace-registro>Crea una en 1 minuto</a></p>
+          <p class="acceso__demo">Vista previa · Prueba con alumna@demo.com / demo1234</p>
         </div>
       </div>
     </section>

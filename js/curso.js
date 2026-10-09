@@ -16,7 +16,8 @@ import {
 } from './detalle-curso.js';
 import { abrirVisor } from './visor.js';
 import { icono } from './iconos.js';
-import { obtenerCursoPorSlug } from './datos.js';
+import { obtenerCursoPorSlug, obtenerInscripcion } from './datos.js';
+import { EVENTO as EVENTO_SESION } from './sesion.js';
 import { cuposDeCurso } from './cupos.js';
 import { formatearFecha, rangoFechas } from './fechas.js';
 import { CONFIG } from './config.js';
@@ -343,13 +344,31 @@ function activarIndice() {
   revisar();
 }
 
-function activarInscripcion(curso) {
-  document.addEventListener('click', (e) => {
+/**
+ * Conecta los botones "Inscribirme" de la ficha (resumen, barra móvil y cierre).
+ * La inscripción previa se lee de antemano para que, al tocar, WhatsApp se abra
+ * en el mismo toque (si no, el navegador bloquea la ventana).
+ */
+async function activarInscripcion(curso) {
+  let previa = await obtenerInscripcion(curso.slug);
+  window.addEventListener(EVENTO_SESION, async () => { previa = await obtenerInscripcion(curso.slug); });
+  document.addEventListener('click', async (e) => {
     const b = e.target.closest('[data-inscribirme]');
     if (!b) return;
     e.preventDefault();
-    inscribirse(curso);
+    await inscribirse(curso, { previa });
+    previa = await obtenerInscripcion(curso.slug);
   });
+
+  // Llegada desde una tarjeta (?inscribirme=1) o de vuelta del registro/ingreso:
+  // se continúa la inscripción sola.
+  const url = new URL(location.href);
+  if (url.searchParams.get('inscribirme') === '1') {
+    url.searchParams.delete('inscribirme');
+    history.replaceState(null, '', url);
+    await inscribirse(curso, { automatico: true, previa });
+    previa = await obtenerInscripcion(curso.slug);
+  }
 }
 
 /* ------------------------------------------------------------------ */

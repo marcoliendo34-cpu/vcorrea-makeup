@@ -20,17 +20,125 @@
 </head>
 <body data-pagina="registro">
   <main id="contenido" tabindex="-1">
-    <div class="contenedor encabezado-pagina">
-      <p class="etiqueta">Alumnas</p>
-      <h1>Crea tu cuenta</h1>
-      <p class="encabezado-pagina__intro">Con tu cuenta puedes solicitar tu inscripción y ver tus cursos.</p>
-    </div>
-    <section class="seccion">
-      <div class="contenedor">
-        <div class="pendiente">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5 19.5 9.5 11 18a3.5 3.5 0 0 1-5-5Z"/><path d="m12.5 6.5 5 5"/><path d="M6 13c-1.5 1.5-1.5 4-2 6.5 2.5-.5 5-.5 6.5-2"/></svg>
-          <p class="pendiente__titulo">Sección en preparación</p>
-          <p>Aquí irá el formulario de registro.</p>
+    <section class="acceso" aria-labelledby="titulo-registro">
+      <div class="contenedor acceso__contenedor">
+        <div class="acceso__caja">
+          <p class="etiqueta">Alumnas</p>
+          <h1 id="titulo-registro">Crea tu cuenta</h1>
+          <p class="acceso__intro">Con tu cuenta solicitas tu inscripción y sigues tus cursos.</p>
+          <p class="acceso__curso" data-curso-contexto hidden></p>
+
+          <ol class="progreso-pasos" aria-label="Progreso del registro" data-progreso>
+            <li class="progreso-pasos__paso" data-indicador="1" aria-current="step"><span class="progreso-pasos__numero">1</span><span>Tus datos</span></li>
+            <li class="progreso-pasos__paso" data-indicador="2"><span class="progreso-pasos__numero">2</span><span>Tu acceso</span></li>
+          </ol>
+          <p class="solo-lectores" aria-live="polite" data-anuncio-paso></p>
+
+          <form class="formulario" novalidate data-registro>
+            <!-- Paso 1 -->
+            <fieldset class="formulario__paso" data-paso="1">
+              <legend class="formulario__leyenda">Paso 1 de 2 · Tus datos</legend>
+              <div class="formulario__fila">
+                <div class="campo">
+                  <label class="campo__etiqueta" for="registro-nombre">Nombre</label>
+                  <input class="campo__control" id="registro-nombre" name="nombre" type="text" autocomplete="given-name" maxlength="40" required aria-describedby="registro-nombre-error">
+                  <p class="campo__error" id="registro-nombre-error" hidden></p>
+                </div>
+                <div class="campo">
+                  <label class="campo__etiqueta" for="registro-apellido">Apellido</label>
+                  <input class="campo__control" id="registro-apellido" name="apellido" type="text" autocomplete="family-name" maxlength="40" required aria-describedby="registro-apellido-error">
+                  <p class="campo__error" id="registro-apellido-error" hidden></p>
+                </div>
+              </div>
+              <div class="campo">
+                <label class="campo__etiqueta" for="registro-cedula">Cédula</label>
+                <div class="campo__union">
+                  <label class="solo-lectores" for="registro-cedula-tipo">Tipo de cédula</label>
+                  <select class="campo__selector" id="registro-cedula-tipo" name="cedulaTipo">
+                    <option value="V">V</option>
+                    <option value="E">E</option>
+                  </select>
+                  <input class="campo__control" id="registro-cedula" name="cedula" type="text" inputmode="numeric" pattern="[0-9]*" autocomplete="off" maxlength="9" placeholder="12345678" required aria-describedby="registro-cedula-ayuda registro-cedula-error">
+                </div>
+                <p class="campo__ayuda" id="registro-cedula-ayuda">Entre 6 y 9 números, sin puntos.</p>
+                <p class="campo__error" id="registro-cedula-error" hidden></p>
+              </div>
+              <div class="campo">
+                <label class="campo__etiqueta" for="registro-telefono">Teléfono</label>
+                <div class="campo__union">
+                  <label class="solo-lectores" for="registro-operadora">Código de operadora</label>
+                  <select class="campo__selector" id="registro-operadora" name="operadora">
+                    <option>0412</option><option selected>0414</option><option>0416</option>
+                    <option>0422</option><option>0424</option><option>0426</option>
+                  </select>
+                  <input class="campo__control" id="registro-telefono" name="telefono" type="tel" inputmode="numeric" autocomplete="tel-local" maxlength="8" placeholder="123-4567" required aria-describedby="registro-telefono-ayuda registro-telefono-error">
+                </div>
+                <p class="campo__ayuda" id="registro-telefono-ayuda" data-telefono-vista>Los 7 números después del código.</p>
+                <p class="campo__error" id="registro-telefono-error" hidden></p>
+              </div>
+              <button class="boton boton--principal boton--grande boton--bloque" type="button" data-continuar>
+                <span>Continuar</span><span class="boton__icono" data-icono="flecha-derecha" data-tamano="18" aria-hidden="true"></span>
+              </button>
+            </fieldset>
+
+            <!-- Paso 2 -->
+            <fieldset class="formulario__paso" data-paso="2" hidden>
+              <legend class="formulario__leyenda">Paso 2 de 2 · Tu acceso</legend>
+              <div class="campo">
+                <label class="campo__etiqueta" for="registro-correo">Correo</label>
+                <input class="campo__control" id="registro-correo" name="correo" type="email" inputmode="email" autocomplete="email" maxlength="80" placeholder="nombre@correo.com" required aria-describedby="registro-correo-error">
+                <p class="campo__error" id="registro-correo-error" hidden></p>
+              </div>
+              <div class="campo">
+                <label class="campo__etiqueta" for="registro-contrasena">Contraseña</label>
+                <div class="campo__grupo">
+                  <input class="campo__control" id="registro-contrasena" name="contrasena" type="password" autocomplete="new-password" required aria-describedby="registro-contrasena-ayuda registro-contrasena-error">
+                  <button class="campo__ojo" type="button" data-mostrar-contrasena="registro-contrasena"></button>
+                </div>
+                <p class="campo__ayuda" id="registro-contrasena-ayuda">Mínimo 8 caracteres.</p>
+                <p class="campo__error" id="registro-contrasena-error" hidden></p>
+              </div>
+              <div class="campo">
+                <label class="campo__etiqueta" for="registro-confirmar">Confirmar contraseña</label>
+                <div class="campo__grupo">
+                  <input class="campo__control" id="registro-confirmar" name="confirmar" type="password" autocomplete="new-password" required aria-describedby="registro-confirmar-error">
+                  <button class="campo__ojo" type="button" data-mostrar-contrasena="registro-confirmar"></button>
+                </div>
+                <p class="campo__error" id="registro-confirmar-error" hidden></p>
+              </div>
+              <div class="formulario__fila">
+                <div class="campo">
+                  <label class="campo__etiqueta" for="registro-instagram">Instagram <span class="campo__opcional">(opcional)</span></label>
+                  <div class="campo__union">
+                    <span class="campo__prefijo" aria-hidden="true">@</span>
+                    <input class="campo__control" id="registro-instagram" name="instagram" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="31" placeholder="tuusuario" aria-describedby="registro-instagram-error">
+                  </div>
+                  <p class="campo__error" id="registro-instagram-error" hidden></p>
+                </div>
+                <div class="campo">
+                  <label class="campo__etiqueta" for="registro-nacimiento">Fecha de nacimiento <span class="campo__opcional">(opcional)</span></label>
+                  <input class="campo__control" id="registro-nacimiento" name="fechaNacimiento" type="date" min="1930-01-01" aria-describedby="registro-nacimiento-error">
+                  <p class="campo__error" id="registro-nacimiento-error" hidden></p>
+                </div>
+              </div>
+              <div class="campo">
+                <label class="casilla" for="registro-acepto">
+                  <input id="registro-acepto" name="acepto" type="checkbox" required aria-describedby="registro-acepto-error">
+                  <span>Acepto el uso de mis datos según la <a href="/privacidad" target="_blank" rel="noopener">política de privacidad</a>.</span>
+                </label>
+                <p class="campo__error" id="registro-acepto-error" hidden></p>
+              </div>
+              <p class="formulario__resultado formulario__resultado--error" role="alert" data-error-general hidden></p>
+              <div class="formulario__acciones">
+                <button class="boton boton--secundario boton--grande" type="button" data-volver>
+                  <span class="boton__icono" data-icono="flecha-izquierda" data-tamano="18" aria-hidden="true"></span><span>Volver</span>
+                </button>
+                <button class="boton boton--principal boton--grande" type="submit" data-crear><span>Crear mi cuenta</span></button>
+              </div>
+            </fieldset>
+          </form>
+
+          <p class="acceso__alterno">¿Ya tienes cuenta? <a href="/ingresar" data-enlace-ingresar>Inicia sesión</a></p>
         </div>
       </div>
     </section>

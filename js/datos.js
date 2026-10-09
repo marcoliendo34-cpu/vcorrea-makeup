@@ -10,6 +10,7 @@
 import { CONFIG } from './config.js';
 import { CURSOS } from '../data/cursos.js';
 import { GALERIA, CATEGORIAS_GALERIA } from '../data/galeria.js';
+import { usuarioActual, almacen, CLAVES } from './sesion.js';
 
 /** @typedef {import('../data/cursos.js').Curso} Curso */
 /** @typedef {import('../data/galeria.js').FotoGaleria} FotoGaleria */
@@ -181,6 +182,79 @@ export async function obtenerGaleria({ soloDestacadas = false, categoria, limite
 /** Categorías de la galería para los chips: [{ id, nombre }]. */
 export async function obtenerCategoriasGaleria() {
   return copiar(CATEGORIAS_GALERIA);
+}
+
+/* ------------------------------------------------------------------ */
+/* Inscripciones de la alumna con sesión                               */
+/* ------------------------------------------------------------------ */
+// Demo: se guardan en localStorage (ver js/sesion.js). Fase 2: tabla
+// "inscripciones" en Supabase con las mismas funciones.
+
+/**
+ * @typedef {Object} Inscripcion
+ * @property {string} id
+ * @property {string} alumnaId
+ * @property {string} cursoSlug
+ * @property {'pendiente'|'confirmada'|'finalizado'} estado
+ * @property {string} creada  Fecha ISO.
+ */
+
+/** Textos de los estados de una inscripción (BRIEF.md §5). */
+export const ESTADOS_INSCRIPCION = {
+  pendiente: 'Pendiente de confirmación',
+  confirmada: 'Confirmada',
+  finalizado: 'Finalizado'
+};
+
+const leerInscripciones = () => almacen.leer(CLAVES.inscripciones, []);
+
+/**
+ * Inscripciones de la alumna con sesión, con su curso, ordenadas por fecha de
+ * inicio. Si el curso ya terminó, el estado visible pasa a 'finalizado'.
+ * @returns {Promise<Array<Inscripcion & {curso: Curso|null, estadoVisible: string}>>}
+ */
+export async function obtenerMisInscripciones() {
+  const usuario = await usuarioActual();
+  if (!usuario) return [];
+  const cursos = await fuente().cursos();
+  return leerInscripciones()
+    .filter((i) => i.alumnaId === usuario.id)
+    .map((i) => {
+      const curso = cursos.find((c) => c.slug === i.cursoSlug) || null;
+      const estadoVisible = curso?.estado === 'finalizado' && i.estado === 'confirmada' ? 'finalizado' : i.estado;
+      return { ...copiar(i), curso, estadoVisible };
+    })
+    .sort((a, b) => (a.curso?.fechaInicio || '').localeCompare(b.curso?.fechaInicio || ''));
+}
+
+/** Inscripción de la alumna con sesión en un curso, o null. */
+export async function obtenerInscripcion(cursoSlug) {
+  const usuario = await usuarioActual();
+  if (!usuario) return null;
+  return leerInscripciones().find((i) => i.alumnaId === usuario.id && i.cursoSlug === cursoSlug) || null;
+}
+
+/**
+ * Registra la solicitud como "Pendiente de confirmación". Si ya existe, no la duplica.
+ * @returns {Promise<{inscripcion: Inscripcion|null, nueva: boolean, error: string|null}>}
+ */
+export async function crearInscripcion(cursoSlug) {
+  const usuario = await usuarioActual();
+  if (!usuario) return { inscripcion: null, nueva: false, error: 'sin-sesion' };
+  const todas = leerInscripciones();
+  const existente = todas.find((i) => i.alumnaId === usuario.id && i.cursoSlug === cursoSlug);
+  if (existente) return { inscripcion: existente, nueva: false, error: null };
+  const inscripcion = {
+    id: `insc-${Date.now().toString(36)}`,
+    alumnaId: usuario.id,
+    cursoSlug,
+    estado: 'pendiente',
+    creada: new Date().toISOString()
+  };
+  if (!almacen.escribir(CLAVES.inscripciones, [...todas, inscripcion])) {
+    return { inscripcion: null, nueva: false, error: 'almacenamiento' };
+  }
+  return { inscripcion, nueva: true, error: null };
 }
 
 export const modo = () => CONFIG.modoDatos;
