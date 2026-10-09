@@ -5,11 +5,11 @@
 
 import { CONFIG } from './config.js';
 import { icono } from './iconos.js';
-import { calcularCupos } from './cupos.js';
+import { calcularCupos, cuposDeCurso } from './cupos.js';
 import { ESTADOS_INSCRIPCION } from './inscripcion.js';
 import { obtenerSesion, inicialAlumna } from './sesion.js';
 import { buscarCursos, obtenerCursosVigentes, normalizar } from './datos.js';
-import { formatearFecha } from './fechas.js';
+import { formatearFecha, fechaTarjeta } from './fechas.js';
 
 /** Escapa texto para insertarlo en HTML. */
 export function esc(valor) {
@@ -193,6 +193,192 @@ export function placeholderFoto({ descripcion, proporcion = '4 / 3', sinBorde = 
          style="--proporcion:${esc(proporcion)}" role="img" aria-label="${esc(texto)}">
       <span class="placeholder-foto__texto" aria-hidden="true">${esc(texto)}</span>
     </div>`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Tarjeta de curso (Inicio y Cursos)                                   */
+/* ------------------------------------------------------------------ */
+
+/** Quita las marcas [EJEMPLO] / [POR DEFINIR] en textos muy cortos (línea de ubicación). */
+const sinMarcas = (texto) => String(texto ?? '').replace(/\s*\[(EJEMPLO|POR DEFINIR)\]\s*/g, ' ').trim();
+
+const textoDuracion = (semanas) => (semanas === 1 ? '1 semana' : `${semanas} semanas`);
+
+/**
+ * Tarjeta de un curso: portada 4:3, insignia de cupos, fecha, datos clave,
+ * barra de inscripción, "Inscribirme" y compartir. NUNCA muestra el precio.
+ * Toda la tarjeta lleva al detalle (enlace extendido sobre el nombre).
+ * El comportamiento de compartir se activa con activarTarjetas().
+ * @param {import('../data/cursos.js').Curso} curso
+ * @param {object} [op]
+ * @param {number} [op.nivelTitulo=3]
+ */
+export function tarjetaCurso(curso, { nivelTitulo = 3 } = {}) {
+  const c = cuposDeCurso(curso);
+  const url = `/cursos/${encodeURIComponent(curso.slug)}`;
+  const idNombre = `curso-${curso.slug}`;
+  const { dia, mesAnio } = fechaTarjeta(curso.fechaInicio);
+  const h = `h${nivelTitulo}`;
+  const foto = curso.imagenPortada || { src: null, alt: curso.nombre };
+
+  const media = foto.src
+    ? `<img src="${esc(foto.src)}" alt="${esc(foto.alt)}" width="600" height="450" loading="lazy" decoding="async">`
+    : placeholderFoto({ descripcion: foto.alt, proporcion: '4 / 3', sinBorde: true });
+
+  const accion = c.estado === 'agotado'
+    ? boton({ texto: 'Cupos agotados', desactivado: true, bloque: true })
+    : boton({
+        texto: 'Inscribirme', icono: 'flecha-derecha', href: `${url}#inscripcion`, bloque: true,
+        atributos: { 'aria-label': `Inscribirme en ${curso.nombre}` }
+      });
+
+  return `
+    <article class="tarjeta-curso tarjeta-curso--${c.estado}" aria-labelledby="${esc(idNombre)}" data-curso="${esc(curso.slug)}">
+      <div class="tarjeta-curso__media">
+        ${media}
+        ${c.estado === 'disponible' ? '' : `<span class="tarjeta-curso__insignia">${insignia(c.estado)}</span>`}
+        <span class="tarjeta-curso__fecha">
+          <span class="tarjeta-curso__dia">${dia}</span>
+          <span class="tarjeta-curso__mes">${esc(mesAnio)}</span>
+        </span>
+      </div>
+      <div class="tarjeta-curso__cuerpo">
+        <p class="tarjeta-curso__meta">${esc(curso.modalidad)} · ${esc(sinMarcas(curso.ubicacion))}</p>
+        <${h} class="tarjeta-curso__nombre" id="${esc(idNombre)}">
+          <a class="tarjeta-curso__enlace" href="${url}">${esc(curso.nombre)}</a>
+        </${h}>
+        <dl class="tarjeta-curso__datos">
+          <div><dt>Duración</dt><dd>${esc(textoDuracion(curso.semanas))}</dd></div>
+          <div><dt>Inicio</dt><dd>${esc(formatearFecha(curso.fechaInicio))}</dd></div>
+          <div><dt>Cupos</dt><dd>${esc(curso.cupos)}</dd></div>
+        </dl>
+        ${barraProgreso({ inscritas: curso.inscritas, cupos: curso.cupos })}
+        <div class="tarjeta-curso__acciones">
+          ${accion}
+          ${botonIcono({
+            icono: 'compartir', etiqueta: `Compartir ${curso.nombre}`,
+            atributos: { 'data-compartir': curso.slug, 'data-nombre': curso.nombre, 'data-inicio': formatearFecha(curso.fechaInicio) }
+          })}
+        </div>
+      </div>
+    </article>`;
+}
+
+/* ------------------------------------------------------------------ */
+/* Aviso breve ("Enlace copiado")                                      */
+/* ------------------------------------------------------------------ */
+
+let temporizadorAviso;
+
+/** Muestra un aviso breve abajo de la pantalla (se anuncia a lectores de pantalla). */
+export function avisar(texto) {
+  let el = document.querySelector('[data-aviso]');
+  if (!el) {
+    el = document.createElement('div');
+    el.className = 'aviso';
+    el.setAttribute('role', 'status');
+    el.setAttribute('aria-live', 'polite');
+    el.dataset.aviso = '';
+    document.body.append(el);
+  }
+  el.innerHTML = `${icono('check', { tamano: 18 })}<span>${esc(texto)}</span>`;
+  el.classList.add('es-visible');
+  clearTimeout(temporizadorAviso);
+  temporizadorAviso = setTimeout(() => el.classList.remove('es-visible'), 2600);
+}
+
+async function copiarTexto(texto) {
+  try {
+    await navigator.clipboard.writeText(texto);
+    return true;
+  } catch {
+    // Respaldo para navegadores sin permiso de portapapeles
+    const area = Object.assign(document.createElement('textarea'), { value: texto });
+    area.setAttribute('readonly', '');
+    area.style.cssText = 'position:fixed;top:0;left:0;opacity:0;';
+    document.body.append(area);
+    area.select();
+    let ok = false;
+    try { ok = document.execCommand('copy'); } catch { ok = false; }
+    area.remove();
+    return ok;
+  }
+}
+
+/**
+ * Compartir con el menú nativo del teléfono; si no existe, copia el enlace
+ * y avisa "Enlace copiado".
+ */
+export async function compartirCurso({ slug, nombre, inicio }) {
+  const url = `${location.origin}/cursos/${encodeURIComponent(slug)}`;
+  const datos = { title: `${nombre} · Verónica Correa Makeup`, text: `${nombre} con Verónica Correa. Inicia el ${inicio}.`, url };
+  if (navigator.share && (!navigator.canShare || navigator.canShare(datos))) {
+    try {
+      await navigator.share(datos);
+      return;
+    } catch (e) {
+      if (e && e.name === 'AbortError') return; // la alumna cerró el menú
+    }
+  }
+  avisar((await copiarTexto(url)) ? 'Enlace copiado' : `Copia este enlace: ${url}`);
+}
+
+let tarjetasActivas = false;
+
+/** Activa el botón de compartir de todas las tarjetas (también las que se dibujen después). */
+export function activarTarjetas() {
+  if (tarjetasActivas) return;
+  tarjetasActivas = true;
+  document.addEventListener('click', (e) => {
+    const b = e.target.closest('[data-compartir]');
+    if (!b) return;
+    e.preventDefault();
+    compartirCurso({ slug: b.dataset.compartir, nombre: b.dataset.nombre, inicio: b.dataset.inicio });
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Íconos escritos en el HTML                                          */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Dibuja los íconos de iconos.js dentro de los elementos con data-icono
+ * (ej. <span data-icono="buscar"></span>). Así el HTML no repite trazos SVG.
+ */
+export function pintarIconos(raiz = document) {
+  raiz.querySelectorAll('[data-icono]:empty').forEach((el) => {
+    el.innerHTML = icono(el.dataset.icono, { tamano: Number(el.dataset.tamano) || 24 });
+  });
+}
+
+/* ------------------------------------------------------------------ */
+/* Aparición suave al entrar en pantalla                               */
+/* ------------------------------------------------------------------ */
+
+let observadorApariciones = null;
+
+/**
+ * Las piezas con [data-aparecer] aparecen con un fundido al entrar en pantalla.
+ * Sin JavaScript o con "reducir movimiento" se ven siempre, sin animación.
+ */
+export function activarApariciones(raiz = document) {
+  const piezas = raiz.querySelectorAll('[data-aparecer]:not(.es-visible)');
+  if (!piezas.length) return;
+  const reducir = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reducir || !('IntersectionObserver' in window)) {
+    piezas.forEach((p) => p.classList.add('es-visible'));
+    return;
+  }
+  document.documentElement.classList.add('con-apariciones');
+  observadorApariciones ??= new IntersectionObserver((entradas) => {
+    entradas.forEach((e) => {
+      if (e.isIntersecting) {
+        e.target.classList.add('es-visible');
+        observadorApariciones.unobserve(e.target);
+      }
+    });
+  }, { rootMargin: '0px 0px -8% 0px', threshold: 0 });
+  piezas.forEach((p) => observadorApariciones.observe(p));
 }
 
 /* ------------------------------------------------------------------ */
@@ -615,5 +801,8 @@ export function iniciarPagina({ pagina = document.body.dataset.pagina, whatsapp 
     if (e.key === 'Escape' && capaAbierta) { e.preventDefault(); cerrarCapa(); }
     atraparFoco(e);
   });
+  pintarIconos();
   activarBarras();
+  activarApariciones();
+  activarTarjetas();
 }

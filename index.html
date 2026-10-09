@@ -20,24 +20,119 @@
 </head>
 <body data-pagina="inicio" data-hero>
   <main id="contenido" tabindex="-1">
+
+    <!-- a. HERO ---------------------------------------------------------- -->
     <section class="hero" aria-labelledby="titulo-hero">
       <div class="hero__media" data-hero-media></div>
       <div class="contenedor">
-        <p class="etiqueta etiqueta--clara">Cursos y formaciones</p>
-        <h1 class="display" id="titulo-hero" style="margin-top:var(--e-4)">Aprende a maquillar con técnica y elegancia</h1>
-        <p class="hero__texto">[EJEMPLO] Formaciones presenciales y online para que domines el maquillaje, desde tu rutina diaria hasta novias y eventos.</p>
-        <div class="hero__acciones" data-hero-acciones></div>
-      </div>
-    </section>
-    <section class="seccion">
-      <div class="contenedor">
-        <div class="pendiente">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5 19.5 9.5 11 18a3.5 3.5 0 0 1-5-5Z"/><path d="m12.5 6.5 5 5"/><path d="M6 13c-1.5 1.5-1.5 4-2 6.5 2.5-.5 5-.5 6.5-2"/></svg>
-          <p class="pendiente__titulo">Sección en preparación</p>
-          <p>Aquí irán el buscador y las tarjetas de “Próximos cursos”. Se construyen en el próximo paso.</p>
+        <div class="hero__contenido">
+          <p class="etiqueta etiqueta--clara">Formación en maquillaje profesional</p>
+          <!-- [EJEMPLO] título y subtítulo del hero -->
+          <h1 class="hero__titulo" id="titulo-hero">Aprende a maquillar con técnica, intención y elegancia</h1>
+          <p class="hero__texto">[EJEMPLO] Cursos presenciales y online, de tu rutina diaria a novias y eventos.</p>
+          <div class="hero__acciones">
+            <a class="boton boton--principal boton--grande" href="#proximos-cursos">
+              <span>Ver próximos cursos</span>
+              <span class="boton__icono" data-icono="chevron-abajo" aria-hidden="true"></span>
+            </a>
+            <a class="boton boton--claro boton--grande" href="/sobre-veronica"><span>Conoce a Verónica</span></a>
+          </div>
         </div>
       </div>
     </section>
+
+    <!-- b. BUSCADOR (superpuesto al hero) y c. FILTROS ------------------- -->
+    <section class="buscador-inicio" aria-label="Buscar y filtrar cursos">
+      <div class="contenedor">
+        <form class="barra-busqueda" action="/cursos" method="get" role="search" data-busqueda-inicio>
+          <span class="barra-busqueda__icono" data-icono="buscar" aria-hidden="true"></span>
+          <label class="solo-lectores" for="busqueda-inicio">¿Qué quieres aprender?</label>
+          <input class="barra-busqueda__campo" id="busqueda-inicio" name="q" type="search"
+                 placeholder="¿Qué quieres aprender?" autocomplete="off" enterkeyhint="search">
+          <button class="boton boton--principal" type="submit"><span>Buscar</span></button>
+        </form>
+
+        <div class="filtros" role="group" aria-label="Filtrar próximos cursos" data-filtros>
+          <button class="chip" type="button" aria-pressed="true" data-filtro="todos">Todos</button>
+          <button class="chip" type="button" aria-pressed="false" data-filtro="modalidad:Presencial">Presencial</button>
+          <button class="chip" type="button" aria-pressed="false" data-filtro="modalidad:Online">Online</button>
+          <button class="chip" type="button" aria-pressed="false" data-filtro="nivel:Básico">Básico</button>
+          <button class="chip" type="button" aria-pressed="false" data-filtro="nivel:Avanzado">Avanzado</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- d. PRÓXIMOS CURSOS ---------------------------------------------- -->
+    <section class="seccion seccion--cursos" id="proximos-cursos" aria-labelledby="titulo-proximos">
+      <div class="contenedor">
+        <div data-titulo-proximos data-aparecer></div>
+        <p class="solo-lectores" aria-live="polite" data-estado-filtro></p>
+        <ul class="rejilla-cursos" data-rejilla-cursos>
+          <li class="sin-resultados">Cargando cursos…</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- e. POR QUÉ APRENDER CON VERÓNICA -------------------------------- -->
+    <section class="seccion seccion--crema" aria-labelledby="titulo-por-que">
+      <div class="contenedor">
+        <div data-titulo-por-que data-aparecer></div>
+        <ul class="beneficios" data-aparecer>
+          <li class="beneficio">
+            <span class="beneficio__icono" data-icono="usuarias"></span>
+            <h3>Grupos reducidos</h3>
+            <p>[EJEMPLO] Pocas alumnas por curso para que recibas correcciones personalizadas en cada clase.</p>
+          </li>
+          <li class="beneficio">
+            <span class="beneficio__icono" data-icono="pincel"></span>
+            <h3>Práctica real</h3>
+            <p>[EJEMPLO] Practicas desde la primera clase, sobre tu propio rostro o sobre modelo.</p>
+          </li>
+          <li class="beneficio">
+            <span class="beneficio__icono" data-icono="neceser"></span>
+            <h3>Material incluido</h3>
+            <p>[EJEMPLO] Usas productos profesionales en clase y te llevas guías para seguir practicando.</p>
+          </li>
+          <li class="beneficio">
+            <span class="beneficio__icono" data-icono="certificado"></span>
+            <h3>Certificado</h3>
+            <p>[EJEMPLO] Al terminar recibes un certificado que respalda tu formación.</p>
+          </li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- f. SOBRE VERÓNICA (avance) -------------------------------------- -->
+    <section class="seccion" aria-labelledby="titulo-sobre">
+      <div class="contenedor avance-sobre">
+        <div class="avance-sobre__retrato" data-retrato data-aparecer></div>
+        <div class="avance-sobre__texto" data-aparecer>
+          <div data-titulo-sobre></div>
+          <p>[EJEMPLO] Maquilladora profesional y formadora. Enseña paso a paso, con paciencia,
+             para que cada alumna gane seguridad y encuentre su propio estilo.</p>
+          <div data-enlace-sobre></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- g. GALERÍA (avance) --------------------------------------------- -->
+    <section class="seccion" aria-labelledby="titulo-galeria" style="padding-top:0">
+      <div class="contenedor">
+        <div data-titulo-galeria data-aparecer></div>
+        <ul class="mosaico" data-mosaico data-aparecer></ul>
+      </div>
+    </section>
+
+    <!-- h. CIERRE ------------------------------------------------------- -->
+    <section class="seccion seccion--crema seccion--cierre" aria-labelledby="titulo-cierre">
+      <div class="contenedor cierre" data-aparecer>
+        <p class="etiqueta">Te ayudo a elegir</p>
+        <h2 id="titulo-cierre">¿No sabes qué curso elegir?</h2>
+        <p>[EJEMPLO] Cuéntame tu nivel y lo que quieres lograr, y te recomiendo la formación ideal para ti.</p>
+        <div data-boton-cierre></div>
+      </div>
+    </section>
+
   </main>
 
   <script type="module" src="/js/inicio.js"></script>

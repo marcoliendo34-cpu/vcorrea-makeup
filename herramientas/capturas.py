@@ -108,7 +108,16 @@ JS_DESBORDE = """
   const total = document.documentElement.scrollWidth;
   const culpables = [];
   if (total > ancho) {
+    // Los carruseles con scroll propio (overflow-x auto/scroll) no cuentan:
+    // su contenido se desplaza dentro de la caja, no en la página.
+    const dentroDeCarrusel = (el) => {
+      for (let p = el.parentElement; p && p !== document.body; p = p.parentElement) {
+        if (/(auto|scroll)/.test(getComputedStyle(p).overflowX)) return true;
+      }
+      return false;
+    };
     for (const el of document.body.querySelectorAll('*')) {
+      if (dentroDeCarrusel(el)) continue;
       const r = el.getBoundingClientRect();
       if (r.width && (r.right > ancho + 1 || r.left < -1)) {
         let sel = el.tagName.toLowerCase();
@@ -120,6 +129,43 @@ JS_DESBORDE = """
     }
   }
   return { ancho, total, culpables };
+}
+"""
+
+JS_CORTES = """
+() => {
+  // Texto que queda recortado por una caja con overflow hidden/clip
+  // (ej. un nombre que no cabe en la tarjeta). Se mide cada texto con un Range.
+  const cortes = [];
+  const recorre = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT, {
+    acceptNode: (n) => n.textContent.trim() ? NodeFilter.FILTER_ACCEPT : NodeFilter.FILTER_REJECT
+  });
+  const rango = document.createRange();
+  for (let n = recorre.nextNode(); n; n = recorre.nextNode()) {
+    const el = n.parentElement;
+    if (!el || el.closest('.solo-lectores, svg, script, style')) continue;
+    const st = getComputedStyle(el);
+    if (st.visibility === 'hidden' || st.display === 'none') continue;
+    rango.selectNodeContents(n);
+    const t = rango.getBoundingClientRect();
+    if (!t.width || !t.height) continue;
+    for (let p = el; p && p !== document.documentElement; p = p.parentElement) {
+      const sp = getComputedStyle(p);
+      const cx = /(hidden|clip)/.test(sp.overflowX), cy = /(hidden|clip)/.test(sp.overflowY);
+      const tieneTextoCortado = sp.textOverflow === 'ellipsis' && p.scrollWidth > p.clientWidth + 1;
+      if (!cx && !cy && !tieneTextoCortado) continue;
+      const r = p.getBoundingClientRect();
+      if (r.width <= 1 || r.height <= 1) break;   // oculto a propósito (solo lectores de pantalla)
+      const fueraX = cx && (t.left < r.left - 1 || t.right > r.right + 1);
+      const fueraY = cy && (t.top < r.top - 1 || t.bottom > r.bottom + 1);
+      if (fueraX || fueraY || tieneTextoCortado) {
+        cortes.push(`"${n.textContent.trim().slice(0, 40)}" en ${el.tagName.toLowerCase()}.${[...el.classList].join('.')}`);
+        break;
+      }
+    }
+    if (cortes.length >= 8) break;
+  }
+  return cortes;
 }
 """
 
@@ -194,6 +240,7 @@ def auditar(rutas, anchos, base, salida, clic=None, desplazar=0, sesion=False, s
                     estado = '404 (página de error)'
                     errores = [e for e in errores if 'status of 404' not in e]
                 desborde = pg.evaluate(JS_DESBORDE)
+                cortes = pg.evaluate(JS_CORTES)
                 fuentes = pg.evaluate(JS_FUENTES)
                 archivo = salida / nombre_archivo(ruta, ancho, sufijo)
                 especial = bool(clic or desplazar or escribir)
@@ -216,7 +263,7 @@ def auditar(rutas, anchos, base, salida, clic=None, desplazar=0, sesion=False, s
                     sin_fuentes = True
 
                 hay_desborde = desborde['total'] > desborde['ancho']
-                ok = estado in (200, '404 (página de error)') and not errores and not propios and not hay_desborde
+                ok = estado in (200, '404 (página de error)') and not errores and not cortes and not propios and not hay_desborde
                 problemas += 0 if ok else 1
                 marca = '✓' if ok else '✗'
                 print(f'  {marca} {ancho:>4}px  HTTP {estado}  →  {archivo.relative_to(RAIZ)}')
@@ -224,6 +271,8 @@ def auditar(rutas, anchos, base, salida, clic=None, desplazar=0, sesion=False, s
                     print(f'      · {e}')
                 for u in propios:
                     print(f'      · no cargó: {u}')
+                for c in cortes:
+                    print(f'      · TEXTO CORTADO: {c}')
                 if hay_desborde:
                     print(f"      · SCROLL HORIZONTAL: {desborde['total']}px > {desborde['ancho']}px")
                     for c in desborde['culpables']:

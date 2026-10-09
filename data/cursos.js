@@ -79,7 +79,7 @@ export const CURSOS = [
     categoria: 'Automaquillaje',
     nivel: 'Básico',
     modalidad: 'Online',
-    ubicacion: 'Clases en vivo por videollamada [EJEMPLO]',
+    ubicacion: 'En vivo por videollamada [EJEMPLO]',
     imagenPortada: { src: null, alt: 'Alumna maquillándose frente al espejo' },
     fechaInicio: '2026-11-07',
     fechaFin: '2026-11-28',

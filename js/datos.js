@@ -9,8 +9,10 @@
 
 import { CONFIG } from './config.js';
 import { CURSOS } from '../data/cursos.js';
+import { GALERIA } from '../data/galeria.js';
 
 /** @typedef {import('../data/cursos.js').Curso} Curso */
+/** @typedef {import('../data/galeria.js').FotoGaleria} FotoGaleria */
 
 /**
  * @typedef {Object} FiltrosCursos
@@ -57,6 +59,9 @@ function textoBuscable(curso) {
 const fuenteDemo = {
   async cursos() {
     return copiar(CURSOS);
+  },
+  async galeria() {
+    return copiar(GALERIA);
   }
 };
 
@@ -143,6 +148,18 @@ export async function obtenerOpcionesDeFiltro() {
     niveles: unicos('nivel').sort((a, b) => ordenNivel.indexOf(a) - ordenNivel.indexOf(b)),
     modalidades: unicos('modalidad').sort((a, b) => a.localeCompare(b, 'es'))
   };
+}
+
+/**
+ * Fotos de la galería.
+ * @param {object} [op]
+ * @param {boolean} [op.soloDestacadas]  Solo las marcadas para el avance de Inicio.
+ * @param {number} [op.limite]
+ * @returns {Promise<FotoGaleria[]>}
+ */
+export async function obtenerGaleria({ soloDestacadas = false, limite } = {}) {
+  const fotos = (await fuente().galeria()).filter((f) => !soloDestacadas || f.destacada);
+  return limite ? fotos.slice(0, limite) : fotos;
 }
 
 export const modo = () => CONFIG.modoDatos;
