@@ -70,6 +70,10 @@
 
   /* Header fijo */
   --alto-header: 64px;
+  /* Franja "Vista previa" (MODO_VISTA_PREVIA en js/config.js): 0 si no está.
+     --tope = todo lo fijo de arriba (franja + header); úsalo para despejar el contenido. */
+  --alto-franja: 0px;
+  --tope: calc(var(--alto-franja) + var(--alto-header));
   --z-header: 50;
   --z-flotante: 40;
   --z-capa: 100;
@@ -521,7 +525,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
    14. Estructura de página
    ------------------------------------------------------------------------- */
 /* El header es fijo: las páginas sin hero dejan su espacio arriba. */
-body[data-pagina]:not([data-hero]) { padding-top: var(--alto-header); }
+body[data-pagina]:not([data-hero]) { padding-top: var(--tope); }
 
 html.sin-scroll, html.sin-scroll body { overflow: hidden; }
 
@@ -580,7 +584,7 @@ html.sin-scroll, html.sin-scroll body { overflow: hidden; }
   --header-borde: var(--beige);
 
   position: fixed;
-  inset: 0 0 auto 0;
+  inset: var(--alto-franja) 0 auto 0;
   z-index: var(--z-header);
   height: var(--alto-header);
   color: var(--header-texto);
@@ -733,7 +737,7 @@ html.sin-scroll, html.sin-scroll body { overflow: hidden; }
    ------------------------------------------------------------------------- */
 .capa {
   position: fixed;
-  inset: 0;
+  inset: var(--alto-franja) 0 0 0;   /* la franja de vista previa sigue visible arriba */
   z-index: var(--z-capa);
   opacity: 0;
   visibility: hidden;
@@ -1043,7 +1047,7 @@ a.pie__red:hover { border-color: var(--dorado); color: var(--dorado-profundo); }
   min-height: 88vh;
   min-height: 88svh;
   padding-block:
-    calc(var(--alto-header) + var(--e-10))
+    calc(var(--tope) + var(--e-10))
     calc(var(--e-12) + var(--alto-barra-busqueda) / 2);
   color: var(--blanco);
   isolation: isolate;
@@ -1065,7 +1069,7 @@ a.pie__red:hover { border-color: var(--dorado); color: var(--dorado-profundo); }
 .hero__media .placeholder-foto {
   align-items: start;
   justify-items: end;
-  padding-top: calc(var(--alto-header) + var(--e-6));
+  padding-top: calc(var(--tope) + var(--e-6));
   /* Mientras falte la foto: tono medio de la paleta para que el texto blanco se lea */
   background: var(--gris-calido);
   color: var(--beige);
@@ -1114,7 +1118,7 @@ a.pie__red:hover { border-color: var(--dorado); color: var(--dorado-profundo); }
 .error {
   display: grid;
   place-items: center;
-  min-height: calc(100svh - var(--alto-header) - 120px);
+  min-height: calc(100svh - var(--tope) - 120px);
   padding-block: var(--e-16);
   text-align: center;
 }
@@ -1413,7 +1417,7 @@ a.pie__red:hover { border-color: var(--dorado); color: var(--dorado-profundo); }
 
 .seccion--cursos { padding-top: var(--e-12); }
 @media (min-width: 1024px) { .seccion--cursos { padding-top: var(--e-16); } }
-#proximos-cursos { scroll-margin-top: calc(var(--alto-header) + var(--e-4)); }
+#proximos-cursos { scroll-margin-top: calc(var(--tope) + var(--e-4)); }
 .rejilla-cursos.esta-cambiando { opacity: 0.4; transition: opacity var(--dur-rapida) var(--curva); }
 .rejilla-cursos { transition: opacity var(--dur) var(--curva); }
 .sin-resultados {
@@ -1536,7 +1540,7 @@ main:has(> .seccion--cierre:last-child) ~ .pie { margin-top: 0; }
 .curso-cargando__bloque--titulo { height: 40px; width: 80%; }
 
 /* Las anclas no quedan tapadas por el header ni por el índice */
-.curso-contenido [id] { scroll-margin-top: calc(var(--alto-header) + var(--alto-indice) + var(--e-4)); }
+.curso-contenido [id] { scroll-margin-top: calc(var(--tope) + var(--alto-indice) + var(--e-4)); }
 
 /* 1. Portada */
 .curso-portada { padding-bottom: var(--e-8); }
@@ -1578,7 +1582,7 @@ main:has(> .seccion--cierre:last-child) ~ .pie { margin-top: 0; }
 /* 2. Índice: chips desplazables, fijos bajo el header */
 .curso-indice {
   position: sticky;
-  top: var(--alto-header);
+  top: var(--tope);
   z-index: calc(var(--z-header) - 1);
   background: rgba(255, 255, 255, 0.92);
   -webkit-backdrop-filter: saturate(1.4) blur(14px);
@@ -1619,7 +1623,7 @@ main:has(> .seccion--cierre:last-child) ~ .pie { margin-top: 0; }
   .curso-resumen {
     display: block;
     position: sticky;
-    top: calc(var(--alto-header) + var(--alto-indice) + var(--e-6));
+    top: calc(var(--tope) + var(--alto-indice) + var(--e-6));
     padding-top: var(--e-10);
   }
 }
@@ -2296,7 +2300,7 @@ main:has(> .acceso:last-child) ~ .pie { margin-top: 0; }
   border-radius: var(--radio-tarjeta);
   background: var(--blanco);
   box-shadow: var(--sombra-suave);
-  scroll-margin-top: calc(var(--alto-header) + var(--e-4));
+  scroll-margin-top: calc(var(--tope) + var(--e-4));
 }
 @media (min-width: 640px) { .acceso { padding-block: var(--e-12) var(--e-16); } .acceso__caja { padding: var(--e-10) var(--e-10); } }
 .acceso__caja > .etiqueta { margin-bottom: var(--e-2); }
@@ -2541,12 +2545,12 @@ input[type="date"].campo__control { display: block; -webkit-appearance: none; ap
    Misma identidad, más compacto. Móvil: barra arriba y pestañas abajo.
    Escritorio (1024+): menú lateral fijo.
    ------------------------------------------------------------------------- */
-body.pagina-panel[data-pagina] { padding-top: 0; background: var(--blanco); }  /* sin header público */
+body.pagina-panel[data-pagina] { padding-top: var(--alto-franja); background: var(--blanco); }  /* sin header público; solo la franja */
 .panel { min-height: 100vh; min-height: 100dvh; }
 
 .panel__lateral {
   position: sticky;
-  top: 0;
+  top: var(--alto-franja);
   z-index: var(--z-header);
   display: flex;
   align-items: center;
@@ -2639,8 +2643,8 @@ body.pagina-panel[data-pagina] { padding-top: 0; background: var(--blanco); }  /
 @media (min-width: 1024px) {
   .panel { display: grid; grid-template-columns: 256px minmax(0, 1fr); align-items: start; }
   .panel__lateral {
-    height: 100vh;
-    height: 100dvh;
+    height: calc(100vh - var(--alto-franja));
+    height: calc(100dvh - var(--alto-franja));
     flex-direction: column;
     align-items: stretch;
     justify-content: flex-start;
@@ -2920,6 +2924,34 @@ body.pagina-panel[data-pagina] { padding-top: 0; background: var(--blanco); }  /
 .nota-demo { display: flex; align-items: flex-start; gap: var(--e-3); padding: var(--e-4); border: 1px dashed var(--beige); border-radius: var(--radio-tarjeta); color: var(--gris-calido); font-size: var(--t-pequeno); }
 .nota-demo > svg { flex-shrink: 0; margin-top: 2px; color: var(--dorado-profundo); }
 .nota-demo .boton--texto { min-height: var(--tactil); font-size: var(--t-pequeno); }
+
+/* -------------------------------------------------------------------------
+   36. Franja "Vista previa"
+   Se activa con MODO_VISTA_PREVIA en js/config.js. generar_paginas.py la
+   escribe en el HTML (sin salto al cargar) y componentes.js la corrige si
+   el HTML quedó desactualizado.
+   ------------------------------------------------------------------------- */
+html.vista-previa { --alto-franja: 32px; }
+.franja-vista-previa {
+  position: fixed;
+  inset: 0 0 auto 0;
+  z-index: calc(var(--z-header) + 1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--alto-franja);
+  padding-inline: var(--margen-lateral);
+  background: var(--beige);
+  color: var(--tinta);
+  font-family: var(--fuente-texto);
+  font-size: var(--t-etiqueta);
+  font-weight: 500;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+html:not(.vista-previa) .franja-vista-previa { display: none; }
 
 /* -------------------------------------------------------------------------
    13. Movimiento reducido

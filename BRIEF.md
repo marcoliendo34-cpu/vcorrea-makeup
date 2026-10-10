@@ -91,6 +91,11 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 - **Roles:** `alumna` (por defecto) y `admin` (Verónica). Las cuentas nuevas siempre son de alumna. En la demo el rol vive en el navegador, así que el panel es solo una maqueta. En la fase 2, Supabase hace cumplir el rol con RLS.
 - **Datos de ejemplo** (8 alumnas e inscripciones ficticias) en `js/sesion.js`. Se recargan al subir `VERSION_SEMILLA`, y el panel tiene el botón "Restablecer datos de ejemplo".
 - **Datos de contacto, redes y métodos de pago** solo en `js/config.js`. Ningún número, usuario de red o dato de pago escrito en otro archivo.
+- **Franja "Vista previa · Los cursos y datos son de ejemplo"** arriba de todo el sitio, incluido el panel. Se controla con `MODO_VISTA_PREVIA` en `js/config.js`:
+  - Después de cambiarlo se corre `herramientas/generar_paginas.py`, que la escribe en el HTML para que no haya salto al cargar.
+  - Si se olvida, `componentes.js` la pone o la quita al abrir la página.
+  - Su alto (`--alto-franja`) entra en `--tope`, la variable que despeja el contenido de lo fijo de arriba.
+- **Bloqueo a buscadores** durante la vista previa, aparte de la franja: meta robots `noindex, nofollow` en cada página, `X-Robots-Tag` en `vercel.json` y `robots.txt`. Para lanzar hay que quitar los tres.
 
 ### Vercel
 

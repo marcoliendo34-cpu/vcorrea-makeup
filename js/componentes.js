@@ -3,7 +3,7 @@
 // Header, menú móvil, buscador, footer y botón flotante de WhatsApp se dibujan
 // aquí con iniciarPagina(), para que sean idénticos en todo el sitio.
 
-import { CONFIG } from './config.js';
+import { CONFIG, MODO_VISTA_PREVIA, TEXTO_VISTA_PREVIA } from './config.js';
 import { icono } from './iconos.js';
 import { calcularCupos, cuposDeCurso } from './cupos.js';
 import { usuarioEnCache, inicialDe, esAdmin, EVENTO as EVENTO_SESION } from './sesion.js';
@@ -858,9 +858,27 @@ function activarHeaderSobreFoto(header) {
  * @param {string} [op.pagina]     Por defecto, <body data-pagina>.
  * @param {boolean} [op.whatsapp=true]  false en /admin.
  */
+/**
+ * Franja "Vista previa" arriba de todo (MODO_VISTA_PREVIA en js/config.js).
+ * Normalmente ya viene en el HTML (generar_paginas.py); esto la pone o la
+ * quita si el HTML quedó desactualizado respecto de config.js.
+ */
+export function asegurarFranjaVistaPrevia() {
+  const raiz = document.documentElement;
+  let franja = document.querySelector('[data-franja-vista-previa]');
+  if (MODO_VISTA_PREVIA && !franja) {
+    document.body.insertAdjacentHTML('afterbegin',
+      `<div class="franja-vista-previa" data-franja-vista-previa>${esc(TEXTO_VISTA_PREVIA)}</div>`);
+  } else if (!MODO_VISTA_PREVIA && franja) {
+    franja.remove();
+  }
+  raiz.classList.toggle('vista-previa', MODO_VISTA_PREVIA);
+}
+
 export function iniciarPagina({ pagina = document.body.dataset.pagina, whatsapp = true } = {}) {
   const activa = ACTIVA_EQUIVALENTE[pagina] || pagina;
   const sesion = usuarioEnCache();
+  asegurarFranjaVistaPrevia();
 
   document.body.insertAdjacentHTML('afterbegin', htmlHeader(activa, sesion) + htmlMenuMovil(activa, sesion) + htmlBuscador());
   document.body.insertAdjacentHTML('beforeend', htmlFooter(sesion) + (whatsapp ? htmlWhatsApp() : ''));

@@ -13,7 +13,7 @@
 // La carga y edición de cursos la hace el desarrollador (fase 2): los botones
 // "Crear curso" y "Editar curso" solo muestran un aviso.
 
-import { esc, boton, insignia, logo, abrirVentana, avisar, urlWhatsAppA } from './componentes.js';
+import { esc, boton, insignia, logo, abrirVentana, avisar, urlWhatsAppA, asegurarFranjaVistaPrevia } from './componentes.js';
 import { icono } from './iconos.js';
 import {
   usuarioEnCache, salir, esAdmin, inicialDe, telefonoVisible, restablecerInscripcionesDemo, EVENTO
@@ -538,6 +538,7 @@ async function pintar({ enfocar = false, foco = null } = {}) {
 const zona = document.querySelector('[data-panel]');
 
 function iniciar() {
+  asegurarFranjaVistaPrevia();
   zona.innerHTML = htmlEstructura();
   zona.hidden = false;
   vista = zona.querySelector('[data-vista]');

@@ -19,8 +19,10 @@ Qué hace:
   4. Precarga de módulos: lee los import de cada página y escribe un
      <link rel="modulepreload"> por archivo, para que el navegador los pida
      todos a la vez y no uno tras otro.
-  5. Llama a generar_cursos.py para rehacer cursos/[slug].html con lo nuevo.
-  6. Con --og-imagen: crea fotos/og/vcorrea-og.jpg (1200×630, logotipo sobre
+  5. Franja "Vista previa" según MODO_VISTA_PREVIA de js/config.js: la escribe
+     en el HTML (o la quita) para que no haya salto al cargar la página.
+  6. Llama a generar_cursos.py para rehacer cursos/[slug].html con lo nuevo.
+  7. Con --og-imagen: crea fotos/og/vcorrea-og.jpg (1200×630, logotipo sobre
      crema) con el navegador sin interfaz y las fuentes reales del sitio.
 
 Ejecútalo cada vez que cambie un título, una descripción, la lista de cursos
@@ -210,6 +212,43 @@ def actualizar_cabecera(archivo):
     return nuevo != texto
 
 
+# ---------------------------------------------------------------------------
+# Franja "Vista previa" (MODO_VISTA_PREVIA en js/config.js)
+# ---------------------------------------------------------------------------
+SIN_FRANJA = {'guia-de-estilo.html'}   # página interna, sin header ni franja
+
+
+def leer_vista_previa():
+    texto = (RAIZ / 'js' / 'config.js').read_text(encoding='utf-8')
+    modo = re.search(r'export const MODO_VISTA_PREVIA\s*=\s*(true|false)', texto)
+    frase = re.search(r"export const TEXTO_VISTA_PREVIA\s*=\s*'([^']*)'", texto)
+    if not modo or not frase:
+        sys.exit('js/config.js: faltan MODO_VISTA_PREVIA o TEXTO_VISTA_PREVIA')
+    return modo.group(1) == 'true', frase.group(1)
+
+
+def actualizar_franja(archivo, activa, frase):
+    """Escribe (o quita) la franja en el HTML, así no hay salto cuando carga el JS."""
+    if archivo in SIN_FRANJA:
+        return False
+    p = RAIZ / archivo
+    texto = p.read_text(encoding='utf-8')
+    nuevo = re.sub(r'\n?[ \t]*<!-- franja:inicio.*?<!-- franja:fin -->', '', texto, flags=re.S)
+    nuevo = nuevo.replace('<html lang="es-VE" class="vista-previa">', '<html lang="es-VE">')
+    if activa:
+        nuevo = nuevo.replace('<html lang="es-VE">', '<html lang="es-VE" class="vista-previa">', 1)
+        bloque_franja = ('  <!-- franja:inicio (MODO_VISTA_PREVIA en js/config.js; la escribe generar_paginas.py) -->\n'
+                         f'  <div class="franja-vista-previa" data-franja-vista-previa>{html.escape(frase)}</div>\n'
+                         '  <!-- franja:fin -->')
+        nuevo, n = re.subn(r'(<body[^>]*>)', lambda m: m.group(1) + '\n' + bloque_franja, nuevo, count=1)
+        if n != 1:
+            sys.exit(f'{archivo}: no tiene <body>')
+    if nuevo != texto:
+        p.write_text(nuevo, encoding='utf-8')
+        return True
+    return False
+
+
 def generar_sitemap(dominio):
     hoy = date.today().isoformat()
     rutas = [d[0] for d in PAGINAS.values() if d[3]]
@@ -289,8 +328,12 @@ def main():
     dominio = x.dominio.rstrip('/')
     if x.og_imagen or not (RAIZ / IMAGEN).exists():
         generar_imagen()
+    vista_previa, frase = leer_vista_previa()
+    print(f'Franja de vista previa: {"activa" if vista_previa else "desactivada"} (MODO_VISTA_PREVIA en js/config.js)')
     for archivo, datos in PAGINAS.items():
         actualizar_pagina(archivo, datos, dominio)
+        if actualizar_franja(archivo, vista_previa, frase):
+            print(f'    franja al día: {archivo}')
         if actualizar_cabecera(archivo):
             print(f'    fuentes y precargas al día: {archivo}')
     generar_sitemap(dominio)
