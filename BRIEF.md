@@ -23,7 +23,7 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 
 - Sitio estático: **HTML, CSS y JavaScript moderno (módulos ES)**.
 - **Sin compilación, sin npm y sin frameworks.** En la sesión de trabajo no se pueden instalar paquetes, y así cada página se revisa aquí antes de publicar.
-- Fuentes desde Google Fonts con `preconnect` y `display=swap`.
+- Fuentes desde Google Fonts con `preconnect` y `display=swap`, cargadas sin bloquear el primer pintado (bloque `<!-- fuentes -->` que escribe `herramientas/generar_paginas.py`).
 - Íconos SVG propios en `js/iconos.js` (estilo lineal, trazo 1.5). Sin librerías externas de íconos.
 - Idioma de la interfaz: **español de Venezuela**.
 - Moneda: **USD**.
@@ -61,6 +61,7 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 │   ├── visor.js             visor de fotos a pantalla completa (galería y cursos anteriores)
 │   ├── formularios.js       validación en vivo y ayudas de formularios (registro, ingreso)
 │   ├── admin.js             panel de la administradora (rutas con #)
+│   ├── textos.js            estados de inscripción y normalizar(), sin dependencias
 │   └── <un archivo por página>   ej. inicio.js, cursos.js, curso.js…
 ├── data/
 │   ├── cursos.js
@@ -69,7 +70,10 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 ├── fotos/                   imágenes en WebP (galería: /fotos/galeria/{archivo}-600 y -1200)
 ├── referencias/             capturas de Hipereventos (NO se publican)
 ├── herramientas/            scripts que solo corren en el espacio de trabajo:
-│                            capturas, auditoría, generador de páginas por curso
+│                            capturas.py, auditoria.py (auditoría completa),
+│                            generar_paginas.py (cabeceras, SEO, sitemap, imagen
+│                            para compartir), generar_cursos.py, fuentes_locales.py
+│                            y fuentes/ (copias OFL de las fuentes, solo para capturas)
 │                            (NO se publican)
 ├── vercel.json
 ├── .vercelignore
@@ -97,7 +101,16 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
   - `404.html` como página de error.
 - `.vercelignore`: excluye `BRIEF.md`, `/referencias` y `/herramientas`.
 - `robots.txt`: bloquea a los buscadores durante la vista previa, pero deja pasar a los lectores de enlaces (WhatsApp, Meta, etc.) para que las vistas previas al compartir funcionen.
-- Páginas por curso: `herramientas/generar_cursos.py` crea `cursos/[slug].html` con título, descripción e imagen Open Graph propios. Se ejecuta cada vez que cambian los cursos o `curso.html`. Los cursos finalizados se muestran en modo lectura (sin precio ni inscripción).
+- **Cabeceras de las páginas:** `herramientas/generar_paginas.py` es el único lugar donde se editan títulos y descripciones. El script:
+  - Escribe el bloque Open Graph y canonical de cada página.
+  - Escribe el bloque de fuentes y el de precarga de módulos (`modulepreload` de todo lo que importa cada página).
+  - Genera `sitemap.xml`.
+  - Con `--og-imagen`, rehace `fotos/og/vcorrea-og.jpg` (1200×630, logotipo sobre crema).
+  - Llama a `generar_cursos.py`.
+  - Se ejecuta cada vez que cambian cursos, títulos, imports o `curso.html`.
+- **Páginas por curso:** `herramientas/generar_cursos.py` crea `cursos/[slug].html` con título, descripción e imagen Open Graph propios. Los cursos finalizados se muestran en modo lectura (sin precio ni inscripción).
+- **Auditoría:** `python3 herramientas/auditoria.py` revisa diseño, consistencia, accesibilidad, rendimiento, SEO, enlaces y movimiento antes de cada entrega grande. El informe queda en `herramientas/capturas/auditoria/`.
+- **Rendimiento:** solo las páginas que muestran cursos cargan `datos.js`. El buscador del header lo pide al abrirse.
 
 ---
 

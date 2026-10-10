@@ -10,9 +10,7 @@ const MENSAJE_ELEGIR = 'Hola Verónica, vengo de tu web y no sé qué curso eleg
 
 /* ---------------------------- piezas fijas ---------------------------- */
 
-// Foto del hero: placeholder hasta que llegue la foto real.
-document.querySelector('[data-hero-media]').innerHTML =
-  placeholderFoto({ descripcion: 'Verónica maquillando a una alumna (hero)', sinBorde: true });
+// La foto del hero está en index.html (se descarga antes que cualquier script).
 
 document.querySelector('[data-titulo-proximos]').innerHTML = tituloSeccion({
   etiqueta: 'Calendario', titulo: 'Próximos cursos', id: 'titulo-proximos',

@@ -7,7 +7,8 @@ import { CONFIG } from './config.js';
 import { icono } from './iconos.js';
 import { calcularCupos, cuposDeCurso } from './cupos.js';
 import { usuarioEnCache, inicialDe, esAdmin, EVENTO as EVENTO_SESION } from './sesion.js';
-import { buscarCursos, obtenerCursosVigentes, normalizar, ESTADOS_INSCRIPCION } from './datos.js';
+import { normalizar, ESTADOS_INSCRIPCION } from './textos.js';
+// datos.js (y los datos de los cursos) se cargan solo al abrir el buscador: ver activarBuscador()
 import { formatearFecha, fechaTarjeta } from './fechas.js';
 
 /** Escapa texto para insertarlo en HTML. */
@@ -278,6 +279,10 @@ export function tarjetaCurso(curso, { nivelTitulo = 3 } = {}) {
 let temporizadorAviso;
 
 /** Muestra un aviso breve abajo de la pantalla (se anuncia a lectores de pantalla). */
+/** 'smooth' o 'auto' según prefers-reduced-motion (para scrollTo / scrollIntoView). */
+export const desplazamiento = () =>
+  (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
+
 export function avisar(texto) {
   let el = document.querySelector('[data-aviso]');
   if (!el) {
@@ -796,6 +801,7 @@ function activarBuscador() {
   async function mostrar() {
     const consulta = campo.value.trim();
     const mio = ++turno;
+    const { buscarCursos, obtenerCursosVigentes } = await import('./datos.js');
     const cursos = consulta ? await buscarCursos(consulta) : await obtenerCursosVigentes();
     if (mio !== turno) return; // llegó una búsqueda más nueva
 

@@ -523,8 +523,8 @@ async function pintar({ enfocar = false, foco = null } = {}) {
   const pendientes = (await obtenerResumenAdmin()).pendientes;
   zona.querySelectorAll('[data-contador-pendientes]').forEach((c) => {
     c.hidden = !pendientes;
-    c.textContent = pendientes;
-    c.setAttribute('aria-label', `${pendientes} pendientes`);
+    // El número se ve; el lector de pantalla oye "5 pendientes"
+    c.innerHTML = `<span aria-hidden="true">${pendientes}</span><span class="solo-lectores">, ${pendientes} pendientes</span>`;
   });
 
   if (foco) {

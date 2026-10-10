@@ -5,8 +5,8 @@ Capturas y auditoría rápida con Chromium sin interfaz (Playwright).
 Abre cada página a 375, 768 y 1280 px, guarda una captura de página completa
 y reporta:
   - errores de consola y errores de JavaScript
-  - recursos que no cargaron (las fuentes de Google se reportan aparte:
-    en este espacio de trabajo no hay acceso a Google Fonts)
+  - recursos que no cargaron (Google Fonts no es accesible aquí: las mismas
+    fuentes se sirven desde herramientas/fuentes, ver fuentes_locales.py)
   - scroll horizontal, con los elementos que se salen del ancho
 
 Uso (desde la raíz del repositorio):
@@ -37,6 +37,9 @@ from pathlib import Path
 from urllib.parse import urlparse, unquote
 
 from playwright.sync_api import sync_playwright
+
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+from fuentes_locales import activar_fuentes  # noqa: E402
 
 RAIZ = Path(__file__).resolve().parent.parent
 SALIDA = RAIZ / 'herramientas' / 'capturas'
@@ -242,8 +245,8 @@ def auditar(rutas, anchos, base, salida, clic=None, desplazar=0, sesion=False, s
                 pg.on('console', en_consola)
                 pg.on('pageerror', lambda e: errores.append(f'JS: {e}'))
                 pg.on('requestfailed', lambda r: fallidos.append(r.url))
-                # Las fuentes de Google no son accesibles aquí: se cortan rápido para no esperar.
-                pg.route(re.compile(r'https://fonts\.(googleapis|gstatic)\.com/.*'), lambda r: r.abort())
+                # Google Fonts no es accesible aquí: se sirven las mismas fuentes desde herramientas/fuentes
+                activar_fuentes(ctx)
 
                 resp = pg.goto(base.rstrip('/') + ruta, wait_until='load', timeout=30000)
                 estado = resp.status if resp else '—'
@@ -294,7 +297,7 @@ def auditar(rutas, anchos, base, salida, clic=None, desplazar=0, sesion=False, s
         nav.close()
 
     if sin_fuentes:
-        print('\nAviso: las fuentes de Google no cargan aquí; las capturas usan la tipografía de respaldo.')
+        print('\nAviso: alguna fuente no cargó; esas capturas usan la tipografía de respaldo.')
     print(f"\n{'Sin problemas.' if problemas == 0 else f'{problemas} captura(s) con problemas.'}")
     return problemas
 

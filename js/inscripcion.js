@@ -12,7 +12,8 @@
 
 import { abrirVentana, boton, urlWhatsApp, esc } from './componentes.js';
 import { usuarioEnCache, telefonoVisible, esAdmin } from './sesion.js';
-import { crearInscripcion, obtenerInscripcion, ESTADOS_INSCRIPCION } from './datos.js';
+import { crearInscripcion, obtenerInscripcion } from './datos.js';
+import { ESTADOS_INSCRIPCION } from './textos.js';
 import { cuposDeCurso } from './cupos.js';
 import { formatearFecha } from './fechas.js';
 

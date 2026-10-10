@@ -15,3 +15,5 @@ Allow: /
 
 User-agent: *
 Disallow: /
+
+Sitemap: https://vcorrea-makeup.vercel.app/sitemap.xml

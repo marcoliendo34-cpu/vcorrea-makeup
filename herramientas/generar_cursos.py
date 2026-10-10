@@ -15,10 +15,11 @@ Un slug sin página generada cae en la reescritura /cursos/:slug → curso.html
 de vercel.json (cursos nuevos de la fase 2 siguen funcionando).
 
 Imagen para compartir: si el curso tiene foto de portada (imagenPortada.src)
-se usa esa. Si no, la imagen de marca fotos/og/vcorrea-og.jpg (monograma VC,
-sin texto: WhatsApp e Instagram ya muestran el título al lado).
+se usa esa. Si no, la imagen de marca fotos/og/vcorrea-og.jpg (logotipo sobre
+crema, ver herramientas/generar_paginas.py).
 
 Necesita node (para leer data/cursos.js) y Playwright (solo para --og-imagen).
+Lo normal es correr herramientas/generar_paginas.py, que también llama a este script.
 """
 
 import argparse
@@ -31,12 +32,15 @@ from datetime import date
 from pathlib import Path
 
 RAIZ = Path(__file__).resolve().parent.parent
+sys.path.insert(0, str(Path(__file__).resolve().parent))
 PLANTILLA = RAIZ / 'curso.html'
 CARPETA = RAIZ / 'cursos'
 IMAGEN_MARCA = 'fotos/og/vcorrea-og.jpg'
 DOMINIO = 'https://vcorrea-makeup.vercel.app'
 MARCA = 'Verónica Correa Makeup'
 SELLO = '<!-- Generado por herramientas/generar_cursos.py a partir de curso.html. No editar a mano. -->'
+MESES_LARGOS = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto',
+                'septiembre', 'octubre', 'noviembre', 'diciembre']
 MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic']
 
 
@@ -77,13 +81,18 @@ def bloque_og(curso, dominio):
         imagen = f'{dominio}/{IMAGEN_MARCA}'
         dimensiones = ('\n  <meta property="og:image:width" content="1200">'
                        '\n  <meta property="og:image:height" content="630">')
-        alt_imagen = 'Monograma VC de Verónica Correa Makeup'
+        alt_imagen = 'Logotipo de Verónica Correa Makeup sobre fondo crema'
 
     if curso['estado'] == 'finalizado':
         cuando = f'Se realizó del {fecha(curso["fechaInicio"])} al {fecha(curso["fechaFin"])}'
     else:
         cuando = f'Inicia el {fecha(curso["fechaInicio"])}'
-    titulo = f'{curso["nombre"]} · {MARCA}'
+    if curso['estado'] == 'finalizado':
+        # Las ediciones pasadas comparten nombre con el curso vigente: el título lleva mes y año
+        f = date.fromisoformat(curso['fechaInicio'][:10])
+        titulo = f'{curso["nombre"]}, {MESES_LARGOS[f.month - 1]} {f.year} · {MARCA}'
+    else:
+        titulo = f'{curso["nombre"]} · {MARCA}'
     descripcion = f'{sin_marcas(curso["subtitulo"])}. {cuando} · {curso["modalidad"]} · Nivel {curso["nivel"].lower()}.'
 
     og = f'''<!-- og:inicio (herramientas/generar_cursos.py reemplaza este bloque en cada página de curso) -->
@@ -122,28 +131,9 @@ def pagina(plantilla, curso, dominio):
 
 
 def generar_imagen_marca():
-    """Imagen 1200×630 en crema con el monograma VC (trazos del favicon, sin fuentes)."""
-    from playwright.sync_api import sync_playwright
-    svg = (RAIZ / 'favicon.svg').read_text(encoding='utf-8')
-    trazos = re.search(r'<g [^>]*>(.*?)</g>', svg, re.S).group(1)
-    documento = f'''<!doctype html><html><body style="margin:0">
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
-  <rect width="1200" height="630" fill="#F5EFE6"/>
-  <rect x="36" y="36" width="1128" height="558" fill="none" stroke="#B8975A" stroke-width="1.5"/>
-  <rect x="48" y="48" width="1104" height="534" fill="none" stroke="#E8DCC8" stroke-width="1"/>
-  <circle cx="600" cy="300" r="150" fill="#FFFFFF" stroke="#B8975A" stroke-width="1.5"/>
-  <g fill="#7A5C30" transform="translate(600 300) scale(4.2) translate(-31.5 -31.5)">{trazos}</g>
-  <line x1="560" y1="500" x2="640" y2="500" stroke="#B8975A" stroke-width="2" stroke-linecap="round"/>
-</svg></body></html>'''
-    destino = RAIZ / IMAGEN_MARCA
-    destino.parent.mkdir(parents=True, exist_ok=True)
-    with sync_playwright() as p:
-        nav = p.chromium.launch()
-        pg = nav.new_page(viewport={'width': 1200, 'height': 630})
-        pg.set_content(documento)
-        pg.screenshot(path=str(destino), type='jpeg', quality=88)
-        nav.close()
-    print(f'  + {destino.relative_to(RAIZ)} ({destino.stat().st_size // 1024} KB)')
+    """Imagen 1200×630 de marca: la genera herramientas/generar_paginas.py (logotipo sobre crema)."""
+    import generar_paginas
+    generar_paginas.generar_imagen()
 
 
 def main():

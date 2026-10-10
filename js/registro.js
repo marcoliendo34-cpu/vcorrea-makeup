@@ -1,7 +1,7 @@
 // Página: registro.html — crear cuenta en 2 pasos.
 // SIMULADO: la cuenta se guarda en este navegador (ver js/sesion.js).
 // Si llega con ?curso=slug, al terminar vuelve a ese curso y sigue la inscripción.
-import { iniciarPagina, esc } from './componentes.js';
+import { iniciarPagina, esc, desplazamiento } from './componentes.js';
 import { icono } from './iconos.js';
 import { registrar, existeCedula, existeCorreo, usuarioEnCache, MIN_CONTRASENA } from './sesion.js';
 import { obtenerCursoPorSlug } from './datos.js';
@@ -121,7 +121,7 @@ function irAPaso(n) {
     if (i === n) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
   });
   anuncio.textContent = n === 1 ? 'Paso 1 de 2: Tus datos' : 'Paso 2 de 2: Tu acceso';
-  document.querySelector('.acceso__caja').scrollIntoView({ block: 'start', behavior: 'smooth' });
+  document.querySelector('.acceso__caja').scrollIntoView({ block: 'start', behavior: desplazamiento() });
   pasos[n - 1].querySelector('.campo__control').focus({ preventScroll: true });
 }
 

@@ -8,8 +8,7 @@
 
 import {
   iniciarPagina, esc, boton, insignia, barraProgreso, placeholderFoto, urlWhatsApp,
-  ajustarWhatsApp, activarBarras, activarApariciones, formatearPrecio
-} from './componentes.js';
+  ajustarWhatsApp, activarBarras, activarApariciones, formatearPrecio, desplazamiento } from './componentes.js';
 import {
   encabezado, datosFicha, htmlFicha, htmlSobre, htmlIncluye, htmlPensum, htmlPracticas,
   htmlRequisitos, htmlCertificado, htmlMiniGaleria, fotosParaVisor
@@ -336,7 +335,7 @@ function activarIndice() {
       const activo = a.dataset.indiceEnlace === actual;
       if (activo) a.setAttribute('aria-current', 'true'); else a.removeAttribute('aria-current');
       if (activo && listaEl.scrollWidth > listaEl.clientWidth) {
-        listaEl.scrollTo({ left: a.parentElement.offsetLeft - 16, behavior: 'smooth' });
+        listaEl.scrollTo({ left: a.parentElement.offsetLeft - 16, behavior: desplazamiento() });
       }
     });
   };

@@ -12,6 +12,7 @@ import { CURSOS } from '../data/cursos.js';
 import { GALERIA, CATEGORIAS_GALERIA } from '../data/galeria.js';
 import { usuarioActual, esAdmin, almacen, CLAVES } from './sesion.js';
 import { calcularCupos } from './cupos.js';
+import { normalizar, ESTADOS_INSCRIPCION } from './textos.js';
 
 /** @typedef {import('../data/cursos.js').Curso} Curso */
 /** @typedef {import('../data/galeria.js').FotoGaleria} FotoGaleria */
@@ -28,15 +29,8 @@ import { calcularCupos } from './cupos.js';
 /* Utilidades                                                          */
 /* ------------------------------------------------------------------ */
 
-/** Minúsculas y sin acentos, para buscar sin importar cómo se escriba. */
-export function normalizar(texto) {
-  return String(texto ?? '')
-    .normalize('NFD')
-    .replace(/[̀-ͯ]/g, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+// normalizar() y ESTADOS_INSCRIPCION viven en js/textos.js (sin dependencias)
+export { normalizar, ESTADOS_INSCRIPCION };
 
 /** Copia profunda para que ninguna página modifique los datos de origen. */
 const copiar = (valor) => structuredClone(valor);
@@ -209,13 +203,6 @@ export async function obtenerCategoriasGaleria() {
  * @property {string} creada  Fecha ISO.
  */
 
-/** Textos de los estados de una inscripción (BRIEF.md §5). */
-export const ESTADOS_INSCRIPCION = {
-  pendiente: 'Pendiente de confirmación',
-  confirmada: 'Confirmada',
-  cancelada: 'Cancelada',
-  finalizado: 'Finalizado'
-};
 
 function leerInscripciones() { return almacen.leer(CLAVES.inscripciones, []); }
 
