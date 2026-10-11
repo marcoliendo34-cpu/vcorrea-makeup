@@ -47,8 +47,11 @@ export const CONFIG = {
 
   moneda: 'USD',
 
-  // Métodos de pago: [POR DEFINIR]. Se muestran tal cual en la ficha del curso.
+  // Métodos de pago (confirmados el 11 oct 2026). Se muestran tal cual en la ficha del curso.
+  // `detalle` es opcional (ej. el banco o el correo de Binance); si es null no se muestra.
   metodosPago: [
-    { nombre: '[POR DEFINIR]', detalle: '[POR DEFINIR]' }
+    { nombre: 'Pago móvil', detalle: null },
+    { nombre: 'Divisas en efectivo', detalle: 'USD' },
+    { nombre: 'USDT', detalle: 'Binance' }
   ]
 };

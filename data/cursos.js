@@ -1,7 +1,7 @@
 // Cursos del sitio (modo demo).
 // Las páginas NUNCA leen este archivo directamente: piden los datos a js/datos.js.
-// Vigentes: cursos reales de Verónica. Finalizados: de ejemplo, marcados con
-// [EJEMPLO], hasta que llegue la lista real de ediciones pasadas.
+// Cursos reales de Verónica. Los finalizados (ediciones pasadas) se agregan
+// cuando llegue su información.
 // En la fase 2 estos datos vienen de Supabase con la misma forma.
 
 /**
@@ -87,7 +87,7 @@ export const CURSOS = [
   /* VIGENTES                                                           */
   /* ================================================================== */
   // Primer curso real (información de Verónica, 11 oct 2026).
-  // Pendiente de Verónica: horario, dirección exacta y foto de portada.
+  // Pendiente de Verónica: foto de portada.
   {
     slug: 'vision-lash',
     nombre: 'Visión Lash',
@@ -95,12 +95,12 @@ export const CURSOS = [
     categoria: 'Pestañas',
     nivel: 'De cero a profesional',
     modalidad: 'Presencial',
-    ubicacion: 'Caracas [POR DEFINIR]',
+    ubicacion: 'Caracas, Venezuela',
     imagenPortada: { src: null, alt: 'Extensiones de pestañas pelo a pelo' },
     fechaInicio: '2026-11-04',
     fechaFin: '2026-12-05',
     dias: 'Miércoles y viernes',
-    horario: '[POR DEFINIR]',
+    horario: 'Exclusivo alumnas',
     semanas: 3,
     totalClases: 6,
     calendario: [
@@ -182,128 +182,8 @@ export const CURSOS = [
     estado: 'vigente',
     galeria: [],
     egresadas: null
-  },
-
-  /* ================================================================== */
-  /* FINALIZADOS (página "Cursos anteriores")                           */
-  /* ================================================================== */
-  {
-    slug: 'pieles-perfectas-2026',
-    nombre: 'Pieles Perfectas',
-    nombreCorto: 'Pieles Perfectas',
-    subtitulo: 'Taller de preparación, corrección y acabados de piel',
-    categoria: 'Maquillaje social',
-    nivel: 'Intermedio',
-    modalidad: 'Presencial',
-    ubicacion: 'Caracas [EJEMPLO]',
-    imagenPortada: { src: null, alt: 'Detalle de piel luminosa' },
-    fechaInicio: '2026-02-07',
-    fechaFin: '2026-02-28',
-    dias: 'Sábados',
-    horario: '9:00 a. m. a 1:00 p. m.',
-    semanas: 4,
-    totalClases: 4,
-    cupos: 12,
-    inscritasFuera: 12,
-    descripcion: '[EJEMPLO] Taller enfocado solo en la piel: preparación, corrección con color, acabados mate, satinado y luminoso, y cómo hacer que el maquillaje dure en el clima de Caracas.',
-    dirigidoA: ['Maquilladoras que quieren perfeccionar la piel', 'Egresadas de cursos básicos'],
-    incluye: ['4 clases presenciales', 'Productos para usar en clase', 'Certificado de participación'],
-    pensum: [
-      { semana: 1, titulo: 'Preparación', temas: ['Skincare previo al maquillaje', 'Primers según tipo de piel'] },
-      { semana: 2, titulo: 'Corrección', temas: ['Colorimetría', 'Ojeras y manchas'] },
-      { semana: 3, titulo: 'Acabados', temas: ['Mate, satinado y luminoso', 'Sellado'] },
-      { semana: 4, titulo: 'Duración', temas: ['Pieles grasas en clima cálido', 'Retoques'] }
-    ],
-    practicas: [{ titulo: 'Piel completa', descripcion: 'Preparación, corrección y acabado sobre modelo.', requiereModelo: true }],
-    requisitos: ['Conocimientos básicos de maquillaje'],
-    certificado: { incluye: true, descripcion: 'Certificado de participación.' },
-    precioUSD: 90,
-    condicionesPago: null,
-    estado: 'finalizado',
-    galeria: [
-      { src: null, alt: 'Alumnas preparando la piel en clase' },
-      { src: null, alt: 'Detalle de piel satinada' },
-      { src: null, alt: 'Grupo de egresadas de Pieles Perfectas' }
-    ],
-    egresadas: 12
-  },
-
-  {
-    slug: 'ojos-de-impacto-2026',
-    nombre: 'Ojos de Impacto',
-    nombreCorto: 'Ojos de Impacto',
-    subtitulo: 'Masterclass de smokey eye, cut crease y pestañas',
-    categoria: 'Maquillaje social',
-    nivel: 'Avanzado',
-    modalidad: 'Presencial',
-    ubicacion: 'Caracas [EJEMPLO]',
-    imagenPortada: { src: null, alt: 'Maquillaje de ojos ahumado' },
-    fechaInicio: '2026-05-11',
-    fechaFin: '2026-05-15',
-    dias: 'Lunes a viernes',
-    horario: '2:00 p. m. a 6:00 p. m.',
-    semanas: 1,
-    totalClases: 5,
-    cupos: 10,
-    inscritasFuera: 9,
-    descripcion: '[EJEMPLO] Semana intensiva dedicada a la mirada: difuminados limpios, cut crease, smokey eye en distintos colores y colocación de pestañas para todo tipo de ojo.',
-    dirigidoA: ['Maquilladoras con experiencia que quieren dominar los ojos'],
-    incluye: ['5 clases presenciales', 'Pestañas para práctica', 'Certificado de participación'],
-    pensum: [
-      { semana: 1, titulo: 'La mirada de impacto', temas: ['Morfología del ojo', 'Difuminados', 'Cut crease', 'Smokey eye', 'Pestañas postizas'] }
-    ],
-    practicas: [{ titulo: 'Smokey eye sobre modelo', descripcion: 'Trabajo final fotografiado.', requiereModelo: true }],
-    requisitos: ['Experiencia previa en maquillaje', 'Kit personal de brochas'],
-    certificado: { incluye: true, descripcion: 'Certificado de participación.' },
-    precioUSD: 150,
-    condicionesPago: null,
-    estado: 'finalizado',
-    galeria: [
-      { src: null, alt: 'Smokey eye terminado por una alumna' },
-      { src: null, alt: 'Colocación de pestañas en clase' },
-      { src: null, alt: 'Grupo de egresadas de Ojos de Impacto' }
-    ],
-    egresadas: 9
-  },
-
-  {
-    slug: 'automaquillaje-esencial-julio-2026',
-    nombre: 'Automaquillaje Esencial',
-    nombreCorto: 'Automaquillaje',
-    subtitulo: 'Edición de julio',
-    categoria: 'Automaquillaje',
-    nivel: 'Básico',
-    modalidad: 'Presencial',
-    ubicacion: 'Caracas [EJEMPLO]',
-    imagenPortada: { src: null, alt: 'Grupo de alumnas en clase de automaquillaje' },
-    fechaInicio: '2026-07-04',
-    fechaFin: '2026-07-25',
-    dias: 'Sábados',
-    horario: '9:00 a. m. a 12:00 m.',
-    semanas: 4,
-    totalClases: 4,
-    cupos: 12,
-    inscritasFuera: 11,
-    descripcion: '[EJEMPLO] Edición presencial del curso de automaquillaje: piel, cejas, ojos y labios para el día a día, con tus propios productos.',
-    dirigidoA: ['Mujeres que quieren aprender a maquillarse desde cero'],
-    incluye: ['4 clases presenciales', 'Revisión de neceser', 'Certificado de participación'],
-    pensum: [
-      { semana: 1, titulo: 'Conoce tu piel', temas: ['Tipos de piel', 'Elección de base'] },
-      { semana: 2, titulo: 'Piel natural', temas: ['Base y corrector', 'Rubor'] },
-      { semana: 3, titulo: 'Cejas y ojos', temas: ['Cejas', 'Sombras neutras'] },
-      { semana: 4, titulo: 'Rutina completa', temas: ['Labios', 'Día a noche'] }
-    ],
-    practicas: [{ titulo: 'Rutina completa', descripcion: 'Maquillaje de día con devolución personalizada.', requiereModelo: false }],
-    requisitos: ['Tus productos de maquillaje'],
-    certificado: { incluye: true, descripcion: 'Certificado de participación.' },
-    precioUSD: 80,
-    condicionesPago: null,
-    estado: 'finalizado',
-    galeria: [
-      { src: null, alt: 'Alumnas maquillándose frente al espejo' },
-      { src: null, alt: 'Revisión de neceser en clase' },
-      { src: null, alt: 'Grupo de egresadas de Automaquillaje' }
-    ],
-    egresadas: 11
   }
+
+  // FINALIZADOS: aquí van las ediciones pasadas (estado: 'finalizado') cuando
+  // Verónica envíe su información. Se muestran en Cursos anteriores.
 ];

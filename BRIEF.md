@@ -10,7 +10,8 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 - **Qué es:** plataforma de cursos y formaciones de maquillaje. Las alumnas ven los cursos disponibles, se registran, ingresan y solicitan su inscripción por WhatsApp. Verónica concreta la inscripción por WhatsApp.
 - **Fase 1 (actual): VISTA PREVIA** para que la clienta apruebe la interfaz.
   - Sin base de datos real.
-  - Cursos en `data/cursos.js`: Visión Lash es el primer curso real (11 oct 2026). Los 3 cursos finalizados de Cursos anteriores siguen de ejemplo.
+  - Cursos en `data/cursos.js`: Visión Lash es el primer curso real (11 oct 2026). Todavía no hay cursos finalizados cargados.
+  - Galería (`data/galeria.js`): categorías Formaciones, Trabajos de alumnas y Trabajos propios. Las fotos con `destacada` van al inicio y las de `enAnteriores` a Cursos anteriores.
   - Sesión de alumna simulada.
 - **Fase 2 (después de la aprobación):** conectar Supabase y cargar los cursos reales.
 - **Referencia de estructura:** hipereventos.com (capturas en `/referencias`).
@@ -175,7 +176,7 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 | `/cursos` | cursos.html | Listado de cursos con buscador |
 | `/cursos/[slug]` | curso.html | Ficha del curso |
 | `/sobre-veronica` | sobre-veronica.html | Perfil de Verónica |
-| `/galeria` | galeria.html | Galería de trabajos |
+| `/galeria` | galeria.html | Galería: formaciones, trabajos de alumnas y trabajos propios |
 | `/cursos-anteriores` | cursos-anteriores.html | Cursos ya realizados |
 | `/contacto` | contacto.html | Contacto, WhatsApp y redes |
 | `/registro` | registro.html | Crear cuenta de alumna |
@@ -247,7 +248,7 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 
 ### Pagos y contacto
 
-- **Métodos de pago:** por definir. Se muestran desde `js/config.js` con el texto **[POR DEFINIR]**.
+- **Métodos de pago:** Pago móvil, divisas en efectivo (USD) y USDT (Binance), en `js/config.js`.
 - **WhatsApp de Verónica:** 0414-589-77-75 (enlace wa.me/584145897775), en `js/config.js`.
 - **Redes de Verónica:** Instagram @vcorrea_makeup y TikTok @vcorrea_makeup, en `js/config.js`.
 

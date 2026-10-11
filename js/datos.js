@@ -174,9 +174,10 @@ function conRutas(f) {
  * @param {string} [op.categoria]        'social' | 'novias' | 'editorial' | 'alumnas'
  * @param {number} [op.limite]
  */
-export async function obtenerGaleria({ soloDestacadas = false, categoria, limite } = {}) {
+export async function obtenerGaleria({ soloDestacadas = false, soloAnteriores = false, categoria, limite } = {}) {
   const fotos = (await fuente().galeria())
     .filter((f) => !soloDestacadas || f.destacada)
+    .filter((f) => !soloAnteriores || f.enAnteriores)
     .filter((f) => !categoria || categoria === 'todas' || f.categoria === categoria)
     .map(conRutas);
   return limite ? fotos.slice(0, limite) : fotos;

@@ -1035,6 +1035,11 @@ def bloque_teclado(nav, base, inf):
     for ruta, sel in ((f'/cursos/{slug}', 'summary.acordeon__resumen'), ('/cursos-anteriores', 'summary.anterior__abrir')):
         ctx = nuevo_contexto(nav, 375)
         pg, _ = abrir(ctx, base, ruta)
+        if not pg.locator(sel).count():
+            # Cursos anteriores sin cursos finalizados: no hay desplegables que probar
+            inf.datos.setdefault('teclado', {})[f'acordeón {ruta}'] = {'sin desplegables en la página': True}
+            ctx.close()
+            continue
         if not tab_hasta(pg, sel, 120):
             inf.agregar(3, 'error', ruta, f'teclado: no se llega con Tab a {sel}', 375)
             ctx.close()

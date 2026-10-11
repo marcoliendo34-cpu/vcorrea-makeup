@@ -1,10 +1,12 @@
-// Página: cursos-anteriores.html — cursos finalizados.
-// Cada tarjeta muestra fechas, egresadas y una mini galería, y se despliega
-// para ver el resumen y el pensum (secciones de js/detalle-curso.js en modo
-// lectura: sin inscripción ni precio).
-import { iniciarPagina, esc, insignia, boton, urlWhatsApp, activarApariciones, textoDuracion } from './componentes.js';
+// Página: cursos-anteriores.html
+// 1. Cursos finalizados (si hay): cada tarjeta muestra fechas, egresadas y una
+//    mini galería, y se despliega para ver el resumen y el pensum (secciones de
+//    js/detalle-curso.js en modo lectura: sin inscripción ni precio).
+// 2. Fotos de entregas de certificado (galería, `enAnteriores: true`) y el aviso
+//    "Próximamente más información".
+import { iniciarPagina, esc, insignia, boton, urlWhatsApp, activarApariciones, textoDuracion, tituloSeccion } from './componentes.js';
 import { icono } from './iconos.js';
-import { obtenerCursosAnteriores } from './datos.js';
+import { obtenerCursosAnteriores, obtenerGaleria } from './datos.js';
 import { rangoFechas } from './fechas.js';
 import { htmlSobre, htmlPensum, htmlMiniGaleria, fotosParaVisor } from './detalle-curso.js';
 import { mensajeRepetir } from './inscripcion.js';
@@ -13,6 +15,10 @@ import { abrirVisor } from './visor.js';
 document.querySelector('[data-boton-cierre]').innerHTML = boton({
   texto: 'Escríbele por WhatsApp', href: urlWhatsApp(mensajeRepetir()), iconoIzquierda: 'whatsapp',
   tamano: 'grande', atributos: { target: '_blank', rel: 'noopener' }
+});
+
+document.querySelector('[data-titulo-certificados]').innerHTML = tituloSeccion({
+  etiqueta: 'Egresadas', titulo: 'Entregas de certificado', id: 'titulo-certificados'
 });
 
 iniciarPagina();
@@ -57,11 +63,31 @@ function tarjeta(curso) {
     </li>`;
 }
 
+/* ----------------------------- fotos ---------------------------------- */
+
+const zonaFotos = document.querySelector('[data-fotos-anteriores]');
+const fotos = await obtenerGaleria({ soloAnteriores: true });
+zonaFotos.innerHTML = fotos.map((f, i) => `
+  <li class="masonry__item">
+    <button class="masonry__boton" type="button" data-foto-anterior="${i}">
+      <span class="solo-lectores">Ampliar: </span>
+      <img src="${esc(f.miniatura)}" alt="${esc(f.alt)}" width="600" height="${Math.round(600 * f.alto / f.ancho)}" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">
+    </button>
+  </li>`).join('');
+zonaFotos.addEventListener('click', (e) => {
+  const b = e.target.closest('[data-foto-anterior]');
+  if (!b) return;
+  abrirVisor(fotos.map((f) => ({ grande: f.grande, alt: f.alt, ancho: f.ancho, alto: f.alto, pie: f.alt })), Number(b.dataset.fotoAnterior), b);
+});
+
+/* ------------------------- cursos finalizados -------------------------- */
+
 const cursos = await obtenerCursosAnteriores();
-lista.innerHTML = cursos.length
-  ? cursos.map(tarjeta).join('')
-  : '<li class="sin-resultados">Todavía no hay cursos finalizados.</li>';
-activarApariciones(lista);
+if (cursos.length) {
+  lista.innerHTML = cursos.map(tarjeta).join('');
+  document.querySelector('[data-seccion-anteriores]').hidden = false;
+}
+activarApariciones();
 
 lista.addEventListener('click', (e) => {
   const b = e.target.closest('[data-mini-galeria]');

@@ -572,6 +572,8 @@ html.sin-scroll, html.sin-scroll body { overflow: hidden; }
   color: var(--gris-calido);
 }
 .pendiente .icono { width: 32px; height: 32px; color: var(--dorado); }
+/* Cursos anteriores: aviso bajo las fotos de entregas de certificado */
+.anteriores-proximamente { margin-top: var(--e-10); padding-block: var(--e-8); }
 .pendiente__titulo { font-family: var(--fuente-titulos); font-size: var(--t-h4); color: var(--tinta); }
 .pendiente p { max-width: 44ch; }
 
@@ -2037,6 +2039,8 @@ main:has(> .seccion--cierre:last-child) ~ .pie { margin-top: 0; }
 }
 @media (min-width: 768px) { .masonry { column-count: 3; column-gap: var(--e-4); } }
 @media (min-width: 1024px) { .masonry { column-count: 4; } }
+/* Cursos anteriores (6 fotos): 3 columnas parejas también en escritorio */
+@media (min-width: 1024px) { .masonry--tres { column-count: 3; } }
 .masonry__item { break-inside: avoid; margin-bottom: var(--e-3); }
 @media (min-width: 768px) { .masonry__item { margin-bottom: var(--e-4); } }
 .masonry > .sin-resultados { column-span: all; }

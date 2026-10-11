@@ -48,20 +48,20 @@ ALT_IMAGEN = 'Logotipo de Verónica Correa Makeup sobre fondo crema'
 #   pública = va en sitemap.xml y lleva canonical
 PAGINAS = {
     'index.html': ('/', f'{MARCA} · Cursos y formaciones de maquillaje',
-                   'Cursos y formaciones de maquillaje con Verónica Correa en Venezuela: automaquillaje, '
-                   'maquillaje social, novias y eventos.', True),
+                   'Formación en cejas, pestañas y maquillaje profesional con Verónica Correa en '
+                   'Caracas, Venezuela.', True),
     'cursos.html': ('/cursos', f'Próximos cursos · {MARCA}',
-                    'Próximos cursos y formaciones de maquillaje de Verónica Correa: fechas, modalidad, '
+                    'Próximos cursos y formaciones de Verónica Correa en pestañas, cejas y maquillaje: fechas, modalidad, '
                     'cupos disponibles e inscripción.', True),
     'sobre-veronica.html': ('/sobre-veronica', f'Sobre Verónica · {MARCA}',
                             'Conoce a Verónica Correa: más de 6 años especializada en pestañas, cejas y '
                             'maquillaje y más de 300 alumnas formadas y certificadas en Caracas.', True),
     'galeria.html': ('/galeria', f'Galería de trabajos · {MARCA}',
-                     'Galería de Verónica Correa Makeup: maquillaje social, novias, editorial y trabajos '
-                     'de sus alumnas en clase.', True),
+                     'Galería de Verónica Correa Makeup: momentos de sus formaciones, trabajos de sus '
+                     'alumnas y trabajos propios.', True),
     'cursos-anteriores.html': ('/cursos-anteriores', f'Cursos anteriores · {MARCA}',
-                               'Cursos y formaciones de maquillaje que Verónica Correa ya realizó, con su '
-                               'contenido y fotos de las prácticas.', True),
+                               'Ediciones y formaciones pasadas de Verónica Correa, con fotos de sus '
+                               'egresadas recibiendo su certificado.', True),
     'contacto.html': ('/contacto', f'Contacto · {MARCA}',
                       'Escríbele a Verónica Correa por WhatsApp o por sus redes para resolver tus dudas '
                       'sobre los cursos de maquillaje.', True),
