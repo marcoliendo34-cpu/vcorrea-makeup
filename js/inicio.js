@@ -6,7 +6,7 @@ import {
 import { obtenerCursosVigentes, buscarCursos, obtenerGaleria } from './datos.js';
 
 const MAX_CURSOS = 6;
-const MENSAJE_ELEGIR = 'Hola Verónica, vengo de tu web y no sé qué curso elegir. ¿Me ayudas?';
+const MENSAJE_INFORMACION = 'Hola Verónica, quiero más información sobre los cursos.';
 
 /* ---------------------------- piezas fijas ---------------------------- */
 
@@ -29,7 +29,7 @@ document.querySelector('[data-titulo-galeria]').innerHTML = tituloSeccion({
   enlace: { texto: 'Ver galería', href: '/galeria' }
 });
 document.querySelector('[data-boton-cierre]').innerHTML = boton({
-  texto: 'Escríbeme por WhatsApp', href: urlWhatsApp(MENSAJE_ELEGIR), iconoIzquierda: 'whatsapp',
+  texto: 'Escríbeme por WhatsApp', href: urlWhatsApp(MENSAJE_INFORMACION), iconoIzquierda: 'whatsapp',
   tamano: 'grande', atributos: { target: '_blank', rel: 'noopener' }
 });
 
