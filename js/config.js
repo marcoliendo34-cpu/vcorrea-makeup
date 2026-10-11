@@ -39,10 +39,10 @@ export const CONFIG = {
   correo: null,       // [POR DEFINIR] ej. 'hola@vcorreamakeup.com'. Si es null, no se muestra.
   ciudad: null,       // [POR DEFINIR]
 
-  // Atención (página de contacto). [EJEMPLO] Confirmar con Verónica.
+  // Atención (página de contacto). Confirmado con Verónica el 11 oct 2026.
   atencion: {
-    zona: '[EJEMPLO] Caracas, Venezuela. Cursos online para todo el país',
-    horario: '[EJEMPLO] Lunes a sábado, de 9:00 a. m. a 6:00 p. m.'
+    zona: 'Caracas, Venezuela',
+    horario: 'Toda la semana, previa cita'
   },
 
   moneda: 'USD',
