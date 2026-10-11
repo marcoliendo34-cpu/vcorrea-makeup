@@ -1079,15 +1079,22 @@ a.pie__red:hover { border-color: var(--dorado); color: var(--dorado-profundo); }
   color: var(--beige);
   text-align: right;
 }
-/* Velo: tinta desde abajo a la izquierda, más un toque arriba para el header */
+/* Velo: tinta desde abajo a la izquierda, más un toque arriba para el header.
+   Con la foto real (fondo claro) va más marcado para que el texto blanco cumpla AA. */
 .hero::before {
   content: "";
   position: absolute;
   inset: 0;
   z-index: -1;
   background:
-    linear-gradient(180deg, rgba(43, 38, 34, 0.45) 0%, rgba(43, 38, 34, 0) 22%),
-    linear-gradient(to top right, rgba(43, 38, 34, 0.86) 0%, rgba(43, 38, 34, 0.55) 42%, rgba(43, 38, 34, 0.12) 78%, rgba(43, 38, 34, 0) 100%);
+    linear-gradient(180deg, rgba(43, 38, 34, 0.62) 0%, rgba(43, 38, 34, 0.3) 16%, rgba(43, 38, 34, 0) 32%),
+    linear-gradient(to top right, rgba(43, 38, 34, 0.9) 0%, rgba(43, 38, 34, 0.66) 45%, rgba(43, 38, 34, 0.28) 78%, rgba(43, 38, 34, 0.12) 100%);
+}
+/* Móvil: la cara queda arriba con poco velo y el texto, más abajo, sobre velo firme */
+@media (max-width: 1023px) {
+  .hero::before {
+    background: linear-gradient(180deg, rgba(43, 38, 34, 0.55) 0%, rgba(43, 38, 34, 0.2) 15%, rgba(43, 38, 34, 0.32) 27%, rgba(43, 38, 34, 0.72) 38%, rgba(43, 38, 34, 0.9) 100%);
+  }
 }
 .hero__contenido { max-width: 760px; }
 .hero__titulo {
