@@ -1476,6 +1476,17 @@ a.pie__red:hover { border-color: var(--dorado); color: var(--dorado-profundo); }
 /* Sobre Verónica (avance) */
 .avance-sobre { display: grid; gap: var(--e-10); align-items: center; }
 .avance-sobre__retrato { max-width: 440px; width: 100%; }
+/* Retrato real de Verónica (misma foto del hero), recortado a 4:5 */
+.retrato-foto {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  object-position: 50% 10%;
+  border-radius: var(--radio-tarjeta);
+  background: var(--crema);
+}
 .avance-sobre__texto { display: grid; gap: var(--e-5); justify-items: start; }
 .avance-sobre__texto > p { max-width: 48ch; font-size: var(--t-cuerpo-grande); font-weight: 300; color: var(--gris-calido); }
 .avance-sobre__cita {
@@ -1936,6 +1947,8 @@ main:has(> .seccion--cierre:last-child) ~ .pie { margin-top: 0; }
    26. Sobre Verónica
    ------------------------------------------------------------------------- */
 .sobre-portada { padding-block: var(--e-8) var(--e-4); }
+/* Historia y Preparación van seguidas sobre blanco: un solo espacio entre ambas */
+[data-pagina="sobre-veronica"] .seccion:not(.seccion--crema) + .seccion:not(.seccion--crema) { padding-top: 0; }
 .sobre-portada__grid { display: grid; gap: var(--e-8); align-items: center; }
 .sobre-portada__retrato { width: 100%; max-width: 520px; }
 .sobre-portada__texto { display: grid; gap: var(--e-3); }

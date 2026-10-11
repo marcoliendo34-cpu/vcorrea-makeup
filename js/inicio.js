@@ -24,8 +24,6 @@ document.querySelector('[data-titulo-sobre]').innerHTML = tituloSeccion({
 });
 document.querySelector('[data-enlace-sobre]').innerHTML =
   boton({ texto: 'Conoce su historia', href: '/sobre-veronica', variante: 'texto', icono: 'flecha-derecha', tamano: 'grande' });
-document.querySelector('[data-retrato]').innerHTML =
-  placeholderFoto({ descripcion: 'Retrato de Verónica', proporcion: '4 / 5' });
 document.querySelector('[data-titulo-galeria]').innerHTML = tituloSeccion({
   etiqueta: 'Galería', titulo: 'Trabajos y momentos de clase', id: 'titulo-galeria',
   enlace: { texto: 'Ver galería', href: '/galeria' }
