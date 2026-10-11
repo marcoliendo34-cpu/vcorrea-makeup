@@ -240,7 +240,8 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 ### Pagos y contacto
 
 - **Métodos de pago:** por definir. Se muestran desde `js/config.js` con el texto **[POR DEFINIR]**.
-- **WhatsApp de Verónica:** +58 414-5897775, en `js/config.js`.
+- **WhatsApp de Verónica:** 0414-589-77-75 (enlace wa.me/584145897775), en `js/config.js`.
+- **Redes de Verónica:** Instagram @vcorrea_makeup y TikTok @vcorrea_makeup, en `js/config.js`.
 
 ---
 

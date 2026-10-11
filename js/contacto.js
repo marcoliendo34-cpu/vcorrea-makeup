@@ -7,6 +7,7 @@ import { CONFIG } from './config.js';
 /* ------------------------------ canales ------------------------------- */
 
 const ig = CONFIG.redes.instagram;
+const tt = CONFIG.redes.tiktok;
 const canal = (nombreIcono, titulo, contenido) => `
   <li class="canal">
     <span class="canal__icono">${icono(nombreIcono, { tamano: 22 })}</span>
@@ -23,6 +24,7 @@ document.querySelector('[data-canales]').innerHTML = `
     ${canal('instagram', 'Instagram', ig
       ? `<a href="${esc(ig.url)}" target="_blank" rel="noopener">${esc(ig.usuario)}</a>`
       : '<p class="canal__dato">[POR DEFINIR]</p>')}
+    ${tt ? canal('tiktok', 'TikTok', `<a href="${esc(tt.url)}" target="_blank" rel="noopener">${esc(tt.usuario)}</a>`) : ''}
     ${CONFIG.correo ? canal('correo', 'Correo', `<a href="mailto:${esc(CONFIG.correo)}">${esc(CONFIG.correo)}</a>`) : ''}
     ${canal('ubicacion', 'Zona de atención', `<p class="canal__dato">${esc(CONFIG.atencion.zona)}</p>`)}
     ${canal('reloj', 'Horario', `<p class="canal__dato">${esc(CONFIG.atencion.horario)}</p>`)}

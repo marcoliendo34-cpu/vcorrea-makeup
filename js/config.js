@@ -27,13 +27,13 @@ export const CONFIG = {
 
   whatsapp: {
     numero: '584145897775',          // formato internacional para wa.me, sin + ni espacios
-    numeroVisible: '+58 414-5897775'
+    numeroVisible: '0414-589-77-75'  // como lo escribe Verónica
   },
 
-  // [POR DEFINIR] Confirmar con Verónica antes de mostrarlas en el sitio.
+  // Redes de Verónica (confirmadas el 11 oct 2026). Si una es null, no se muestra.
   redes: {
-    instagram: null,  // ej. { usuario: '@...', url: 'https://instagram.com/...' }
-    tiktok: null
+    instagram: { usuario: '@vcorrea_makeup', url: 'https://www.instagram.com/vcorrea_makeup/' },
+    tiktok: { usuario: '@vcorrea_makeup', url: 'https://www.tiktok.com/@vcorrea_makeup' }
   },
 
   correo: null,       // [POR DEFINIR] ej. 'hola@vcorreamakeup.com'. Si es null, no se muestra.

@@ -665,16 +665,21 @@ function htmlResultado(c, consulta) {
 
 function htmlRedes() {
   const ig = CONFIG.redes.instagram;
+  const tt = CONFIG.redes.tiktok;
   const instagram = ig
     ? `<a class="pie__red" href="${esc(ig.url)}" target="_blank" rel="noopener" aria-label="Instagram ${esc(ig.usuario)}">${icono('instagram')}</a>`
     : `<span class="pie__red pie__red--pendiente" role="img" aria-label="Instagram: [POR DEFINIR]" title="Instagram [POR DEFINIR]">${icono('instagram')}</span>`;
+  const tiktok = tt
+    ? `<a class="pie__red" href="${esc(tt.url)}" target="_blank" rel="noopener" aria-label="TikTok ${esc(tt.usuario)}">${icono('tiktok')}</a>`
+    : '';
   const whatsapp = `<a class="pie__red" href="${urlWhatsApp(MENSAJE_WHATSAPP)}" target="_blank" rel="noopener" aria-label="WhatsApp ${esc(CONFIG.whatsapp.numeroVisible)}">${icono('whatsapp')}</a>`;
-  return `<div class="pie__redes">${instagram}${whatsapp}</div>`;
+  return `<div class="pie__redes">${instagram}${tiktok}${whatsapp}</div>`;
 }
 
 function htmlFooter(sesion) {
   const anio = new Date().getFullYear();
   const ig = CONFIG.redes.instagram;
+  const tt = CONFIG.redes.tiktok;
 
   return `
   <footer class="pie">
@@ -700,6 +705,7 @@ function htmlFooter(sesion) {
           <ul class="pie__lista">
             <li><a href="${urlWhatsApp(MENSAJE_WHATSAPP)}" target="_blank" rel="noopener">WhatsApp ${esc(CONFIG.whatsapp.numeroVisible)}</a></li>
             <li>${ig ? `<a href="${esc(ig.url)}" target="_blank" rel="noopener">Instagram ${esc(ig.usuario)}</a>` : '<span class="texto-secundario">Instagram [POR DEFINIR]</span>'}</li>
+            ${tt ? `<li><a href="${esc(tt.url)}" target="_blank" rel="noopener">TikTok ${esc(tt.usuario)}</a></li>` : ''}
           </ul>
         </div>
       </div>
