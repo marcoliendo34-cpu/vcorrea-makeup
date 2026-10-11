@@ -1066,6 +1066,10 @@ a.pie__red:hover { border-color: var(--dorado); color: var(--dorado-profundo); }
   object-fit: cover;
   aspect-ratio: auto;
 }
+/* Foto vertical de Verónica: en móvil se ve la cara arriba y el texto va sobre el vestido;
+   en escritorio la foto se agranda al ancho, así que se encuadra desde arriba. */
+.hero__media img { object-position: 50% 14%; }
+@media (min-width: 1024px) { .hero__media img { object-position: 50% 6%; } }
 .hero__media .placeholder-foto {
   align-items: start;
   justify-items: end;
