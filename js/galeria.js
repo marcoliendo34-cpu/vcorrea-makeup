@@ -36,10 +36,11 @@ zonaChips.addEventListener('click', (e) => {
 
 /* ----------------------------- mosaico -------------------------------- */
 
+// La primera foto carga de inmediato: es lo primero que se ve (LCP).
 function htmlFoto(f, i) {
   const alto600 = Math.round(600 * f.alto / f.ancho);
   const media = f.miniatura
-    ? `<img src="${esc(f.miniatura)}" alt="${esc(f.alt)}" width="600" height="${alto600}" loading="lazy" decoding="async">`
+    ? `<img src="${esc(f.miniatura)}" alt="${esc(f.alt)}" width="600" height="${alto600}" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">`
     : placeholderFoto({ descripcion: f.alt, proporcion: `${f.ancho} / ${f.alto}`, sinBorde: true });
   return `
     <li class="masonry__item">

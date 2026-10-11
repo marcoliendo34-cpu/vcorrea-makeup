@@ -686,7 +686,7 @@ function htmlFooter(sesion) {
     <div class="contenedor pie__principal">
       <div class="pie__marca">
         ${logo({ version: 'apilado' })}
-        <p class="pie__frase">[EJEMPLO] Formación en maquillaje con técnica, paciencia y mucho cariño por los detalles.</p>
+        <p class="pie__frase">Formando miradas con precisión, visión y excelencia</p>
         ${htmlRedes()}
       </div>
       <div class="pie__columnas">
