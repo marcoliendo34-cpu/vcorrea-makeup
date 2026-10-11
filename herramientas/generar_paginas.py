@@ -54,8 +54,8 @@ PAGINAS = {
                     'Próximos cursos y formaciones de maquillaje de Verónica Correa: fechas, modalidad, '
                     'cupos disponibles e inscripción.', True),
     'sobre-veronica.html': ('/sobre-veronica', f'Sobre Verónica · {MARCA}',
-                            'Conoce a Verónica Correa, maquilladora profesional en Venezuela, y cómo son sus '
-                            'cursos y formaciones de maquillaje.', True),
+                            'Conoce a Verónica Correa: más de 6 años especializada en pestañas, cejas y '
+                            'maquillaje y más de 300 alumnas formadas y certificadas en Caracas.', True),
     'galeria.html': ('/galeria', f'Galería de trabajos · {MARCA}',
                      'Galería de Verónica Correa Makeup: maquillaje social, novias, editorial y trabajos '
                      'de sus alumnas en clase.', True),
