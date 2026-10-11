@@ -39,12 +39,15 @@
   <!-- precargas:inicio (módulos de esta página: generar_paginas.py) -->
   <link rel="modulepreload" href="/js/cursos.js">
   <link rel="modulepreload" href="/js/componentes.js">
+  <link rel="modulepreload" href="/js/datos.js">
   <link rel="modulepreload" href="/js/config.js">
   <link rel="modulepreload" href="/js/iconos.js">
   <link rel="modulepreload" href="/js/cupos.js">
   <link rel="modulepreload" href="/js/sesion.js">
   <link rel="modulepreload" href="/js/textos.js">
   <link rel="modulepreload" href="/js/fechas.js">
+  <link rel="modulepreload" href="/data/cursos.js">
+  <link rel="modulepreload" href="/data/galeria.js">
   <!-- precargas:fin -->
 </head>
 <body data-pagina="cursos">
@@ -58,13 +61,13 @@
       <p class="encabezado-pagina__intro">[EJEMPLO] Elige tu formación: automaquillaje, maquillaje social, novias y eventos.</p>
     </div>
     <div class="contenedor" data-consulta></div>
-    <section class="seccion">
+    <section class="seccion seccion--cursos" aria-label="Próximos cursos">
       <div class="contenedor">
-        <div class="pendiente">
-          <svg class="icono" viewBox="0 0 24 24" aria-hidden="true"><path d="M14.5 4.5 19.5 9.5 11 18a3.5 3.5 0 0 1-5-5Z"/><path d="m12.5 6.5 5 5"/><path d="M6 13c-1.5 1.5-1.5 4-2 6.5 2.5-.5 5-.5 6.5-2"/></svg>
-          <p class="pendiente__titulo">Sección en preparación</p>
-          <p>Aquí irán el buscador, los filtros y todas las tarjetas de cursos.</p>
-        </div>
+        <p class="solo-lectores" aria-live="polite" data-estado-cursos></p>
+        <ul class="rejilla-cursos" data-rejilla-cursos>
+          <li class="sin-resultados">Cargando cursos…</li>
+        </ul>
+        <p class="cursos-anteriores-enlace">¿Buscas una formación que ya terminó? <a href="/cursos-anteriores">Ver cursos anteriores</a></p>
       </div>
     </section>
   </main>

@@ -10,7 +10,7 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 - **Qué es:** plataforma de cursos y formaciones de maquillaje. Las alumnas ven los cursos disponibles, se registran, ingresan y solicitan su inscripción por WhatsApp. Verónica concreta la inscripción por WhatsApp.
 - **Fase 1 (actual): VISTA PREVIA** para que la clienta apruebe la interfaz.
   - Sin base de datos real.
-  - 3 cursos de ejemplo.
+  - Cursos en `data/cursos.js`: Visión Lash es el primer curso real (11 oct 2026). Los 3 cursos finalizados de Cursos anteriores siguen de ejemplo.
   - Sesión de alumna simulada.
 - **Fase 2 (después de la aprobación):** conectar Supabase y cargar los cursos reales.
 - **Referencia de estructura:** hipereventos.com (capturas en `/referencias`).
@@ -197,6 +197,14 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 - **"Agotado"** al 100%: botón desactivado con el texto **"Cupos agotados"**.
 - Todo este cálculo vive en `js/cupos.js`.
 - **Inscritas de un curso** = `inscritasFuera` (cupos ocupados por fuera de la web, dato del curso) + inscripciones **confirmadas** en la web. Lo calcula `js/datos.js`. Las pendientes no ocupan cupo.
+
+### Ficha del curso (campos opcionales)
+
+- `calendario`: fecha de cada clase; se muestra como "Calendario".
+- `pensum` sin número de semana: se muestra por módulos con el título "Qué aprenderás".
+- `destacados`: lista extra en "Sobre el curso" (ej. "Porque tu éxito es nuestra meta") con una frase de remate.
+- `preguntas`: preguntas frecuentes propias del curso. Si no tiene, la sección no aparece.
+- Datos que aún no da Verónica van con **[POR DEFINIR]** (en la tarjeta se ocultan las marcas).
 
 ### Precio
 

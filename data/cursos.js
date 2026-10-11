@@ -1,8 +1,8 @@
-// Cursos de ejemplo para la vista previa (modo demo).
+// Cursos del sitio (modo demo).
 // Las páginas NUNCA leen este archivo directamente: piden los datos a js/datos.js.
-// Todo el contenido es de muestra y está marcado con [EJEMPLO]
-// (fechas, precios, cifras, ubicación y textos). En la fase 2 estos datos
-// vienen de Supabase con la misma forma.
+// Vigentes: cursos reales de Verónica. Finalizados: de ejemplo, marcados con
+// [EJEMPLO], hasta que llegue la lista real de ediciones pasadas.
+// En la fase 2 estos datos vienen de Supabase con la misma forma.
 
 /**
  * Foto con su texto alternativo. Si `src` es null se muestra el placeholder
@@ -13,10 +13,11 @@
  */
 
 /**
- * Una semana del pensum.
+ * Una semana (o un módulo) del pensum.
  * @typedef {Object} SemanaPensum
- * @property {number} semana     Número de semana (1, 2, 3…).
- * @property {string} titulo     Tema central de la semana.
+ * @property {number} [semana]   Número de semana (1, 2, 3…). Sin semana, es un módulo
+ *                               y la sección se titula "Qué aprenderás".
+ * @property {string} titulo     Tema central de la semana o nombre del módulo.
  * @property {string[]} temas    Temas que se ven esa semana.
  */
 
@@ -42,7 +43,7 @@
  * @property {string} [nombreCorto]  Para la barra fija del móvil. Si falta, se usa `nombre`.
  * @property {string} subtitulo       Una línea que resume el curso.
  * @property {string} categoria       Ej. "Automaquillaje", "Maquillaje social", "Novias y eventos".
- * @property {'Básico'|'Intermedio'|'Avanzado'} nivel
+ * @property {string} nivel           Ej. 'Básico', 'Intermedio', 'Avanzado', 'De cero a profesional'.
  * @property {'Presencial'|'Online'} modalidad
  * @property {string} ubicacion       Ciudad o sede (presencial) o plataforma (online).
  * @property {Foto} imagenPortada
@@ -50,6 +51,8 @@
  * @property {string} fechaFin        'AAAA-MM-DD'
  * @property {string} dias            Ej. "Sábados", "Martes y jueves".
  * @property {string} horario         Ej. "9:00 a. m. a 1:00 p. m."
+ * @property {{fecha: string, texto: string, destacada?: boolean}[]} [calendario]
+ *                                   Fechas de cada clase ('AAAA-MM-DD'), opcional. Se muestra en la ficha.
  * @property {number} semanas
  * @property {number} totalClases
  * @property {number} cupos           Cupos totales.
@@ -62,6 +65,8 @@
  *                                   lo calcula js/datos.js (inscritasFuera + confirmadas).
  * @property {string} descripcion
  * @property {string[]} dirigidoA
+ * @property {{titulo: string, items: string[], cierre?: string}} [destacados]
+ *                                   Lista opcional bajo "Sobre el curso" (ej. "Porque tu éxito es nuestra meta").
  * @property {string[]} incluye
  * @property {SemanaPensum[]} pensum
  * @property {Practica[]} practicas
@@ -69,6 +74,7 @@
  * @property {Certificado} certificado
  * @property {number} precioUSD       Solo se muestra en la ficha del curso, después de lo que incluye.
  * @property {string|null} condicionesPago  Texto opcional (ej. pago en dos partes).
+ * @property {{pregunta: string, respuesta: string}[]} [preguntas]  Preguntas frecuentes del curso (opcional).
  * @property {'vigente'|'finalizado'} estado
  * @property {Foto[]} galeria         Fotos opcionales del curso (mini galería en Cursos anteriores).
  *                                    `src` es la versión grande (1200 px) y `miniatura`, opcional, la de 600 px.
@@ -80,169 +86,99 @@ export const CURSOS = [
   /* ================================================================== */
   /* VIGENTES                                                           */
   /* ================================================================== */
+  // Primer curso real (información de Verónica, 11 oct 2026).
+  // Pendiente de Verónica: horario, dirección exacta y foto de portada.
   {
-    slug: 'automaquillaje-esencial',
-    nombre: 'Automaquillaje Esencial',
-    nombreCorto: 'Automaquillaje',
-    subtitulo: 'Aprende a maquillarte para el día a día con tus propios productos',
-    categoria: 'Automaquillaje',
-    nivel: 'Básico',
-    modalidad: 'Online',
-    ubicacion: 'En vivo por videollamada [EJEMPLO]',
-    imagenPortada: { src: null, alt: 'Alumna maquillándose frente al espejo' },
-    fechaInicio: '2026-11-07',
-    fechaFin: '2026-11-28',
-    dias: 'Sábados',
-    horario: '9:00 a. m. a 12:00 m.',
-    semanas: 4,
-    totalClases: 4,
-    cupos: 12,
-    inscritasFuera: 4,
-    descripcion: '[EJEMPLO] Un curso pensado para que pierdas el miedo a maquillarte. Partimos de cero: cómo preparar la piel, elegir el tono de base correcto y lograr un maquillaje natural y duradero en menos de 15 minutos, usando los productos que ya tienes en casa.',
-    dirigidoA: [
-      'Mujeres que quieren aprender a maquillarse desde cero',
-      'Quienes ya se maquillan pero quieren resultados más prolijos',
-      'Personas que buscan una rutina rápida para el trabajo o la universidad'
-    ],
-    incluye: [
-      '4 clases en vivo de 3 horas',
-      'Grabación de cada clase por 30 días',
-      'Revisión de tu neceser y lista de compras personalizada',
-      'Guía digital de rutinas paso a paso',
-      'Grupo de consultas durante el curso',
-      'Certificado de participación'
-    ],
-    pensum: [
-      { semana: 1, titulo: 'Conoce tu piel', temas: ['Tipos de piel y cuidado previo', 'Hidratación y primer', 'Cómo elegir tu tono y subtono de base'] },
-      { semana: 2, titulo: 'Piel uniforme y natural', temas: ['Base, corrector y polvo', 'Técnicas con brocha, esponja y dedos', 'Rubor y bronceador según tu rostro'] },
-      { semana: 3, titulo: 'Cejas y ojos', temas: ['Diseño y relleno de cejas', 'Sombras neutras en tres pasos', 'Delineado sencillo y máscara de pestañas'] },
-      { semana: 4, titulo: 'Tu rutina completa', temas: ['Labios: perfilado y elección de tonos', 'Maquillaje de día en 15 minutos', 'Transición de día a noche'] }
-    ],
-    practicas: [
-      { titulo: 'Rutina de piel en vivo', descripcion: 'Aplicas tu base y corrector con correcciones de Verónica en tiempo real.', requiereModelo: false },
-      { titulo: 'Maquillaje de día completo', descripcion: 'Práctica final: tu rutina completa, de principio a fin, con devolución personalizada.', requiereModelo: false }
-    ],
-    requisitos: [
-      'Conexión a internet estable y cámara',
-      'Espejo y buena iluminación (luz natural o aro de luz)',
-      'Tus productos de maquillaje actuales'
-    ],
-    certificado: { incluye: true, descripcion: 'Certificado digital de participación al completar las 4 clases.' },
-    precioUSD: 80,
-    condicionesPago: null,
-    estado: 'vigente',
-    galeria: [],
-    egresadas: null
-  },
-
-  {
-    slug: 'masterclass-novias-y-eventos',
-    nombre: 'Masterclass Novias y Eventos',
-    nombreCorto: 'Novias y Eventos',
-    subtitulo: 'Una semana intensiva para dominar el maquillaje nupcial de larga duración',
-    categoria: 'Novias y eventos',
-    nivel: 'Avanzado',
+    slug: 'vision-lash',
+    nombre: 'Visión Lash',
+    subtitulo: 'Programa de Formación Profesional de Pestañas Pelo a Pelo',
+    categoria: 'Pestañas',
+    nivel: 'De cero a profesional',
     modalidad: 'Presencial',
-    ubicacion: 'Caracas [EJEMPLO]',
-    imagenPortada: { src: null, alt: 'Maquillaje de novia con piel luminosa' },
-    fechaInicio: '2026-11-23',
-    fechaFin: '2026-11-27',
-    dias: 'Lunes a viernes',
-    horario: '2:00 p. m. a 7:00 p. m.',
-    semanas: 1,
-    totalClases: 5,
+    ubicacion: 'Caracas [POR DEFINIR]',
+    imagenPortada: { src: null, alt: 'Extensiones de pestañas pelo a pelo' },
+    fechaInicio: '2026-11-04',
+    fechaFin: '2026-12-05',
+    dias: 'Miércoles y viernes',
+    horario: '[POR DEFINIR]',
+    semanas: 3,
+    totalClases: 6,
+    calendario: [
+      { fecha: '2026-11-04', texto: 'Clase 1' },
+      { fecha: '2026-11-06', texto: 'Clase 2' },
+      { fecha: '2026-11-11', texto: 'Clase 3' },
+      { fecha: '2026-11-13', texto: 'Clase 4' },
+      { fecha: '2026-11-18', texto: 'Clase 5' },
+      { fecha: '2026-11-20', texto: 'Clase 6' },
+      { fecha: '2026-12-05', texto: 'Exposiciones, certificaciones y brindis', destacada: true }
+    ],
     cupos: 10,
-    inscritasFuera: 9,
-    descripcion: '[EJEMPLO] Formación intensiva para maquilladoras que quieren especializarse en novias y eventos. Trabajamos pieles que resisten 12 horas, fotografía con flash, prueba de maquillaje con la clienta y cómo organizar la agenda del gran día.',
-    dirigidoA: [
-      'Maquilladoras con experiencia en maquillaje social',
-      'Profesionales que quieren sumar novias a sus servicios',
-      'Egresadas del curso de Maquillaje Social Profesional'
-    ],
+    inscritasFuera: 0,
+    descripcion: 'Un programa de formación integral y práctico diseñado para transformarte de cero a profesional en el arte de las extensiones de pestañas. No solo aprendes técnicas, también construyes tu independencia económica.',
+    dirigidoA: [],
+    destacados: {
+      titulo: 'Porque tu éxito es nuestra meta',
+      items: [
+        'Te enseñamos a ser independiente, no solo a hacer un servicio.',
+        'Preparada para la temporada de mayor demanda.',
+        'Sales lista para atender clientas con confianza y seguridad.',
+        'Formas parte de una comunidad que crece contigo.'
+      ],
+      cierre: 'No es solo una formación. Es el comienzo de tu carrera, de tu independencia y de un futuro que construyes con tus propias manos.'
+    },
     incluye: [
-      '5 clases presenciales de 5 horas',
-      'Demostración completa de maquillaje de novia',
-      'Kit de productos para usar en clase',
-      'Plantilla de prueba de maquillaje y contrato para clientas',
-      'Sesión de fotos de tu trabajo final',
-      'Certificado de especialización'
+      'Kit profesional de obsequio',
+      '80 % de los materiales',
+      'Material POP',
+      'Medalla de reconocimiento',
+      'Certificado de aprobación con sello oficial',
+      'Coffee break',
+      'Guía',
+      'Camisa para la formación',
+      'Brindis',
+      'Impulso en marketing',
+      'Material audiovisual, teórico y práctico',
+      'Práctica en esponja, maniquíes y 3 modelos reales',
+      'Almuerzo (2 días)',
+      'Tutoría ilimitada',
+      'Regalos y patrocinios',
+      'Premio a las 2 mejores prácticas',
+      'Tu gran cierre: evaluación y exposición final'
     ],
+    // Pensum por módulos (sin semana): se muestra como "Qué aprenderás".
     pensum: [
-      { semana: 1, titulo: 'La novia de principio a fin', temas: ['Pieles de larga duración y a prueba de llanto', 'Maquillaje para fotografía con flash y video', 'Novia clásica, natural y glam', 'Pestañas postizas y peinado: cómo coordinar', 'Prueba de maquillaje, precios y agenda del día de la boda'] }
+      { titulo: 'Técnicas fundamentales', temas: ['Técnica clásica 1:1', 'Efecto rímel', 'Híbridas', 'Inicio al volumen manual', 'Volumen tecnológico'] },
+      { titulo: 'Fibras tecnológicas y sus efectos', temas: ['Volumen tecnológico', 'Volumen egipcio', 'Volumen griego', 'Volumen hawaiano'] },
+      { titulo: 'Conocimientos esenciales', temas: [
+        'Higiene correcta y bioseguridad',
+        'Salud ocular y contraindicaciones',
+        'El adhesivo: composición, manejo y retención',
+        'Diseños de mirada, con aprendizaje gradual',
+        'Tapping',
+        'Aislamiento preciso',
+        'Aislamiento unilateral: técnica infalible',
+        'Mapping comercial',
+        'Capping brasileño',
+        'Productos y su uso correcto',
+        'Ficha clínica del cliente',
+        'Retiro normal y retiro químico',
+        '¡Y mucho más para destacar en el mercado!'
+      ] }
     ],
     practicas: [
-      { titulo: 'Novia natural', descripcion: 'Maquillaje completo con revisión de la piel a las 4 horas.', requiereModelo: true },
-      { titulo: 'Novia glam con fotografía', descripcion: 'Trabajo final fotografiado con flash para tu portafolio.', requiereModelo: true }
+      { titulo: 'En esponja y maniquíes', descripcion: 'Practicas cada técnica en esponja y en maniquíes antes de trabajar sobre una persona.', requiereModelo: false },
+      { titulo: 'Con modelos reales', descripcion: 'Aplicas lo aprendido sobre 3 modelos reales.', requiereModelo: false },
+      { titulo: 'Evaluación y exposición final', descripcion: 'Tu gran cierre. Las 2 mejores prácticas reciben un premio.', requiereModelo: false }
     ],
-    requisitos: [
-      'Haber hecho un curso de maquillaje social o tener experiencia comprobable',
-      'Kit personal de brochas',
-      'Traer una modelo los días de práctica (jueves y viernes)'
+    requisitos: [],
+    certificado: { incluye: true, descripcion: 'Certificado de aprobación con sello oficial y medalla de reconocimiento. Se entregan el 5 de diciembre, en el día de exposiciones, certificaciones y brindis.' },
+    precioUSD: 500,
+    condicionesPago: 'Reservas tu cupo con $140 y pagas 6 cuotas de $60, una en cada clase.',
+    preguntas: [
+      { pregunta: '¿Necesito experiencia previa?', respuesta: 'No. Visión Lash está diseñado para llevarte de cero a profesional en extensiones de pestañas.' },
+      { pregunta: '¿Puedo pagar en partes?', respuesta: 'Sí. Reservas tu cupo con $140 y pagas 6 cuotas de $60, una en cada clase. El total es de $500.' },
+      { pregunta: '¿Cuándo recibo mi certificado?', respuesta: 'El 5 de diciembre, en el día de exposiciones, certificaciones y brindis.' }
     ],
-    certificado: { incluye: true, descripcion: 'Certificado de especialización en maquillaje de novias y eventos.' },
-    precioUSD: 180,
-    condicionesPago: 'Se reserva el cupo con el 50 % y el resto se paga el primer día. [EJEMPLO]',
-    estado: 'vigente',
-    galeria: [],
-    egresadas: null
-  },
-
-  {
-    slug: 'maquillaje-social-profesional',
-    nombre: 'Maquillaje Social Profesional',
-    nombreCorto: 'Maquillaje Social',
-    subtitulo: 'Formación completa para empezar a maquillar a clientas',
-    categoria: 'Maquillaje social',
-    nivel: 'Intermedio',
-    modalidad: 'Presencial',
-    ubicacion: 'Caracas [EJEMPLO]',
-    imagenPortada: { src: null, alt: 'Verónica maquillando a una modelo en clase' },
-    fechaInicio: '2027-01-12',
-    fechaFin: '2027-03-04',
-    dias: 'Martes y jueves',
-    horario: '6:00 p. m. a 9:00 p. m.',
-    semanas: 8,
-    totalClases: 16,
-    cupos: 15,
-    inscritasFuera: 11,
-    descripcion: '[EJEMPLO] La formación para quienes quieren maquillar a otras personas. Aprendes a leer cada rostro, corregir con color y luz, y crear maquillajes de día, de noche y para eventos con acabado profesional, además de cómo atender y cobrar a tus primeras clientas.',
-    dirigidoA: [
-      'Quienes quieren empezar a trabajar como maquilladoras',
-      'Egresadas de Automaquillaje Esencial que quieren dar el siguiente paso',
-      'Estilistas y profesionales de la belleza que quieren sumar maquillaje'
-    ],
-    incluye: [
-      '16 clases presenciales de 3 horas',
-      'Demostraciones en vivo en cada clase',
-      'Productos profesionales para usar en clase',
-      'Manual digital del curso',
-      'Asesoría para armar tu primer kit profesional',
-      'Fotos de tus trabajos para tu portafolio',
-      'Certificado de formación'
-    ],
-    pensum: [
-      { semana: 1, titulo: 'Bases del oficio', temas: ['Higiene y bioseguridad', 'Herramientas y productos profesionales', 'Preparación de la piel según su tipo'] },
-      { semana: 2, titulo: 'Colorimetría', temas: ['Círculo cromático aplicado al maquillaje', 'Subtonos y elección de base', 'Corrección de ojeras, manchas y rojeces'] },
-      { semana: 3, titulo: 'Visagismo', temas: ['Tipos de rostro', 'Contorno e iluminación', 'Diseño de cejas según el rostro'] },
-      { semana: 4, titulo: 'Ojos I', temas: ['Morfología del ojo', 'Difuminado y transiciones', 'Delineados clásicos'] },
-      { semana: 5, titulo: 'Ojos II', temas: ['Cut crease y smokey eye', 'Pestañas postizas en tira e individuales', 'Glitter y pigmentos'] },
-      { semana: 6, titulo: 'Maquillaje de día y de noche', temas: ['Maquillaje natural para fotos', 'Maquillaje de noche', 'Labios de larga duración'] },
-      { semana: 7, titulo: 'Eventos', temas: ['Graduaciones y quince años', 'Pieles maduras', 'Maquillaje en distintos tonos de piel'] },
-      { semana: 8, titulo: 'Tu negocio', temas: ['Atención y prueba con la clienta', 'Precios y presupuestos', 'Fotografía de tus trabajos para redes'] }
-    ],
-    practicas: [
-      { titulo: 'Corrección con colorimetría', descripcion: 'Práctica guiada de corrección y unificación de la piel.', requiereModelo: true },
-      { titulo: 'Maquillaje de noche', descripcion: 'Smokey eye y labios de larga duración sobre modelo.', requiereModelo: true },
-      { titulo: 'Examen final', descripcion: 'Maquillaje de evento completo evaluado por Verónica.', requiereModelo: true }
-    ],
-    requisitos: [
-      'Ser mayor de 16 años',
-      'Kit básico de brochas (se da una lista antes de empezar)',
-      'Traer modelo en las clases de práctica'
-    ],
-    certificado: { incluye: true, descripcion: 'Certificado de formación en maquillaje social profesional.' },
-    precioUSD: 250,
-    condicionesPago: 'Puede pagarse en dos partes: 50 % para reservar y 50 % en la semana 4. [EJEMPLO]',
     estado: 'vigente',
     galeria: [],
     egresadas: null

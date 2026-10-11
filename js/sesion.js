@@ -29,7 +29,7 @@ export const CLAVES = {
 };
 
 /** Versión de los datos de ejemplo. Subirla cuando cambien: se vuelven a cargar. */
-const VERSION_SEMILLA = 2;
+const VERSION_SEMILLA = 3;
 
 export const EVENTO = 'cambio-de-sesion';
 export const MIN_CONTRASENA = 8;
@@ -132,22 +132,15 @@ const CUENTAS_FIJAS = [ALUMNA_DEMO, ADMIN_DEMO, ...ALUMNAS_EJEMPLO];
 const IDS_FIJOS = new Set(CUENTAS_FIJAS.map((a) => a.id));
 
 const insc = (n, alumnaId, cursoSlug, estado, creada) => ({ id: `insc-demo-${n}`, alumnaId, cursoSlug, estado, creada });
+// Todas pendientes (o cancelada): las pendientes no ocupan cupo, así la barra de
+// Visión Lash (curso real) no muestra inscritas inventadas. Confirmar alguna en el
+// panel demo solo cambia la barra en ese navegador.
 const INSCRIPCIONES_DEMO = [
-  // María (cuenta demo de alumna)
-  insc(1, 'alumna-demo', 'automaquillaje-esencial', 'confirmada', '2026-09-20T15:00:00.000Z'),
-  insc(2, 'alumna-demo', 'maquillaje-social-profesional', 'pendiente', '2026-10-02T18:30:00.000Z'),
-  // Maquillaje Social Profesional
-  insc(3, 'ejemplo-1', 'maquillaje-social-profesional', 'confirmada', '2026-09-12T14:10:00.000Z'),
-  insc(4, 'ejemplo-2', 'maquillaje-social-profesional', 'confirmada', '2026-09-15T21:45:00.000Z'),
-  insc(5, 'ejemplo-3', 'maquillaje-social-profesional', 'pendiente', '2026-10-03T16:20:00.000Z'),
-  insc(6, 'ejemplo-4', 'maquillaje-social-profesional', 'pendiente', '2026-10-05T12:05:00.000Z'),
-  insc(7, 'ejemplo-8', 'maquillaje-social-profesional', 'pendiente', '2026-10-07T19:30:00.000Z'),
-  // Automaquillaje Esencial
-  insc(8, 'ejemplo-5', 'automaquillaje-esencial', 'confirmada', '2026-09-22T17:00:00.000Z'),
-  insc(9, 'ejemplo-6', 'automaquillaje-esencial', 'pendiente', '2026-10-06T22:15:00.000Z'),
-  insc(10, 'ejemplo-2', 'automaquillaje-esencial', 'cancelada', '2026-09-28T13:40:00.000Z'),
-  // Masterclass Novias y Eventos
-  insc(11, 'ejemplo-7', 'masterclass-novias-y-eventos', 'confirmada', '2026-09-05T15:30:00.000Z')
+  insc(1, 'alumna-demo', 'vision-lash', 'pendiente', '2026-10-08T15:00:00.000Z'),
+  insc(2, 'ejemplo-1', 'vision-lash', 'pendiente', '2026-10-09T14:10:00.000Z'),
+  insc(3, 'ejemplo-2', 'vision-lash', 'pendiente', '2026-10-09T21:45:00.000Z'),
+  insc(4, 'ejemplo-3', 'vision-lash', 'pendiente', '2026-10-10T16:20:00.000Z'),
+  insc(5, 'ejemplo-4', 'vision-lash', 'cancelada', '2026-10-10T12:05:00.000Z')
 ];
 
 /**

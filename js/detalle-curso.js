@@ -10,7 +10,7 @@
 
 import { esc, textoDuracion, placeholderFoto } from './componentes.js';
 import { icono } from './iconos.js';
-import { formatearFecha } from './fechas.js';
+import { formatearFecha, diaSemana } from './fechas.js';
 
 const ops = ({ prefijo = '', nivel = 2, aparecer = true } = {}) => ({
   id: (base) => `${prefijo}${base}`,
@@ -55,6 +55,23 @@ export function htmlFicha(curso, opciones) {
   </section>`;
 }
 
+/** Fechas de cada clase (opcional: solo si el curso trae `calendario`). */
+export function htmlCalendario(curso, opciones) {
+  if (!curso.calendario?.length) return '';
+  const o = ops(opciones);
+  return `
+  <section class="curso-seccion" id="${o.id('calendario')}" aria-labelledby="${o.id('t-calendario')}"${o.aparecer}>
+    ${encabezado({ etiqueta: textoDuracion(curso.semanas), titulo: 'Calendario', id: o.id('t-calendario'), h: o.h })}
+    <ol class="calendario">
+      ${curso.calendario.map((c) => `
+        <li class="calendario__item${c.destacada ? ' calendario__item--destacada' : ''}">
+          <span class="calendario__fecha"><span class="calendario__dia">${esc(diaSemana(c.fecha))}</span>${esc(formatearFecha(c.fecha))}</span>
+          <span class="calendario__texto">${esc(c.texto)}</span>
+        </li>`).join('')}
+    </ol>
+  </section>`;
+}
+
 export function htmlSobre(curso, opciones) {
   const o = ops(opciones);
   return `
@@ -62,6 +79,10 @@ export function htmlSobre(curso, opciones) {
     ${encabezado({ titulo: 'Sobre el curso', id: o.id('t-sobre'), h: o.h })}
     <p class="curso-seccion__intro">${esc(curso.descripcion)}</p>
     ${curso.dirigidoA?.length ? `<${o.hSub} class="curso-seccion__subtitulo">Dirigido a</${o.hSub}>${lista(curso.dirigidoA)}` : ''}
+    ${curso.destacados?.items?.length ? `
+      <${o.hSub} class="curso-seccion__subtitulo">${esc(curso.destacados.titulo)}</${o.hSub}>
+      ${lista(curso.destacados.items)}
+      ${curso.destacados.cierre ? `<p class="curso-seccion__remate">${esc(curso.destacados.cierre)}</p>` : ''}` : ''}
   </section>`;
 }
 
@@ -79,7 +100,7 @@ export function htmlPensum(curso, opciones) {
   const semanas = curso.pensum.map((s, i) => `
     <details class="acordeon__item"${i === 0 ? ' open' : ''}>
       <summary class="acordeon__resumen">
-        <span class="acordeon__titulo"><span class="acordeon__numero">Semana ${s.semana}</span> · ${esc(s.titulo)}</span>
+        <span class="acordeon__titulo">${s.semana ? `<span class="acordeon__numero">Semana ${s.semana}</span> · ` : ''}${esc(s.titulo)}</span>
         <span class="acordeon__meta">${s.temas.length === 1 ? '1 tema' : `${s.temas.length} temas`}</span>
         ${icono('chevron-abajo', { tamano: 20, clase: 'acordeon__flecha' })}
       </summary>
@@ -89,7 +110,7 @@ export function htmlPensum(curso, opciones) {
     </details>`).join('');
   return `
   <section class="curso-seccion" id="${o.id('pensum')}" aria-labelledby="${o.id('t-pensum')}"${o.aparecer}>
-    ${encabezado({ etiqueta: `${textoDuracion(curso.semanas)} · ${curso.totalClases} clases`, titulo: 'Pensum', id: o.id('t-pensum'), h: o.h })}
+    ${encabezado({ etiqueta: `${textoDuracion(curso.semanas)} · ${curso.totalClases} clases`, titulo: curso.pensum.every((s) => s.semana) ? 'Pensum' : 'Qué aprenderás', id: o.id('t-pensum'), h: o.h })}
     <div class="acordeon">${semanas}</div>
   </section>`;
 }

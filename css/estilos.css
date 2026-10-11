@@ -1429,6 +1429,9 @@ a.pie__red:hover { border-color: var(--dorado); color: var(--dorado-profundo); }
 .seccion--cursos { padding-top: var(--e-12); }
 @media (min-width: 1024px) { .seccion--cursos { padding-top: var(--e-16); } }
 #proximos-cursos { scroll-margin-top: calc(var(--tope) + var(--e-4)); }
+/* Página Cursos: enlace a las ediciones pasadas bajo la rejilla */
+.cursos-anteriores-enlace { margin-top: var(--e-12); font-size: 0.9375rem; color: var(--gris-calido); text-align: center; }
+.cursos-anteriores-enlace a { display: inline-flex; align-items: center; min-height: var(--tactil); margin-block: calc((1.5em - var(--tactil)) / 2); font-weight: 500; }
 .rejilla-cursos.esta-cambiando { opacity: 0.4; transition: opacity var(--dur-rapida) var(--curva); }
 .rejilla-cursos { transition: opacity var(--dur) var(--curva); }
 .sin-resultados {
@@ -1660,6 +1663,35 @@ main:has(> .seccion--cierre:last-child) ~ .pie { margin-top: 0; }
 .curso-seccion__intro { font-size: var(--t-cuerpo-grande); font-weight: 300; line-height: 1.7; max-width: 62ch; }
 .curso-seccion__subtitulo { margin: var(--e-8) 0 var(--e-4); font-size: var(--t-h4); font-weight: 500; }
 .curso-seccion__nota { margin-top: var(--e-4); font-size: var(--t-pequeno); color: var(--gris-calido); }
+/* Frase de remate bajo una lista (ej. "No es solo una formación…") */
+.curso-seccion__remate {
+  max-width: 56ch;
+  margin-top: var(--e-6);
+  padding-left: var(--e-4);
+  border-left: 2px solid var(--dorado);
+  font-family: var(--fuente-titulos);
+  font-size: var(--t-h4);
+  font-style: italic;
+  line-height: 1.4;
+}
+
+/* Calendario de clases de la ficha */
+.calendario { display: grid; margin: 0; padding: 0; list-style: none; border-top: var(--borde); }
+.calendario__item {
+  display: grid;
+  grid-template-columns: minmax(0, 11rem) minmax(0, 1fr);
+  gap: var(--e-4);
+  align-items: baseline;
+  padding-block: var(--e-3);
+  border-bottom: var(--borde);
+}
+.calendario__fecha { display: grid; font-weight: 500; line-height: 1.35; }
+.calendario__dia { font-size: var(--t-pequeno); font-weight: 400; color: var(--gris-calido); text-transform: capitalize; }
+.calendario__texto { line-height: 1.45; }
+.calendario__item--destacada .calendario__texto { font-weight: 500; color: var(--dorado-profundo); }
+@media (min-width: 640px) {
+  .calendario__fecha { grid-auto-flow: column; justify-content: start; gap: var(--e-2); }
+}
 
 /* 3. Ficha rápida */
 .ficha { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--e-3); margin: 0; }

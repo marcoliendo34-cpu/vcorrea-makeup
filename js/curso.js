@@ -10,7 +10,7 @@ import {
   iniciarPagina, esc, boton, insignia, barraProgreso, placeholderFoto, urlWhatsApp,
   ajustarWhatsApp, activarBarras, activarApariciones, formatearPrecio, desplazamiento } from './componentes.js';
 import {
-  encabezado, datosFicha, htmlFicha, htmlSobre, htmlIncluye, htmlPensum, htmlPracticas,
+  encabezado, datosFicha, htmlFicha, htmlCalendario, htmlSobre, htmlIncluye, htmlPensum, htmlPracticas,
   htmlRequisitos, htmlCertificado, htmlMiniGaleria, fotosParaVisor
 } from './detalle-curso.js';
 import { abrirVisor } from './visor.js';
@@ -24,24 +24,9 @@ import { inscribirse, mensajeAvisame, mensajeDudas, mensajeRepetir } from './ins
 
 const MARCA = 'Verónica Correa Makeup';
 
-// [EJEMPLO] Preguntas frecuentes de muestra (iguales para todos los cursos por ahora).
-const PREGUNTAS = [
-  {
-    pregunta: '¿Necesito experiencia previa?',
-    respuesta: '[EJEMPLO] Depende del nivel. Los cursos básicos parten de cero; en los intermedios y avanzados revisa los requisitos de cada curso.'
-  },
-  {
-    pregunta: '¿Qué pasa si falto a una clase?',
-    respuesta: '[EJEMPLO] Avísale a Verónica con tiempo y te indicará cómo recuperar el contenido de esa clase.'
-  },
-  {
-    pregunta: '¿Puedo pagar en partes?',
-    respuesta: '[EJEMPLO] Algunos cursos permiten pagar en partes. Las condiciones de cada curso aparecen en la sección Inversión.'
-  }
-];
-
 const INDICE = [
   { id: 'detalles', texto: 'Detalles' },
+  { id: 'calendario', texto: 'Fechas' },
   { id: 'incluye', texto: 'Incluye' },
   { id: 'pensum', texto: 'Pensum' },
   { id: 'practicas', texto: 'Prácticas' },
@@ -207,12 +192,14 @@ function htmlPagos() {
   </section>`;
 }
 
-function htmlPreguntas() {
+/** Preguntas frecuentes del curso (solo si el curso trae las suyas). */
+function htmlPreguntas(curso) {
+  if (!curso.preguntas?.length) return '';
   return `
   <section class="curso-seccion" aria-labelledby="t-preguntas" data-aparecer>
     ${encabezado({ titulo: 'Preguntas frecuentes', id: 't-preguntas' })}
     <div class="acordeon">
-      ${PREGUNTAS.map((p) => `
+      ${curso.preguntas.map((p) => `
         <details class="acordeon__item">
           <summary class="acordeon__resumen">
             <span class="acordeon__titulo">${esc(p.pregunta)}</span>
@@ -410,6 +397,7 @@ if (!curso) {
   const lectura = est.finalizado;
   const secciones = [
     htmlFicha(curso),
+    htmlCalendario(curso),
     htmlCupos(curso, est),
     htmlSobre(curso),
     htmlIncluye(curso),
@@ -421,7 +409,7 @@ if (!curso) {
     lectura ? '' : htmlInversion(curso),
     lectura ? '' : htmlInscripcion(),
     lectura ? '' : htmlPagos(),
-    lectura ? '' : htmlPreguntas()
+    lectura ? '' : htmlPreguntas(curso)
   ].join('');
   const ids = INDICE.map((x) => x.id).filter((id) => secciones.includes(`id="${id}"`));
 

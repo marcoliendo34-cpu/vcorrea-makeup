@@ -54,6 +54,11 @@ export function rangoFechas(inicio, fin) {
   return `${a.getDate()} – ${formatearFecha(b)}`;
 }
 
+/** "miércoles" */
+export function diaSemana(valor) {
+  return DIAS[leerFecha(valor).getDay()];
+}
+
 /** true si la fecha ya pasó (antes de hoy). */
 export function yaPaso(valor, hoy = new Date()) {
   return leerFecha(valor) < leerFecha(hoy);

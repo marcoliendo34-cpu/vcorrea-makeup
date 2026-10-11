@@ -296,12 +296,12 @@ document.fonts.ready.then(() => {
 
 activarBarras();
 
-/* ------------------- verificación con cursos de ejemplo ------------------- */
+/* ------------------------ verificación con los cursos ------------------------ */
+// Valores esperados sin inscripciones confirmadas en este navegador.
+// Los estados "Últimos cupos" y "Agotado" se ven arriba, en la sección de cupos.
 
 const ESPERADO = {
-  'automaquillaje-esencial': { porcentaje: 50, restantes: 6, estado: 'disponible' },
-  'maquillaje-social-profesional': { porcentaje: 87, restantes: 2, estado: 'ultimos' },
-  'masterclass-novias-y-eventos': { porcentaje: 100, restantes: 0, estado: 'agotado' }
+  'vision-lash': { porcentaje: 0, restantes: 10, estado: 'disponible' }
 };
 const NOMBRE_ESTADO = { disponible: 'Disponible', ultimos: 'Últimos cupos', agotado: 'Agotado' };
 const marca = (ok) => ok
@@ -312,20 +312,20 @@ async function verificarCursos() {
   const [vigentes, anteriores, porSlug, ...busquedas] = await Promise.all([
     obtenerCursosVigentes(),
     obtenerCursosAnteriores(),
-    obtenerCursoPorSlug('maquillaje-social-profesional'),
-    buscarCursos('MAQUILLAJE SOCIAL'),
-    buscarCursos('novias'),
-    buscarCursos('basico'),
-    buscarCursos('colorimetria'),
-    buscarCursos('', { modalidad: 'online' }),
+    obtenerCursoPorSlug('vision-lash'),
+    buscarCursos('VISION LASH'),
+    buscarCursos('pestañas'),
+    buscarCursos('pelo a pelo'),
+    buscarCursos('capping brasileno'),
+    buscarCursos('', { modalidad: 'presencial' }),
     buscarCursos('', { nivel: 'Avanzado', estado: 'todos' })
   ]);
   const consultas = [
-    ['"MAQUILLAJE SOCIAL"', busquedas[0]],
-    ['"novias"', busquedas[1]],
-    ['"basico" (sin acento)', busquedas[2]],
-    ['"colorimetria" (tema del pensum)', busquedas[3]],
-    ['filtro modalidad "online"', busquedas[4]],
+    ['"VISION LASH" (sin acento)', busquedas[0]],
+    ['"pestañas"', busquedas[1]],
+    ['"pelo a pelo"', busquedas[2]],
+    ['"capping brasileno" (tema del pensum)', busquedas[3]],
+    ['filtro modalidad "presencial"', busquedas[4]],
     ['filtro nivel "Avanzado", vigentes y finalizados', busquedas[5]]
   ];
 
@@ -368,7 +368,7 @@ async function verificarCursos() {
         </table>
         <h3 class="guia-subtitulo" style="margin-top:var(--e-8)">Curso por slug</h3>
         <table class="guia-tabla">
-          <tr><th>maquillaje-social-profesional</th><td>${porSlug ? esc(porSlug.nombre) : 'No encontrado'}</td></tr>
+          <tr><th>vision-lash</th><td>${porSlug ? esc(porSlug.nombre) : 'No encontrado'}</td></tr>
         </table>
       </div>
     </div>`;
