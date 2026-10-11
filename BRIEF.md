@@ -13,7 +13,11 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
   - Cursos en `data/cursos.js`: Visión Lash es el primer curso real (11 oct 2026). Todavía no hay cursos finalizados cargados.
   - Galería (`data/galeria.js`): categorías Formaciones, Trabajos de alumnas y Trabajos propios. Las fotos con `destacada` van al inicio y las de `enAnteriores` a Cursos anteriores.
   - Sesión de alumna simulada.
-- **Fase 2 (después de la aprobación):** conectar Supabase y cargar los cursos reales.
+- **Fase 2 (en curso desde el 11 oct 2026, vista previa aprobada):** Supabase.
+  - Proyecto **VCORREA MAKEUP** (`sgcxjurhxycnhmsiqeid`, us-east-1, plan gratuito): https://sgcxjurhxycnhmsiqeid.supabase.co
+  - Migraciones en `supabase/migraciones/` (mismo nombre y versión que en la base). Pruebas de reglas en `supabase/pruebas/`.
+  - Tablas: `perfiles`, `cursos`, `inscripciones`, `galeria`. Buckets públicos `cursos` y `galeria`.
+  - La web sigue en `modoDatos: 'demo'` hasta el paso de conexión. URL y llave publicable en `js/config.js`; la llave secreta nunca va en el código.
 - **Referencia de estructura:** hipereventos.com (capturas en `/referencias`).
   - **Sí tomamos:** hero con imagen grande, buscador, tarjetas de "Próximos cursos" con fecha, datos clave, barra de inscripción en % y botón "Inscribirme".
   - **No tomamos:** sus colores oscuros ni su tipografía gruesa. Nuestra estética es **clara, minimalista y elegante**.
@@ -67,6 +71,9 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 ├── data/
 │   ├── cursos.js
 │   └── galeria.js
+├── supabase/
+│   ├── migraciones/         SQL de cada migración (NO se publica)
+│   └── pruebas/             pruebas de RLS por rol y su limpieza
 ├── cursos/                  una página por curso, generada (NO editar a mano)
 ├── fotos/                   imágenes en WebP (galería: /fotos/galeria/{archivo}-600 y -1200)
 ├── referencias/             capturas de Hipereventos (NO se publican)
@@ -89,7 +96,7 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 - **Sesión de alumna simulada** con `localStorage` en `js/sesion.js`, con la misma forma que tendrá Supabase: `registrar(datos)`, `ingresar(correo, contrasena)`, `salir()`, `usuarioActual()` y el evento `cambio-de-sesion`. En la demo no se guardan contraseñas. Cuentas demo (contraseña demo1234):
   - alumna@demo.com, rol `alumna`.
   - admin@demo.com, rol `admin`.
-- **Roles:** `alumna` (por defecto) y `admin` (Verónica). Las cuentas nuevas siempre son de alumna. En la demo el rol vive en el navegador, así que el panel es solo una maqueta. En la fase 2, Supabase hace cumplir el rol con RLS.
+- **Roles:** `alumna` (por defecto), `admin` (Verónica) y `superadmin` (desarrollador: cursos, galería y fotos). Las cuentas nuevas siempre son de alumna. **Los roles solo se cambian desde la base de datos**, nunca desde la web. En la demo el rol vive en el navegador; en la fase 2 Supabase lo hace cumplir con RLS.
 - **Datos de ejemplo** (8 alumnas e inscripciones ficticias) en `js/sesion.js`. Se recargan al subir `VERSION_SEMILLA`, y el panel tiene el botón "Restablecer datos de ejemplo".
 - **Datos de contacto, redes y métodos de pago** solo en `js/config.js`. Ningún número, usuario de red o dato de pago escrito en otro archivo.
 - **Franja "Vista previa · Los cursos y datos son de ejemplo"** arriba de todo el sitio, incluido el panel. Se controla con `MODO_VISTA_PREVIA` en `js/config.js`:
@@ -197,7 +204,8 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 - Etiqueta **"Últimos cupos"** desde 80% hasta 99%.
 - **"Agotado"** al 100%: botón desactivado con el texto **"Cupos agotados"**.
 - Todo este cálculo vive en `js/cupos.js`.
-- **Inscritas de un curso** = `inscritasFuera` (cupos ocupados por fuera de la web, dato del curso) + inscripciones **confirmadas** en la web. Lo calcula `js/datos.js`. Las pendientes no ocupan cupo.
+- **Inscritas de un curso** = solo las inscripciones **confirmadas** (decidido el 11 oct 2026). Las pendientes no ocupan cupo. Quien se inscriba por fuera de la web se carga como inscripción confirmada. `inscritasFuera` desaparece al conectar Supabase.
+- En Supabase, la función pública `cupos_de_cursos()` da por curso solo el número de confirmadas, y la base **no deja confirmar** si el curso está lleno.
 
 ### Ficha del curso (campos opcionales)
 
@@ -222,7 +230,7 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
   - Pendiente de confirmación.
   - Confirmada.
   - Cancelada: la cancela la administradora. Si la alumna vuelve a pedir el curso, la inscripción pasa otra vez a pendiente.
-  - Finalizado: no se guarda; se muestra cuando el curso ya terminó.
+  - Finalizada: en Supabase es un estado guardado (`finalizada`), lo marca la administradora.
 
 ### Panel de administradora (`/admin`)
 

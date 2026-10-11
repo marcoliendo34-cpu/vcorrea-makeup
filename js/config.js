@@ -22,6 +22,15 @@ export const CONFIG = {
   // El modo demo se mantiene siempre para poder hacer capturas sin conexión.
   modoDatos: 'demo',
 
+  // Supabase (fase 2). Proyecto "VCORREA MAKEUP", us-east-1.
+  // La llave publicable es pública por diseño: la seguridad la ponen las reglas
+  // RLS de la base (supabase/migraciones). La llave secreta NUNCA va en el código.
+  // Aún sin usar: la web sigue en modoDatos 'demo' hasta el paso de conexión.
+  supabase: {
+    url: 'https://sgcxjurhxycnhmsiqeid.supabase.co',
+    llavePublica: 'sb_publishable_DAq2QDwfNAOCo4rb6pRtbg_X8GOIxpo'
+  },
+
   // Igual que MODO_VISTA_PREVIA (arriba), por compatibilidad.
   vistaPrevia: MODO_VISTA_PREVIA,
 
