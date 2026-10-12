@@ -233,7 +233,8 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 
 - El botón **"Inscribirme"** exige sesión.
 - **Sin sesión:** lleva a `/registro` y, al terminar, regresa al curso.
-- **Con sesión:** registra la inscripción como **"Pendiente de confirmación"** y abre WhatsApp (`wa.me`) con un mensaje prellenado.
+- **Con sesión:** primero revisa los cupos en ese momento; luego guarda la inscripción como **"Pendiente de confirmación"** en la base (sin duplicar) y recién entonces abre WhatsApp (`wa.me`) con el mensaje prellenado.
+- **Curso lleno al tocar "Inscribirme":** ventana **"Este curso acaba de agotarse"** con **"Avísame del próximo"**. La base tampoco acepta solicitudes nuevas (ni reabrir una cancelada) en un curso lleno.
 - Verónica concreta la inscripción por WhatsApp.
 - **Estados de una inscripción:**
   - Pendiente de confirmación.
