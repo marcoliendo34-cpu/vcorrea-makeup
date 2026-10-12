@@ -8,7 +8,8 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 
 - **Clienta:** Verónica Correa, maquilladora profesional en Venezuela. Marca: **Vcorrea Makeup**.
 - **Qué es:** plataforma de cursos y formaciones de maquillaje. Las alumnas ven los cursos disponibles, se registran, ingresan y solicitan su inscripción por WhatsApp. Verónica concreta la inscripción por WhatsApp.
-- **Fase 1 (actual): VISTA PREVIA** para que la clienta apruebe la interfaz.
+- **Lanzamiento (12 oct 2026):** sin franja de vista previa; los buscadores indexan las páginas públicas. Medición con Pixel de Meta y Vercel Web Analytics (`js/medicion.js`). Correos de cuenta con Resend (plantillas en `supabase/correos/`).
+- **Fase 1 (terminada): VISTA PREVIA** para que la clienta aprobara la interfaz.
   - Sin base de datos real.
   - Cursos en `data/cursos.js`: Visión Lash es el primer curso real (11 oct 2026). Todavía no hay cursos finalizados cargados.
   - Galería (`data/galeria.js`): categorías Formaciones, Trabajos de alumnas y Trabajos propios. Las fotos con `destacada` van al inicio y las de `enAnteriores` a Cursos anteriores.
@@ -69,6 +70,8 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 │   ├── sesion-supabase.js   Supabase Auth + tabla perfiles
 │   ├── demo/                sesión y datos de ejemplo (SOLO capturas en localhost)
 │   ├── inscripcion.js       flujo "Inscribirme" → WhatsApp
+│   ├── medicion.js          Pixel de Meta y Vercel Web Analytics (solo en la web publicada)
+│   ├── nueva-contrasena.js  crear contraseña nueva desde el enlace del correo
 │   ├── detalle-curso.js     secciones de la ficha del curso reutilizables (ficha y cursos anteriores)
 │   ├── visor.js             visor de fotos a pantalla completa (galería y cursos anteriores)
 │   ├── formularios.js       validación en vivo y ayudas de formularios (registro, ingreso)
@@ -82,6 +85,7 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 │   └── galeria.js
 ├── supabase/
 │   ├── migraciones/         SQL de cada migración (NO se publica)
+│   ├── correos/             plantillas HTML de los correos de Supabase Auth (se pegan en el panel de Supabase)
 │   └── pruebas/             pruebas de RLS por rol y su limpieza
 ├── cursos/                  una página por curso, generada (NO editar a mano)
 ├── fotos/                   imágenes en WebP (galería: /fotos/galeria/{archivo}-600 y -1200)
@@ -110,21 +114,26 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 - **Roles:** `alumna` (por defecto), `admin` (Verónica) y `superadmin` (Marco, desarrollador: cursos, galería y fotos). Las cuentas nuevas siempre son de alumna. **Los roles solo se cambian desde la base de datos**, nunca desde la web. En la demo el rol vive en el navegador; en Supabase lo hacen cumplir las reglas RLS.
 - **Datos de ejemplo de la demo** (8 alumnas e inscripciones ficticias) en `js/demo/sesion-demo.js`. Se recargan al subir `VERSION_SEMILLA`. El aviso "Restablecer datos de ejemplo" del panel solo aparece en la demo.
 - **Datos de contacto, redes y métodos de pago** solo en `js/config.js`. Ningún número, usuario de red o dato de pago escrito en otro archivo.
-- **Franja "Vista previa · Los cursos y datos son de ejemplo"** arriba de todo el sitio, incluido el panel. Se controla con `MODO_VISTA_PREVIA` en `js/config.js`:
+- **Franja "Vista previa · Los cursos y datos son de ejemplo"**: apagada desde el lanzamiento (`MODO_VISTA_PREVIA = false` en `js/config.js`). Si se vuelve a encender:
   - Después de cambiarlo se corre `herramientas/generar_paginas.py`, que la escribe en el HTML para que no haya salto al cargar.
   - Si se olvida, `componentes.js` la pone o la quita al abrir la página.
   - Su alto (`--alto-franja`) entra en `--tope`, la variable que despeja el contenido de lo fijo de arriba.
-- **Bloqueo a buscadores** durante la vista previa, aparte de la franja: meta robots `noindex, nofollow` en cada página, `X-Robots-Tag` en `vercel.json` y `robots.txt`. Para lanzar hay que quitar los tres.
+- **Buscadores (desde el lanzamiento):** las páginas públicas se indexan. Llevan `noindex, nofollow` (meta robots, lo escribe `generar_paginas.py` según `PRIVADAS`) solo `/admin`, `/mi-cuenta`, `/ingresar`, `/registro`, `/nueva-contrasena`, la 404 y la guía de estilo. `vercel.json` manda además `X-Robots-Tag` en esas rutas. `robots.txt` deja pasar todo (si bloqueara las privadas, los buscadores no leerían su noindex).
+- **Medición (`js/medicion.js`, configurada en `CONFIG.medicion`):** nunca en localhost ni en `/admin`.
+  - Pixel de Meta (`metaPixelId`): `PageView` en cada página, `Contact` al tocar "Inscribirme" y `CompleteRegistration` al terminar el registro. Sin datos personales.
+  - Vercel Web Analytics (`vercelAnalytics: true`): script `/_vercel/insights/script.js`; se activa en el panel de Vercel.
+- **Correos de cuenta (Supabase Auth + Resend por SMTP):** confirmación de cuenta (el enlace lleva a `/ingresar?confirmada=1`, que entra directo) y "¿Olvidaste tu contraseña?" (enlace a `/nueva-contrasena`). Si el enlace vence, se ofrece otro. Plantillas en `supabase/correos/`.
+- **Prueba de lanzamiento:** `python3 herramientas/prueba_lanzamiento.py [--capturas]` simula la web publicada (dominio que no es localhost): sin franja, noindex correcto, Pixel, Analytics, confirmación de correo y cambio de contraseña.
 
 ### Vercel
 
 - `vercel.json`:
   - URLs limpias (`/cursos` en lugar de `/cursos.html`).
   - Reescritura `/cursos/:slug` → `curso.html`.
-  - Encabezado `X-Robots-Tag: noindex` mientras dure la vista previa.
+  - Encabezado `X-Robots-Tag: noindex` solo en las páginas privadas.
   - `404.html` como página de error.
-- `.vercelignore`: excluye `BRIEF.md`, `/referencias` y `/herramientas`.
-- `robots.txt`: bloquea a los buscadores durante la vista previa, pero deja pasar a los lectores de enlaces (WhatsApp, Meta, etc.) para que las vistas previas al compartir funcionen.
+- `.vercelignore`: excluye `BRIEF.md`, `/referencias`, `/herramientas`, `/supabase` y la guía de estilo.
+- `robots.txt`: deja pasar a todos e indica el sitemap.
 - **Cabeceras de las páginas:** `herramientas/generar_paginas.py` es el único lugar donde se editan títulos y descripciones. El script:
   - Escribe el bloque Open Graph y canonical de cada página.
   - Escribe el bloque de fuentes y el de precarga de módulos (`modulepreload` de todo lo que importa cada página).
@@ -200,8 +209,9 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 | `/registro` | registro.html | Crear cuenta de alumna |
 | `/ingresar` | ingresar.html | Iniciar sesión |
 | `/mi-cuenta` | mi-cuenta.html | Datos de la alumna y sus inscripciones |
+| `/nueva-contrasena` | nueva-contrasena.html | Crear contraseña nueva desde el enlace del correo |
 | `/admin` | admin.html | Panel de la administradora (solo rol admin; noindex, sin header público ni botón flotante) |
-| `/privacidad` | privacidad.html | Texto provisional |
+| `/privacidad` | privacidad.html | Política de privacidad (12 oct 2026; menciona Supabase, Vercel, Resend, Pixel de Meta y Vercel Analytics) |
 | (cualquier otra) | 404.html | Página no encontrada |
 
 ---
@@ -274,6 +284,8 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 - **Obligatorios:** nombre, apellido, cédula (V o E + número), teléfono venezolano, correo y contraseña.
 - **Opcionales:** Instagram y fecha de nacimiento.
 - **Una cuenta por cédula y una por correo.**
+- **Confirmación por correo:** con "Confirm email" activo en Supabase, al crear la cuenta se ve "Revisa tu correo" (con "Reenviar el correo"). Ingresar con un correo sin confirmar también ofrece reenviarlo.
+- **Contraseña olvidada:** en `/ingresar`, "¿Olvidaste tu contraseña?" manda el enlace (mismo mensaje exista o no la cuenta).
 
 ### Pagos y contacto
 

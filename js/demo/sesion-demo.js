@@ -168,6 +168,20 @@ export async function salir() {
   return { error: null };
 }
 
+/* -------- Contraseña y confirmación: en la demo no hay correos, solo la interfaz -------- */
+
+export async function enviarRecuperacion() { return { error: null }; }
+export async function reenviarConfirmacion() { return { error: null }; }
+/** En la demo el "enlace" vale si hay sesión (para ver la pantalla en las capturas). */
+export async function prepararRecuperacion() {
+  const u = usuarioEnCacheDemo();
+  return { listo: Boolean(u), correo: u?.correo ?? null };
+}
+export async function cambiarContrasena(nueva) {
+  if (String(nueva || '').length < MIN_CONTRASENA) return { usuario: null, error: ERRORES.faltanDatos() };
+  return { usuario: usuarioEnCacheDemo(), error: null };
+}
+
 /* ------------------- Acceso de bajo nivel para js/demo/datos-demo.js ------------------- */
 
 export const almacen = { leer, escribir };

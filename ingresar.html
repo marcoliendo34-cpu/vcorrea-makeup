@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es-VE" class="vista-previa">
+<html lang="es-VE">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -46,14 +46,12 @@
   <link rel="modulepreload" href="/js/cupos.js">
   <link rel="modulepreload" href="/js/textos.js">
   <link rel="modulepreload" href="/js/fechas.js">
+  <link rel="modulepreload" href="/js/medicion.js">
   <link rel="modulepreload" href="/js/modo.js">
   <link rel="modulepreload" href="/js/sesion-base.js">
   <!-- precargas:fin -->
 </head>
 <body data-pagina="ingresar">
-  <!-- franja:inicio (MODO_VISTA_PREVIA en js/config.js; la escribe generar_paginas.py) -->
-  <div class="franja-vista-previa" data-franja-vista-previa>Vista previa · Los cursos y datos son de ejemplo</div>
-  <!-- franja:fin -->
   <main id="contenido" tabindex="-1">
     <section class="acceso" aria-labelledby="titulo-ingresar">
       <div class="contenedor acceso__contenedor">
@@ -62,6 +60,7 @@
           <h1 id="titulo-ingresar">Inicia sesión</h1>
           <p class="acceso__intro">Entra para solicitar tu inscripción y ver tus cursos.</p>
           <p class="acceso__curso" data-curso-contexto hidden></p>
+          <p class="formulario__resultado formulario__resultado--ok" role="status" data-confirmada hidden></p>
 
           <form class="formulario" novalidate data-ingresar>
             <div class="campo">
@@ -79,7 +78,11 @@
                 <button class="campo__ojo" type="button" data-mostrar-contrasena="ingresar-contrasena"></button>
               </div>
               <p class="campo__error" id="ingresar-contrasena-error" hidden></p>
-              <p class="campo__aviso" id="aviso-olvido" role="status" data-aviso-olvido hidden>Disponible pronto. Mientras tanto, escríbele a Verónica por WhatsApp y te ayuda.</p>
+              <div class="campo__aviso recuperar" id="aviso-olvido" data-aviso-olvido hidden>
+                <p>Escribe tu correo arriba y te enviamos un enlace para crear una contraseña nueva.</p>
+                <button class="boton boton--secundario boton--bloque" type="button" data-enviar-enlace><span>Enviarme el enlace</span></button>
+                <p class="recuperar__estado" role="status" data-estado-olvido></p>
+              </div>
             </div>
             <p class="formulario__resultado formulario__resultado--error" role="alert" data-error-general hidden></p>
             <button class="boton boton--principal boton--grande boton--bloque" type="submit"><span>Ingresar</span></button>

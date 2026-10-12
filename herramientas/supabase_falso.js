@@ -39,8 +39,9 @@ function semilla() {
   return { cursos, galeria, usuarios, perfiles, inscripciones: [], sesion: null, archivos: [] };
 }
 
-const leerDB = () => { try { return JSON.parse(localStorage.getItem(CLAVE_DB)) || semilla(); } catch { return semilla(); } };
 const guardarDB = (db) => localStorage.setItem(CLAVE_DB, JSON.stringify(db));
+// La primera lectura guarda la semilla (así las pruebas pueden tocar la base desde el inicio)
+const leerDB = () => { try { const db = JSON.parse(localStorage.getItem(CLAVE_DB)); if (db) return db; } catch { /* semilla */ } const nueva = semilla(); guardarDB(nueva); return nueva; };
 const demora = (v) => new Promise((r) => setTimeout(() => r(v), 15));
 
 /* ------------------------------ consultas ------------------------------ */
@@ -196,6 +197,12 @@ export function createClient(url) {
         db.usuarios.push({ ...user, password });
         // trigger al_registrarse: siempre alumna
         db.perfiles.push({ id: user.id, nombre: d.nombre, apellido: d.apellido, cedula: d.cedula, telefono: d.telefono, correo: email, instagram: d.instagram || null, fecha_nacimiento: d.fecha_nacimiento || null, rol: 'alumna', creado_en: new Date().toISOString() });
+        // Con "confirmar correo" activo (db.confirmar) no se abre sesión: llega un correo
+        if (db.confirmar) {
+          (db.correos ||= []).push({ tipo: 'confirmar', email, enlace: options?.emailRedirectTo });
+          guardarDB(db);
+          return demora({ data: { user, session: null }, error: null });
+        }
         db.sesion = { user, access_token: 'falso' };
         guardarDB(db);
         avisar('SIGNED_IN', db.sesion);
@@ -209,6 +216,22 @@ export function createClient(url) {
         guardarDB(db);
         avisar('SIGNED_IN', db.sesion);
         return demora({ data: { user: db.sesion.user, session: db.sesion }, error: null });
+      },
+      async resetPasswordForEmail(email, opciones) {
+        const db = leerDB(); (db.correos ||= []).push({ tipo: 'recuperar', email, enlace: opciones?.redirectTo }); guardarDB(db);
+        return demora({ data: {}, error: null });
+      },
+      async resend({ type, email, options }) {
+        const db = leerDB(); (db.correos ||= []).push({ tipo: `reenviar-${type}`, email, enlace: options?.emailRedirectTo }); guardarDB(db);
+        return demora({ data: {}, error: null });
+      },
+      async updateUser({ password }) {
+        const db = leerDB();
+        if (!db.sesion) return demora({ data: { user: null }, error: { code: 'session_not_found', status: 401, message: 'Auth session missing!' } });
+        const u = db.usuarios.find((x) => x.id === db.sesion.user.id);
+        if (u.password === password) return demora({ data: { user: null }, error: { code: 'same_password', status: 422, message: 'New password should be different from the old password.' } });
+        u.password = password; guardarDB(db);
+        return demora({ data: { user: db.sesion.user }, error: null });
       },
       async signOut() {
         const db = leerDB(); db.sesion = null; guardarDB(db);

@@ -45,7 +45,7 @@ const porFechaDesc = (a, b) => b.fechaInicio.localeCompare(a.fechaInicio);
 function textoBuscable(curso) {
   return normalizar([
     curso.nombre, curso.subtitulo, curso.categoria, curso.nivel, curso.modalidad,
-    curso.ubicacion, curso.dias, String(curso.descripcion || '').replace('[EJEMPLO]', ''),
+    curso.ubicacion, curso.dias, curso.descripcion || '',
     ...(curso.dirigidoA || []),
     ...(curso.pensum || []).flatMap((s) => [s.titulo, ...(s.temas || [])])
   ].join(' '));

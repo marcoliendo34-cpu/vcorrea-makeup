@@ -44,10 +44,10 @@ const ESCALA = [
   { nombre: 'Display', clase: 'display', v: '--t-display', fuente: 'Cormorant 300', rango: '44 → 72 px', texto: 'Formación en maquillaje' },
   { nombre: 'Título 1', etiquetaHtml: 'h1', v: '--t-h1', fuente: 'Cormorant 300', rango: '36 → 56 px', texto: 'Próximos cursos' },
   { nombre: 'Título 2', etiquetaHtml: 'h2', v: '--t-h2', fuente: 'Cormorant 400', rango: '30 → 42 px', texto: 'Lo que vas a aprender' },
-  { nombre: 'Título 3', etiquetaHtml: 'h3', v: '--t-h3', fuente: 'Cormorant 400', rango: '24 → 30 px', texto: 'Maquillaje social [EJEMPLO]' },
+  { nombre: 'Título 3', etiquetaHtml: 'h3', v: '--t-h3', fuente: 'Cormorant 400', rango: '24 → 30 px', texto: 'Visión Lash' },
   { nombre: 'Título 4', etiquetaHtml: 'h4', v: '--t-h4', fuente: 'Cormorant 500', rango: '20 → 22 px', texto: 'Qué incluye' },
-  { nombre: 'Cuerpo grande', clase: 'texto-grande', v: '--t-cuerpo-grande', fuente: 'Jost 300', rango: '18 px', texto: 'Texto de introducción para presentar un curso o una sección. [EJEMPLO]' },
-  { nombre: 'Cuerpo', v: '--t-cuerpo', fuente: 'Jost 400', rango: '16 px', texto: 'Texto corrido de lectura. Mucho aire entre líneas para que se lea cómodo en el teléfono. [EJEMPLO]' },
+  { nombre: 'Cuerpo grande', clase: 'texto-grande', v: '--t-cuerpo-grande', fuente: 'Jost 300', rango: '18 px', texto: 'Texto de introducción para presentar un curso o una sección.' },
+  { nombre: 'Cuerpo', v: '--t-cuerpo', fuente: 'Jost 400', rango: '16 px', texto: 'Texto corrido de lectura. Mucho aire entre líneas para que se lea cómodo en el teléfono.' },
   { nombre: 'Pequeño', clase: 'texto-pequeno texto-secundario', v: '--t-pequeno', fuente: 'Jost 400', rango: '14 px', texto: 'Texto secundario, notas y datos de apoyo.' },
   { nombre: 'Etiqueta', clase: 'etiqueta', v: '--t-etiqueta', fuente: 'Jost 500 · mayúsculas · 0.2em', rango: '12 px', texto: 'Próximos cursos' }
 ];

@@ -1,13 +1,11 @@
 // Configuración del sitio. ÚNICO lugar con datos de contacto, redes y pagos.
 // Ningún otro archivo debe escribir estos datos a mano.
 
-// Vista previa para la clienta: muestra arriba la franja
-// "Vista previa · Los cursos y datos son de ejemplo" en todo el sitio.
-// Para quitarla: false y luego `python3 herramientas/generar_paginas.py`
-// (escribe la franja en el HTML para que no haya salto al cargar; si se
-// olvida, js/componentes.js igual la pone o la quita al abrir cada página).
-// El bloqueo a buscadores (meta robots, X-Robots-Tag y robots.txt) es aparte.
-export const MODO_VISTA_PREVIA = true;
+// Franja "Vista previa · Los cursos y datos son de ejemplo" arriba de todo el
+// sitio. Apagada desde el lanzamiento (12 oct 2026). Si se vuelve a encender,
+// correr `python3 herramientas/generar_paginas.py` (la escribe en el HTML).
+// Qué páginas se ocultan a los buscadores lo decide generar_paginas.py (PRIVADAS).
+export const MODO_VISTA_PREVIA = false;
 export const TEXTO_VISTA_PREVIA = 'Vista previa · Los cursos y datos son de ejemplo';
 
 export const CONFIG = {
@@ -44,8 +42,7 @@ export const CONFIG = {
     tiktok: { usuario: '@vcorrea_makeup', url: 'https://www.tiktok.com/@vcorrea_makeup' }
   },
 
-  correo: null,       // [POR DEFINIR] ej. 'hola@vcorreamakeup.com'. Si es null, no se muestra.
-  ciudad: null,       // [POR DEFINIR]
+  correo: null,       // Correo de contacto público (ej. 'hola@dominio.com'). Si es null, no se muestra.
 
   // Atención (página de contacto). Confirmado con Verónica el 11 oct 2026.
   atencion: {
@@ -54,6 +51,17 @@ export const CONFIG = {
   },
 
   moneda: 'USD',
+
+  // Medición (solo en la web publicada; nunca en localhost):
+  //   metaPixelId: ID del Pixel de Meta (solo números). null = sin Pixel.
+  //     Eventos: PageView en cada página, Contact al tocar "Inscribirme" y
+  //     CompleteRegistration al terminar el registro (js/medicion.js).
+  //   vercelAnalytics: true = script de Vercel Web Analytics (hay que activarlo
+  //     en el panel de Vercel → proyecto → Analytics).
+  medicion: {
+    metaPixelId: null,
+    vercelAnalytics: true
+  },
 
   // Métodos de pago (confirmados el 11 oct 2026). Se muestran tal cual en la ficha del curso.
   // `detalle` es opcional (ej. el banco o el correo de Binance); si es null no se muestra.

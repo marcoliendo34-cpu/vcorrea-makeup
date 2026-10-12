@@ -10,6 +10,7 @@ import { usuarioEnCache, inicialDe, esAdmin, EVENTO as EVENTO_SESION } from './s
 import { normalizar, ESTADOS_INSCRIPCION } from './textos.js';
 // datos.js (y los datos de los cursos) se cargan solo al abrir el buscador: ver activarBuscador()
 import { formatearFecha, fechaTarjeta } from './fechas.js';
+import { iniciarMedicion } from './medicion.js';
 
 /** Escapa texto para insertarlo en HTML. */
 export function esc(valor) {
@@ -204,7 +205,7 @@ export function placeholderFoto({ descripcion, proporcion = '4 / 3', sinBorde = 
 /* Tarjeta de curso (Inicio y Cursos)                                   */
 /* ------------------------------------------------------------------ */
 
-/** Quita las marcas [EJEMPLO] / [POR DEFINIR] en textos muy cortos (línea de ubicación). */
+/** Quita marcas de texto provisional (EJEMPLO / POR DEFINIR entre corchetes) en textos muy cortos. */
 const sinMarcas = (texto) => String(texto ?? '').replace(/\s*\[(EJEMPLO|POR DEFINIR)\]\s*/g, ' ').trim();
 
 export const textoDuracion = (semanas) => (semanas === 1 ? '1 semana' : `${semanas} semanas`);
@@ -671,7 +672,7 @@ function htmlRedes() {
   const tt = CONFIG.redes.tiktok;
   const instagram = ig
     ? `<a class="pie__red" href="${esc(ig.url)}" target="_blank" rel="noopener" aria-label="Instagram ${esc(ig.usuario)}">${icono('instagram')}</a>`
-    : `<span class="pie__red pie__red--pendiente" role="img" aria-label="Instagram: [POR DEFINIR]" title="Instagram [POR DEFINIR]">${icono('instagram')}</span>`;
+    : '';
   const tiktok = tt
     ? `<a class="pie__red" href="${esc(tt.url)}" target="_blank" rel="noopener" aria-label="TikTok ${esc(tt.usuario)}">${icono('tiktok')}</a>`
     : '';
@@ -707,7 +708,7 @@ function htmlFooter(sesion) {
           <h2>Contacto</h2>
           <ul class="pie__lista">
             <li><a href="${urlWhatsApp(MENSAJE_WHATSAPP)}" target="_blank" rel="noopener">WhatsApp ${esc(CONFIG.whatsapp.numeroVisible)}</a></li>
-            <li>${ig ? `<a href="${esc(ig.url)}" target="_blank" rel="noopener">Instagram ${esc(ig.usuario)}</a>` : '<span class="texto-secundario">Instagram [POR DEFINIR]</span>'}</li>
+            ${ig ? `<li><a href="${esc(ig.url)}" target="_blank" rel="noopener">Instagram ${esc(ig.usuario)}</a></li>` : ''}
             ${tt ? `<li><a href="${esc(tt.url)}" target="_blank" rel="noopener">TikTok ${esc(tt.usuario)}</a></li>` : ''}
           </ul>
         </div>
@@ -888,6 +889,7 @@ export function iniciarPagina({ pagina = document.body.dataset.pagina, whatsapp 
   const activa = ACTIVA_EQUIVALENTE[pagina] || pagina;
   const sesion = usuarioEnCache();
   asegurarFranjaVistaPrevia();
+  iniciarMedicion();
 
   document.body.insertAdjacentHTML('afterbegin', htmlHeader(activa, sesion) + htmlMenuMovil(activa, sesion) + htmlBuscador());
   document.body.insertAdjacentHTML('beforeend', htmlFooter(sesion) + (whatsapp ? htmlWhatsApp() : ''));

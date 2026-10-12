@@ -31,7 +31,7 @@ export const CLAVES = {
 
 /**
  * @typedef {'cedula-existe'|'correo-existe'|'credenciales'|'datos-invalidos'|'almacenamiento'
- *   |'confirmar-correo'|'correo-sin-confirmar'|'conexion'|'demasiados-intentos'|'servidor'} CodigoError
+ *   |'confirmar-correo'|'correo-sin-confirmar'|'enlace-vencido'|'conexion'|'demasiados-intentos'|'servidor'} CodigoError
  * @typedef {{ codigo: CodigoError, mensaje: string }} ErrorSesion
  */
 

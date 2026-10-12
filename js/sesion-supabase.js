@@ -5,6 +5,9 @@
 //                 (al_registrarse) usando los datos enviados; siempre como 'alumna'.
 // - ingresar    → supabase.auth.signInWithPassword
 // - salir       → supabase.auth.signOut
+// - enviarRecuperacion / prepararRecuperacion / cambiarContrasena → "¿Olvidaste
+//                 tu contraseña?" (correo con enlace a /nueva-contrasena)
+// - reenviarConfirmacion → vuelve a mandar el correo de confirmación de cuenta
 // - usuarioActual → sesión de Supabase + fila de "perfiles"
 // El perfil se copia en localStorage (CLAVES.perfil) solo para pintar el header
 // al instante. Quién puede ver o cambiar qué lo deciden las reglas RLS de la base,
@@ -64,6 +67,14 @@ function actualizarCopia(usuario) {
 }
 
 /* -------------------------------- API -------------------------------- */
+
+/** Adónde lleva el enlace de confirmación del correo: /ingresar avisa y entra solo. */
+function urlConfirmacion(volver) {
+  const u = new URL('/ingresar', location.origin);
+  u.searchParams.set('confirmada', '1');
+  if (volver && /^\/(?!\/)/.test(volver)) u.searchParams.set('volver', volver);
+  return u.href;
+}
 
 /** @returns {Promise<import('./sesion-base.js').Usuario|null>} */
 export async function usuarioActual() {
@@ -139,6 +150,7 @@ export async function registrar(datos) {
       email: correo,
       password: datos.contrasena,
       options: {
+        emailRedirectTo: urlConfirmacion(datos.volver),
         // El trigger al_registrarse crea el perfil con esto. El rol NO se manda:
         // la base lo pone siempre en 'alumna'.
         data: {
@@ -203,6 +215,70 @@ export async function salir() {
   olvidarPerfil();
   actualizarCopia(null);
   return { error: null };
+}
+
+/* ----------------------- contraseña y confirmación ----------------------- */
+
+/** Manda el correo con el enlace para crear una contraseña nueva. */
+export async function enviarRecuperacion(correo) {
+  try {
+    const { error: e } = await supabase.auth.resetPasswordForEmail(normalizarCorreo(correo), {
+      redirectTo: new URL('/nueva-contrasena', location.origin).href
+    });
+    return { error: e ? traducir(e) : null };
+  } catch (e) {
+    return { error: traducir(e) };
+  }
+}
+
+/** Vuelve a mandar el correo de confirmación de la cuenta. */
+export async function reenviarConfirmacion(correo, volver = null) {
+  try {
+    const { error: e } = await supabase.auth.resend({
+      type: 'signup', email: normalizarCorreo(correo), options: { emailRedirectTo: urlConfirmacion(volver) }
+    });
+    return { error: e ? traducir(e) : null };
+  } catch (e) {
+    return { error: traducir(e) };
+  }
+}
+
+/**
+ * /nueva-contrasena: lee el enlace del correo. Supabase abre la sesión con él
+ * (detectSessionInUrl). Si venció o ya se usó, el enlace trae #error=…
+ * @returns {Promise<{listo: boolean, correo: string|null}>}
+ */
+export async function prepararRecuperacion() {
+  const enlace = new URLSearchParams(location.hash.slice(1));
+  const consulta = new URLSearchParams(location.search);
+  if (enlace.get('error') || consulta.get('error')) return { listo: false, correo: null };
+  try {
+    const { data } = await supabase.auth.getSession();
+    return { listo: Boolean(data?.session), correo: data?.session?.user?.email ?? null };
+  } catch {
+    return { listo: false, correo: null };
+  }
+}
+
+/** Guarda la contraseña nueva (con la sesión que abrió el enlace) y deja la sesión iniciada. */
+export async function cambiarContrasena(nueva) {
+  if (String(nueva || '').length < MIN_CONTRASENA) return { usuario: null, error: ERRORES.faltanDatos() };
+  try {
+    const { data, error: e } = await supabase.auth.updateUser({ password: nueva });
+    if (e) {
+      if (e.code === 'same_password') return { usuario: null, error: error('datos-invalidos', 'La contraseña nueva tiene que ser distinta de la anterior.') };
+      if (e.code === 'session_not_found' || e.status === 401 || /session/i.test(String(e.message))) {
+        return { usuario: null, error: error('enlace-vencido', 'El enlace venció. Pide uno nuevo desde "¿Olvidaste tu contraseña?".') };
+      }
+      return { usuario: null, error: traducir(e) };
+    }
+    olvidarPerfil();
+    const usuario = await cargarPerfil(data.user.id);
+    actualizarCopia(usuario);
+    return { usuario, error: null };
+  } catch (e) {
+    return { usuario: null, error: traducir(e) };
+  }
 }
 
 /** En la web publicada no hay datos de ejemplo que restablecer. */

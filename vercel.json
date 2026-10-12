@@ -3,13 +3,19 @@
   "cleanUrls": true,
   "trailingSlash": false,
   "rewrites": [
-    { "source": "/cursos/:slug", "destination": "/curso" }
+    {
+      "source": "/cursos/:slug",
+      "destination": "/curso"
+    }
   ],
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/(admin|mi-cuenta|ingresar|registro|nueva-contrasena)",
       "headers": [
-        { "key": "X-Robots-Tag", "value": "noindex, nofollow" }
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
       ]
     }
   ]

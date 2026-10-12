@@ -119,7 +119,7 @@ export function destinoTrasEntrar(usuario = null) {
   if (curso && /^[a-z0-9-]+$/.test(curso)) return `/cursos/${curso}?inscribirme=1`;
   const volver = p.get('volver');
   if (volver && /^\/(?!\/)[\w\-/?=&.#]*$/.test(volver)) return volver;
-  return usuario?.rol === 'admin' ? '/admin' : '/mi-cuenta';
+  return usuario?.rol === 'admin' || usuario?.rol === 'superadmin' ? '/admin' : '/mi-cuenta';
 }
 
 /** Mantiene ?curso / ?volver al pasar entre registro e ingreso. */

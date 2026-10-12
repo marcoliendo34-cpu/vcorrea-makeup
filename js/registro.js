@@ -3,7 +3,8 @@
 // Si llega con ?curso=slug, al terminar vuelve a ese curso y sigue la inscripción.
 import { iniciarPagina, esc, desplazamiento } from './componentes.js';
 import { icono } from './iconos.js';
-import { registrar, existeCedula, existeCorreo, usuarioEnCache, MIN_CONTRASENA } from './sesion.js';
+import { registrar, reenviarConfirmacion, existeCedula, existeCorreo, usuarioEnCache, MIN_CONTRASENA } from './sesion.js';
+import { medir } from './medicion.js';
 import { obtenerCursoPorSlug } from './datos.js';
 import {
   validacionEnVivo, validarTodos, marcarCampo, activarMostrarContrasena, reglas,
@@ -156,10 +157,16 @@ form.addEventListener('submit', async (e) => {
     correo: form.correo.value,
     contrasena: form.contrasena.value,
     instagram: form.instagram.value.trim().replace(/^@/, '') || null,
-    fechaNacimiento: form.fechaNacimiento.value || null
+    fechaNacimiento: form.fechaNacimiento.value || null,
+    volver: destinoTrasEntrar()   // adonde lleva el enlace de confirmación del correo
   });
+  if (!error || error.codigo === 'confirmar-correo') medir('CompleteRegistration', { status: true });
   if (!error) {
     location.assign(destinoTrasEntrar());
+    return;
+  }
+  if (error.codigo === 'confirmar-correo') {
+    mostrarRevisaTuCorreo(form.correo.value.trim().toLowerCase());
     return;
   }
   botonCrear.disabled = false;
@@ -171,3 +178,29 @@ form.addEventListener('submit', async (e) => {
 });
 
 activarMostrarContrasena(form);
+
+/* --------------- Cuenta creada: falta confirmar el correo --------------- */
+
+function mostrarRevisaTuCorreo(correo) {
+  const caja = document.querySelector('.acceso__caja');
+  const ingresar = document.querySelector('[data-enlace-ingresar]')?.getAttribute('href') || '/ingresar';
+  caja.innerHTML = `
+    <div class="acceso__listo">
+      <span class="acceso__listo-icono">${icono('correo', { tamano: 26 })}</span>
+      <p class="etiqueta">Cuenta creada</p>
+      <h1 tabindex="-1">Revisa tu correo</h1>
+      <p class="acceso__intro">Te enviamos un enlace a <strong>${esc(correo)}</strong>. Ábrelo para confirmar tu cuenta y entrarás directo.</p>
+      <p class="campo__aviso">¿No te llega? Revisa las carpetas de spam y promociones. Puede tardar unos minutos.</p>
+      <button class="boton boton--secundario boton--grande boton--bloque" type="button" data-reenviar><span>Reenviar el correo</span></button>
+      <p class="acceso__reenvio" role="status" data-reenvio></p>
+      <p class="acceso__alterno">¿Ya lo confirmaste? <a href="${esc(ingresar)}">Inicia sesión</a></p>
+    </div>`;
+  caja.querySelector('h1').focus();
+  const botonReenviar = caja.querySelector('[data-reenviar]');
+  botonReenviar.addEventListener('click', async () => {
+    botonReenviar.disabled = true;
+    const { error: e } = await reenviarConfirmacion(correo, destinoTrasEntrar());
+    caja.querySelector('[data-reenvio]').textContent = e ? e.mensaje : 'Listo, te lo enviamos de nuevo.';
+    setTimeout(() => { botonReenviar.disabled = false; }, 30000);   // evita reenvíos seguidos
+  });
+}

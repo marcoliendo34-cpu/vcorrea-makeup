@@ -68,6 +68,18 @@ export async function ingresar(correo, contrasena) { return (await cargar()).ing
 /** Cierra la sesión. */
 export async function salir() { return (await cargar()).salir(); }
 
+/** "¿Olvidaste tu contraseña?": manda el correo con el enlace a /nueva-contrasena. */
+export async function enviarRecuperacion(correo) { return (await cargar()).enviarRecuperacion(correo); }
+
+/** Vuelve a mandar el correo de confirmación de la cuenta. */
+export async function reenviarConfirmacion(correo, volver) { return (await cargar()).reenviarConfirmacion(correo, volver); }
+
+/** /nueva-contrasena: ¿el enlace del correo abrió una sesión válida? */
+export async function prepararRecuperacion() { return (await cargar()).prepararRecuperacion(); }
+
+/** Guarda la contraseña nueva y deja la sesión iniciada. */
+export async function cambiarContrasena(nueva) { return (await cargar()).cambiarContrasena(nueva); }
+
 /** Solo capturas: vuelve a poner las inscripciones de ejemplo (en la web publicada no hace nada). */
 export async function restablecerInscripcionesDemo() {
   if (MODO_DEMO) (await cargar()).restablecerInscripcionesDemo();

@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es-VE">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Nueva contraseña · Verónica Correa Makeup</title>
+  <meta name="description" content="Crea una contraseña nueva para tu cuenta de alumna de Verónica Correa Makeup.">
+  <!-- og:inicio (herramientas/generar_paginas.py escribe este bloque; no editar a mano) -->
+  <meta property="og:site_name" content="Verónica Correa Makeup">
+  <meta property="og:locale" content="es_VE">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://vcorrea-makeup.vercel.app/nueva-contrasena">
+  <meta property="og:title" content="Nueva contraseña · Verónica Correa Makeup">
+  <meta property="og:description" content="Crea una contraseña nueva para tu cuenta de alumna de Verónica Correa Makeup.">
+  <meta property="og:image" content="https://vcorrea-makeup.vercel.app/fotos/og/vcorrea-og.jpg">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="Logotipo de Verónica Correa Makeup sobre fondo crema">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="Nueva contraseña · Verónica Correa Makeup">
+  <meta name="twitter:description" content="Crea una contraseña nueva para tu cuenta de alumna de Verónica Correa Makeup.">
+  <meta name="twitter:image" content="https://vcorrea-makeup.vercel.app/fotos/og/vcorrea-og.jpg">
+  <!-- og:fin -->
+  <meta name="theme-color" content="#FFFFFF">
+
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+  <!-- fuentes:inicio (Google Fonts sin bloquear el primer pintado) -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&amp;family=Jost:wght@300;400;500&amp;display=swap" media="print" onload="this.media='all'">
+  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,400&amp;family=Jost:wght@300;400;500&amp;display=swap"></noscript>
+  <!-- fuentes:fin -->
+
+  <link rel="stylesheet" href="/css/estilos.css">
+  <!-- precargas:inicio (módulos de esta página: generar_paginas.py) -->
+  <link rel="modulepreload" href="/js/nueva-contrasena.js">
+  <link rel="modulepreload" href="/js/componentes.js">
+  <link rel="modulepreload" href="/js/sesion.js">
+  <link rel="modulepreload" href="/js/formularios.js">
+  <link rel="modulepreload" href="/js/config.js">
+  <link rel="modulepreload" href="/js/iconos.js">
+  <link rel="modulepreload" href="/js/cupos.js">
+  <link rel="modulepreload" href="/js/textos.js">
+  <link rel="modulepreload" href="/js/fechas.js">
+  <link rel="modulepreload" href="/js/medicion.js">
+  <link rel="modulepreload" href="/js/modo.js">
+  <link rel="modulepreload" href="/js/sesion-base.js">
+  <!-- precargas:fin -->
+</head>
+<body data-pagina="nueva-contrasena">
+  <main id="contenido" tabindex="-1">
+    <section class="acceso" aria-labelledby="titulo-nueva">
+      <div class="contenedor acceso__contenedor">
+        <div class="acceso__caja" data-caja>
+          <p class="etiqueta">Alumnas</p>
+          <h1 id="titulo-nueva" tabindex="-1">Crea tu nueva contraseña</h1>
+          <p class="acceso__intro" data-intro>Comprobando tu enlace…</p>
+
+          <form class="formulario" novalidate data-nueva hidden>
+            <div class="campo">
+              <label class="campo__etiqueta" for="nueva-contrasena">Contraseña nueva</label>
+              <div class="campo__grupo">
+                <input class="campo__control" id="nueva-contrasena" name="contrasena" type="password" autocomplete="new-password" required aria-describedby="nueva-contrasena-ayuda nueva-contrasena-error">
+                <button class="campo__ojo" type="button" data-mostrar-contrasena="nueva-contrasena"></button>
+              </div>
+              <p class="campo__ayuda" id="nueva-contrasena-ayuda">Mínimo 8 caracteres.</p>
+              <p class="campo__error" id="nueva-contrasena-error" hidden></p>
+            </div>
+            <div class="campo">
+              <label class="campo__etiqueta" for="nueva-confirmar">Confirmar contraseña</label>
+              <div class="campo__grupo">
+                <input class="campo__control" id="nueva-confirmar" name="confirmar" type="password" autocomplete="new-password" required aria-describedby="nueva-confirmar-error">
+                <button class="campo__ojo" type="button" data-mostrar-contrasena="nueva-confirmar"></button>
+              </div>
+              <p class="campo__error" id="nueva-confirmar-error" hidden></p>
+            </div>
+            <p class="formulario__resultado formulario__resultado--error" role="alert" data-error-general hidden></p>
+            <button class="boton boton--principal boton--grande boton--bloque" type="submit"><span>Guardar contraseña</span></button>
+          </form>
+
+          <div data-vencido hidden>
+            <p class="campo__aviso">Este enlace venció o ya se usó. Los enlaces sirven una sola vez y por tiempo limitado.</p>
+            <a class="boton boton--principal boton--grande boton--bloque acceso__boton" href="/ingresar"><span>Pedir un enlace nuevo</span></a>
+          </div>
+
+          <p class="acceso__alterno">¿La recordaste? <a href="/ingresar">Inicia sesión</a></p>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script type="module" src="/js/nueva-contrasena.js"></script>
+</body>
+</html>

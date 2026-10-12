@@ -71,9 +71,10 @@ zonaFotos.innerHTML = fotos.map((f, i) => `
   <li class="masonry__item">
     <button class="masonry__boton" type="button" data-foto-anterior="${i}">
       <span class="solo-lectores">Ampliar: </span>
-      <img src="${esc(f.miniatura)}" alt="${esc(f.alt)}" width="600" height="${Math.round(600 * f.alto / f.ancho)}" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">
+      <img src="${esc(f.miniatura)}" alt="${esc(f.alt)}" width="600" height="${Math.round(600 * f.alto / f.ancho)}" loading="${i < 4 ? 'eager' : 'lazy'}" decoding="async">
     </button>
   </li>`).join('');
+zonaFotos.classList.remove('es-cargando');
 zonaFotos.addEventListener('click', (e) => {
   const b = e.target.closest('[data-foto-anterior]');
   if (!b) return;

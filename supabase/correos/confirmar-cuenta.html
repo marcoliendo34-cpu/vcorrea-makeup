@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="light only">
+<title>Confirma tu correo</title>
+</head>
+<body style="margin:0;padding:0;background:#F5EFE6;">
+<!-- Texto de vista previa en la bandeja de entrada -->
+<div style="display:none;max-height:0;overflow:hidden;opacity:0;">Confirma tu correo para activar tu cuenta de alumna.</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:#F5EFE6;">
+  <tr>
+    <td align="center" style="padding:32px 16px;">
+      <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="max-width:520px;">
+        <!-- Logotipo -->
+        <tr>
+          <td align="center" style="padding:0 0 24px;">
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0"><tr>
+              <td align="center" valign="middle" width="44" height="44" style="width:44px;height:44px;border:1px solid #B8975A;border-radius:22px;background:#FFFFFF;font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;font-size:18px;color:#2B2622;">VC</td>
+              <td style="padding-left:12px;text-align:left;">
+                <div style="font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;font-size:24px;font-weight:300;line-height:1;color:#2B2622;">Verónica Correa</div>
+                <div style="font-family:Jost,Helvetica,Arial,sans-serif;font-size:10px;letter-spacing:3.5px;color:#2B2622;padding-top:6px;">MAKEUP</div>
+              </td>
+            </tr></table>
+          </td>
+        </tr>
+        <!-- Tarjeta -->
+        <tr>
+          <td style="background:#FFFFFF;border:1px solid #E8DCC8;border-radius:16px;padding:40px 32px;">
+            <p style="margin:0 0 8px;font-family:Jost,Helvetica,Arial,sans-serif;font-size:12px;font-weight:500;letter-spacing:2.4px;text-transform:uppercase;color:#7A5C30;">Bienvenida</p>
+            <h1 style="margin:0 0 8px;font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;font-size:32px;font-weight:400;line-height:1.15;color:#2B2622;">Confirma tu correo</h1>
+            <div style="width:48px;height:2px;background:#B8975A;margin:16px 0 24px;line-height:2px;font-size:0;">&nbsp;</div>
+            <p style="margin:0 0 16px;font-family:Jost,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;color:#2B2622;">¡Hola! Gracias por crear tu cuenta de alumna en Verónica Correa Makeup.</p><p style="margin:0 0 16px;font-family:Jost,Helvetica,Arial,sans-serif;font-size:16px;line-height:1.6;color:#2B2622;">Toca el botón para confirmar tu correo ({{ .Email }}) y activar tu cuenta. Después podrás solicitar tu inscripción en los cursos y seguir su estado desde Mi cuenta.</p>
+            <!-- Botón -->
+            <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin:8px 0 24px;"><tr>
+              <td align="center" bgcolor="#7A5C30" style="border-radius:10px;">
+                <a href="{{ .ConfirmationURL }}" target="_blank" style="display:inline-block;padding:15px 28px;font-family:Jost,Helvetica,Arial,sans-serif;font-size:16px;font-weight:500;color:#FFFFFF;text-decoration:none;border-radius:10px;">Confirmar mi correo</a>
+              </td>
+            </tr></table>
+            <p style="margin:0 0 16px;font-family:Jost,Helvetica,Arial,sans-serif;font-size:14px;line-height:1.6;color:#6B625A;">El enlace sirve una sola vez y vence en 1 hora.</p>
+            <p style="margin:0 0 4px;font-family:Jost,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.5;color:#6B625A;">¿El botón no funciona? Copia y pega este enlace en tu navegador:</p>
+            <p style="margin:0;font-family:Jost,Helvetica,Arial,sans-serif;font-size:13px;line-height:1.5;word-break:break-all;"><a href="{{ .ConfirmationURL }}" style="color:#7A5C30;">{{ .ConfirmationURL }}</a></p>
+          </td>
+        </tr>
+        <!-- Pie -->
+        <tr>
+          <td align="center" style="padding:24px 16px 0;">
+            <p style="margin:0 0 8px;font-family:'Cormorant Garamond',Georgia,'Times New Roman',serif;font-size:17px;font-style:italic;color:#7A5C30;">Formando miradas con precisión, visión y excelencia</p>
+            <p style="margin:0;font-family:Jost,Helvetica,Arial,sans-serif;font-size:12px;line-height:1.6;color:#6B625A;">Si no creaste esta cuenta, ignora este correo: no se activará.<br>Verónica Correa Makeup · Caracas, Venezuela</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

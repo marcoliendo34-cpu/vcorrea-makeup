@@ -11,7 +11,7 @@ const LIMITE = 4.5 * 1024 * 1024;   // el bucket acepta 5 MB
 /** Abre la imagen respetando la orientación de la cámara. */
 async function abrir(archivo) {
   if ('createImageBitmap' in window) {
-    try { return await createImageBitmap(archivo, { imageOrientation: 'from-image' }); } catch { /* se intenta con <img> */ }
+    try { return await createImageBitmap(archivo, { imageOrientation: 'from-image' }); } catch { /* se intenta con una imagen HTML */ }
   }
   const url = URL.createObjectURL(archivo);
   try {

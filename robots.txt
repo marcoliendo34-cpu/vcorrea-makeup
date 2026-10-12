@@ -1,19 +1,10 @@
-# Vista previa: los buscadores no indexan nada mientras la clienta aprueba la
-# interfaz (además, cada respuesta lleva X-Robots-Tag: noindex).
-# Los lectores de enlaces de WhatsApp, Instagram/Facebook y similares sí pueden
-# leer las páginas, para que los cursos se vean bien al compartirlos.
-
-User-agent: facebookexternalhit
-User-agent: Facebot
-User-agent: meta-externalagent
-User-agent: WhatsApp
-User-agent: Twitterbot
-User-agent: TelegramBot
-User-agent: Slackbot-LinkExpanding
-User-agent: LinkedInBot
-Allow: /
+# Verónica Correa Makeup · sitio público desde el 12 oct 2026.
+# Las páginas privadas (/admin, /mi-cuenta, /ingresar, /registro y
+# /nueva-contrasena) llevan noindex en la página y en el encabezado
+# X-Robots-Tag (vercel.json): no se bloquean aquí para que los buscadores
+# puedan leer ese noindex.
 
 User-agent: *
-Disallow: /
+Allow: /
 
 Sitemap: https://vcorrea-makeup.vercel.app/sitemap.xml

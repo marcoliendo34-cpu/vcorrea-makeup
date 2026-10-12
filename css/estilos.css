@@ -2047,6 +2047,8 @@ main:has(> .seccion--cierre:last-child) ~ .pie { margin-top: 0; }
 .masonry__item { break-inside: avoid; margin-bottom: var(--e-3); }
 @media (min-width: 768px) { .masonry__item { margin-bottom: var(--e-4); } }
 .masonry > .sin-resultados { column-span: all; }
+/* Mientras llegan las fotos, el mosaico ocupa la pantalla: el pie no salta (CLS) */
+.masonry.es-cargando { min-height: 100vh; min-height: 100svh; }
 .masonry__boton {
   position: relative;
   display: block;
@@ -2450,6 +2452,23 @@ input[type="date"].campo__control { display: block; -webkit-appearance: none; ap
   .formulario__acciones [data-crear] { order: 0; }
 }
 .formulario__resultado--error { border: 1px solid var(--dorado-profundo); background: var(--crema); color: var(--tinta); }
+.formulario__resultado--ok { border: 1px solid var(--dorado); background: var(--blanco); color: var(--tinta); }
+.acceso__caja > .formulario__resultado { margin-top: var(--e-5); }
+/* Botón con aspecto de enlace dentro de un mensaje ("Reenviar el correo") */
+.boton-enlace { display: inline; min-height: 0; padding: 0; border: 0; background: none; color: var(--dorado-profundo); font: inherit; font-weight: 500; text-decoration: underline; text-underline-offset: 0.2em; cursor: pointer; }
+.boton-enlace:disabled { opacity: 0.6; cursor: default; }
+/* "¿Olvidaste tu contraseña?" */
+.recuperar { display: grid; gap: var(--e-3); }
+.recuperar__estado:empty { display: none; }
+.recuperar__estado { color: var(--tinta); }
+/* Registro: "Revisa tu correo" */
+.acceso__listo { display: grid; gap: var(--e-4); }
+.acceso__listo h1 { outline: none; }
+.acceso__listo .acceso__intro { margin-top: 0; }
+.acceso__listo-icono { display: grid; place-items: center; width: 56px; height: 56px; border: 1px solid var(--dorado); border-radius: 50%; color: var(--dorado-profundo); }
+.acceso__reenvio:empty { display: none; }
+.acceso__reenvio { color: var(--gris-calido); font-size: var(--t-pequeno); }
+.acceso__boton { margin-top: var(--e-4); }
 
 /* Campos compuestos */
 .campo__cabeza { display: flex; align-items: baseline; justify-content: space-between; gap: var(--e-3); }

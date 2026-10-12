@@ -77,6 +77,8 @@ PAGINAS = {
     'mi-cuenta.html': ('/mi-cuenta', f'Mi cuenta · {MARCA}',
                        'Tus cursos y el estado de tus inscripciones en los cursos de maquillaje de '
                        'Verónica Correa Makeup.', False),
+    'nueva-contrasena.html': ('/nueva-contrasena', f'Nueva contraseña · {MARCA}',
+                              'Crea una contraseña nueva para tu cuenta de alumna de Verónica Correa Makeup.', False),
     'admin.html': ('/admin', f'Panel · {MARCA}',
                    'Panel de administración de Verónica Correa Makeup: cursos, inscritas y confirmación '
                    'de inscripciones.', False),
@@ -91,6 +93,14 @@ PAGINAS = {
                    'Detalle del curso de maquillaje: fechas, pensum, prácticas, requisitos e inscripción '
                    'con Verónica Correa.', False),
 }
+
+
+# Páginas que los buscadores NO deben indexar (meta robots noindex). Las demás
+# se indexan desde el lanzamiento (12 oct 2026). vercel.json manda además el
+# encabezado X-Robots-Tag en las mismas rutas.
+PRIVADAS = {'admin.html', 'mi-cuenta.html', 'ingresar.html', 'registro.html',
+            'nueva-contrasena.html', '404.html', 'guia-de-estilo.html'}
+META_NOINDEX = '<meta name="robots" content="noindex, nofollow">'
 
 
 def a(texto):
@@ -128,6 +138,11 @@ def actualizar_pagina(archivo, datos, dominio):
     nuevo = re.sub(r'<title>.*?</title>', f'<title>{html.escape(titulo)}</title>', texto, count=1, flags=re.S)
     nuevo = re.sub(r'<meta name="description" content="[^"]*">',
                    f'<meta name="description" content="{a(descripcion)}">', nuevo, count=1)
+    # Buscadores: noindex solo en las páginas privadas
+    nuevo = re.sub(r'\n[ \t]*<meta name="robots" content="[^"]*">', '', nuevo)
+    if archivo in PRIVADAS:
+        nuevo = re.sub(r'(<meta name="viewport" content="[^"]*">)', lambda m: m.group(1) + '\n  ' + META_NOINDEX,
+                       nuevo, count=1)
     og = bloque(ruta, titulo, descripcion, publica, dominio, plantilla=archivo == 'curso.html')
     if '<!-- og:inicio' in nuevo:
         nuevo = re.sub(r'<!-- og:inicio.*?<!-- og:fin -->', lambda _: og, nuevo, count=1, flags=re.S)

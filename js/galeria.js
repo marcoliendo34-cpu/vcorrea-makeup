@@ -36,11 +36,11 @@ zonaChips.addEventListener('click', (e) => {
 
 /* ----------------------------- mosaico -------------------------------- */
 
-// La primera foto carga de inmediato: es lo primero que se ve (LCP).
+// Las 4 primeras cargan de inmediato: son lo primero que se ve (LCP).
 function htmlFoto(f, i) {
   const alto600 = Math.round(600 * f.alto / f.ancho);
   const media = f.miniatura
-    ? `<img src="${esc(f.miniatura)}" alt="${esc(f.alt)}" width="600" height="${alto600}" loading="${i === 0 ? 'eager' : 'lazy'}" decoding="async">`
+    ? `<img src="${esc(f.miniatura)}" alt="${esc(f.alt)}" width="600" height="${alto600}" loading="${i < 4 ? 'eager' : 'lazy'}" decoding="async">`
     : placeholderFoto({ descripcion: f.alt, proporcion: `${f.ancho} / ${f.alto}`, sinBorde: true });
   return `
     <li class="masonry__item">
@@ -60,6 +60,7 @@ async function pintar() {
          <p>Aún no hay fotos en esta categoría.</p>
          ${boton({ texto: 'Ver todas las fotos', href: '/galeria', variante: 'texto', icono: 'flecha-derecha' })}
        </li>`;
+  lista.classList.remove('es-cargando');
   const n = fotosVisibles.length;
   estado.textContent = `${n === 1 ? '1 foto' : `${n} fotos`}${actual === 'todas' ? '' : ` en ${nombreCategoria[actual]}`}`;
 }

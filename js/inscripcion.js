@@ -20,6 +20,7 @@ import { crearInscripcion, obtenerInscripcion, obtenerCuposAhora } from './datos
 import { ESTADOS_INSCRIPCION } from './textos.js';
 import { cuposDeCurso, calcularCupos } from './cupos.js';
 import { formatearFecha } from './fechas.js';
+import { medir } from './medicion.js';
 
 export { ESTADOS_INSCRIPCION };
 
@@ -150,6 +151,8 @@ function reservarPestana() {
  */
 export async function inscribirse(curso, opciones = {}) {
   const { automatico = false } = opciones;
+  // Pixel de Meta: la alumna tocó "Inscribirme" (contacto por WhatsApp)
+  medir('Contact', { content_name: curso.nombre, content_category: curso.categoria });
   // Lectura inmediata de la sesión: así WhatsApp se abre dentro del mismo toque.
   const usuario = usuarioEnCache();
   if (!usuario) {
