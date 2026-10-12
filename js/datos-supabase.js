@@ -106,6 +106,17 @@ export async function galeria() {
   return structuredClone(await galeriaEnCurso);
 }
 
+/** Cupos de un curso leídos en este momento (sin la copia de la página). */
+export async function cuposAhora(cursoSlug) {
+  const fila = (exigir(await supabase.rpc('cupos_de_cursos')) || []).find((c) => c.slug === cursoSlug);
+  cursosEnCurso = null;   // la próxima lectura de cursos trae los cupos nuevos
+  return fila ? { cupos: fila.cupos, confirmadas: fila.confirmadas } : null;
+}
+
+/** Error de la base → código para la página. */
+const codigoDeError = (e) => (/agotarse|lleno/i.test(e?.message || '') ? 'agotado'
+  : /no está abierto/i.test(e?.message || '') ? 'cerrado' : 'servidor');
+
 /* ------------------------------ inscripciones ------------------------------ */
 
 export async function inscripcionesDe(usuarioId) {
@@ -132,8 +143,9 @@ export async function crearInscripcion(usuario, cursoSlug) {
   try {
     const existente = exigir(await buscar());
     if (existente?.estado === 'cancelada') {
-      const fila = exigir(await supabase.from('inscripciones').update({ estado: 'pendiente' })
-        .eq('id', existente.id).select(COLUMNAS_INSCRIPCION).single());
+      const { data: fila, error: e } = await supabase.from('inscripciones').update({ estado: 'pendiente' })
+        .eq('id', existente.id).select(COLUMNAS_INSCRIPCION).single();
+      if (e) return { inscripcion: null, nueva: false, error: codigoDeError(e) };
       return { inscripcion: aInscripcion(fila), nueva: true, error: null };
     }
     if (existente) return { inscripcion: aInscripcion(existente), nueva: false, error: null };
@@ -143,9 +155,7 @@ export async function crearInscripcion(usuario, cursoSlug) {
     if (error?.code === '23505') {   // la pidió en otra pestaña al mismo tiempo
       return { inscripcion: aInscripcion(exigir(await buscar())), nueva: false, error: null };
     }
-    if (error) {
-      return { inscripcion: null, nueva: false, error: /no está abierto/i.test(error.message) ? 'cerrado' : 'servidor' };
-    }
+    if (error) return { inscripcion: null, nueva: false, error: codigoDeError(error) };
     return { inscripcion: aInscripcion(data), nueva: true, error: null };
   } catch {
     return { inscripcion: null, nueva: false, error: 'servidor' };

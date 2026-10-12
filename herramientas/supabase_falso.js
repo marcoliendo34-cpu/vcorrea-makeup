@@ -75,6 +75,7 @@ class Consulta {
         const alumna = this.datos.alumna_id ?? yo;
         if (alumna !== yo) return { data: null, error: { code: '42501', message: 'new row violates row-level security policy' } };
         if (db.inscripciones.some((i) => i.curso_id === curso.id && i.alumna_id === alumna)) return { data: null, error: { code: '23505', message: 'duplicate key' } };
+        if (db.inscripciones.filter((i) => i.curso_id === curso.id && i.estado === 'confirmada').length >= curso.cupos) return { data: null, error: { code: 'P0001', message: 'Este curso acaba de agotarse.' } };
         const fila = { id: uuid(), curso_id: curso.id, alumna_id: alumna, estado: 'pendiente', nota: null, creado_en: new Date().toISOString(), confirmada_en: null };
         db.inscripciones.push(fila); guardarDB(db);
         res = [fila];
@@ -87,6 +88,12 @@ class Consulta {
         if (this.tabla === 'inscripciones') {
           if (!admin && !(f.alumna_id === yo?.id && f.estado === 'cancelada' && this.datos.estado === 'pendiente')) {
             return { data: null, error: { code: '42501', message: 'Solo Verónica puede cambiar el estado de una inscripción.' } };
+          }
+          if (!admin && f.estado === 'cancelada' && this.datos.estado === 'pendiente') {
+            const curso = db.cursos.find((c) => c.id === f.curso_id);
+            if (db.inscripciones.filter((i) => i.curso_id === f.curso_id && i.estado === 'confirmada').length >= curso.cupos) {
+              return { data: null, error: { code: 'P0001', message: 'Este curso acaba de agotarse.' } };
+            }
           }
           if (this.datos.estado === 'confirmada' && f.estado !== 'confirmada') {
             const curso = db.cursos.find((c) => c.id === f.curso_id);

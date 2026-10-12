@@ -39,16 +39,27 @@ export async function alumnas() {
   return copiar(leerAlumnas());
 }
 
+/** Cupos de un curso en este momento. */
+export async function cuposAhora(cursoSlug) {
+  const c = (await cursos()).find((x) => x.slug === cursoSlug);
+  return c ? { cupos: c.cupos, confirmadas: c.inscritas } : null;
+}
+
 export async function crearInscripcion(usuario, cursoSlug) {
   const todas = leerInscripciones();
+  // Igual que la base: no se piden cupos de un curso lleno.
+  const ahora = await cuposAhora(cursoSlug);
+  const lleno = ahora && ahora.confirmadas >= ahora.cupos;
   const existente = todas.find((i) => i.alumnaId === usuario.id && i.cursoSlug === cursoSlug);
   if (existente?.estado === 'cancelada') {
+    if (lleno) return { inscripcion: null, nueva: false, error: 'agotado' };
     existente.estado = 'pendiente';
     existente.creada = new Date().toISOString();
     if (!almacen.escribir(CLAVES.inscripciones, todas)) return { inscripcion: null, nueva: false, error: 'almacenamiento' };
     return { inscripcion: copiar(existente), nueva: true, error: null };
   }
   if (existente) return { inscripcion: copiar(existente), nueva: false, error: null };
+  if (lleno) return { inscripcion: null, nueva: false, error: 'agotado' };
   const inscripcion = {
     id: `insc-${Date.now().toString(36)}`,
     alumnaId: usuario.id,

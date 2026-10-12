@@ -24,6 +24,7 @@ with sync_playwright() as p:
     if modo == 'supabase':
         ctx.route('https://cdn.jsdelivr.net/**', lambda r: r.fulfill(path=str(FAKE), content_type='application/javascript'))
     ctx.route('https://fonts.googleapis.com/**', lambda r: r.abort())
+    ctx.route('https://wa.me/**', lambda r: r.fulfill(status=200, content_type='text/html', body='<title>WhatsApp</title>ok'))   # sin red
     pg = ctx.new_page()
     pg.on('pageerror', lambda e: errores.append(f'pageerror {pg.url}: {e}'))
     pg.on('console', lambda m: m.type == 'error' and 'fonts.googleapis' not in m.text and 'ERR_FAILED' not in m.text and errores.append(f'console {pg.url}: {m.text}'))
@@ -69,8 +70,13 @@ with sync_playwright() as p:
     paso('Mi cuenta: saluda a Laura', 'Hola, Laura' in txt)
     # Inscribirse
     ir('/cursos/vision-lash')
-    ctx.on('page', lambda np: np.close())   # la ventana de WhatsApp
-    pg.locator('[data-inscribirme]').first.click(); pg.wait_for_timeout(1200)
+    pestanas = []
+    ctx.on('page', lambda np: pestanas.append(np))   # la pestaña de WhatsApp
+    pg.locator('[data-inscribirme]').first.click(); pg.wait_for_timeout(1500)
+    destino = pestanas[0].url if pestanas else ''
+    paso('Inscribirme: abre WhatsApp con el mensaje (después de guardar)', destino.startswith('https://wa.me/584145897775') and 'inscribirme' in __import__('urllib.parse').parse.unquote(destino).lower(), destino[:60])
+    for np in pestanas: np.close()
+    paso('Inscribirme: ventana "Tu solicitud quedó… pendiente"', 'Pendiente de confirmación' in pg.locator('dialog[open]').inner_text() if pg.locator('dialog[open]').count() else False)
     ir('/mi-cuenta')
     paso('Inscripción: queda pendiente en Mi cuenta', 'PENDIENTE' in pg.locator('main').inner_text().upper())
     # Salir y volver a entrar
@@ -80,7 +86,8 @@ with sync_playwright() as p:
     paso('Sin sesión otra vez → /ingresar', '/ingresar' in pg.url)
     pg.fill('[name="correo"]', 'laura@prueba.local'); pg.fill('[name="contrasena"]', 'otraclave99' if modo == 'supabase' else 'x')
     pg.locator('button[type="submit"]').click(); pg.wait_for_timeout(900)
-    paso('Ingresar con clave mala → error', 'no coinciden' in pg.locator('main').inner_text())
+    if modo == 'supabase':   # en la demo cualquier clave de 8+ vale
+        paso('Ingresar con clave mala → error', 'no coinciden' in pg.locator('main').inner_text())
     pg.fill('[name="contrasena"]', 'clave12345')
     pg.locator('button[type="submit"]').click(); pg.wait_for_timeout(1500)
     paso('Ingresar → Mi cuenta', '/mi-cuenta' in pg.url or 'Hola, Laura' in pg.locator('main').inner_text(), pg.url.replace(base, ''))
@@ -103,6 +110,34 @@ with sync_playwright() as p:
         if conf.count(): conf.first.click(); pg.wait_for_timeout(1000)
     ir('/cursos/vision-lash')
     paso('Tras confirmar: la ficha dice 1 de 10', '1 de 10' in pg.locator('.curso-cupos').inner_text(), pg.locator('.curso-cupos').inner_text().replace('\n', ' '))
+    # El curso se llena mientras otra alumna mira la ficha
+    pg.evaluate("import('/js/sesion.js').then(m => m.salir())"); pg.wait_for_timeout(600)
+    ir('/registro')
+    pg.fill('#registro-nombre', 'Sofía'); pg.fill('#registro-apellido', 'Prueba')
+    pg.fill('[name="cedula"]', '34567890'); pg.fill('[name="telefono"]', '7654321')
+    pg.click('[data-continuar]'); pg.wait_for_timeout(600)
+    pg.fill('[name="correo"]', 'sofia@prueba.local'); pg.fill('[name="contrasena"]', 'clave12345')
+    pg.fill('[name="confirmar"]', 'clave12345'); pg.check('[name="acepto"]')
+    pg.locator('[data-crear]').click(); pg.wait_for_timeout(1500)
+    ir('/cursos/vision-lash')
+    llenar = ("(() => { const db = JSON.parse(localStorage.getItem('falso:db')); const c = db.cursos.find(x => x.slug === 'vision-lash');"
+              " for (let n = 0; n < 12; n++) db.inscripciones.push({ id: crypto.randomUUID(), curso_id: c.id, alumna_id: 'otra-' + n, estado: 'confirmada', creado_en: new Date().toISOString() });"
+              " localStorage.setItem('falso:db', JSON.stringify(db)); })()") if modo == 'supabase' else (
+              "(() => { const k = 'vcorrea:inscripciones'; const a = JSON.parse(localStorage.getItem(k) || '[]');"
+              " for (let n = 0; n < 12; n++) a.push({ id: 'otra-' + n, alumnaId: 'otra-' + n, cursoSlug: 'vision-lash', estado: 'confirmada', creada: new Date().toISOString() });"
+              " localStorage.setItem(k, JSON.stringify(a)); })()")
+    paso('Antes de llenarse: la ficha dice que hay cupos', 'Quedan' in pg.locator('.curso-cupos').inner_text())
+    pg.evaluate(llenar)   # otras alumnas confirmadas mientras Sofía mira
+    pestanas.clear()
+    pg.locator('[data-inscribirme]').first.click(); pg.wait_for_timeout(1500)
+    caja = pg.locator('dialog[open]').inner_text() if pg.locator('dialog[open]').count() else ''
+    paso('Curso lleno al tocar: "Este curso acaba de agotarse"', 'Este curso acaba de agotarse' in caja)
+    paso('Curso lleno: opción "Avísame del próximo"', 'Avísame del próximo' in caja)
+    paso('Curso lleno: no queda pestaña de WhatsApp abierta', all(np.is_closed() for np in pestanas), f'{len(pestanas)} pestaña(s)')
+    pg.keyboard.press('Escape'); pg.wait_for_timeout(1500)
+    paso('Al cerrar, la ficha dice "Cupos agotados"', 'agotados' in pg.locator('main').inner_text().lower())
+    ir('/mi-cuenta')
+    paso('Sofía no quedó inscrita', 'Visión Lash' not in pg.locator('main').inner_text())
     ctx.close(); nav.close()
 srv.shutdown()
 print('\nerrores:', json.dumps(errores, ensure_ascii=False, indent=1) if errores else 'ninguno')

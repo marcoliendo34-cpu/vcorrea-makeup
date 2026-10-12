@@ -179,7 +179,17 @@ export async function obtenerInscripcion(cursoSlug) {
 }
 
 /**
+ * Cupos de un curso leídos en este momento (no la copia con que se pintó la
+ * página): sirve para saber si se agotó mientras la alumna miraba.
+ * @returns {Promise<{cupos:number, confirmadas:number}|null>}
+ */
+export async function obtenerCuposAhora(cursoSlug) {
+  return (await fuente()).cuposAhora(cursoSlug);
+}
+
+/**
  * Registra la solicitud como "Pendiente de confirmación". Si ya existe, no la duplica.
+ * error: 'sin-sesion' | 'admin' | 'agotado' (el curso se llenó) | 'cerrado' | 'servidor' | 'almacenamiento'
  * @returns {Promise<{inscripcion: Inscripcion|null, nueva: boolean, error: string|null}>}
  */
 export async function crearInscripcion(cursoSlug) {
