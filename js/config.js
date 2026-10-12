@@ -18,14 +18,13 @@ export const CONFIG = {
     nombreCorto: 'Vcorrea Makeup'
   },
 
-  // Modo de datos: 'demo' usa /data/*.js. En la fase 2 se agrega 'supabase'.
-  // El modo demo se mantiene siempre para poder hacer capturas sin conexión.
-  modoDatos: 'demo',
+  // De dónde salen los datos: lo decide js/modo.js, no este archivo.
+  // Web publicada → siempre Supabase. Espacio de trabajo (localhost) → demo
+  // con data/*.js, solo para capturas.
 
   // Supabase (fase 2). Proyecto "VCORREA MAKEUP", us-east-1.
   // La llave publicable es pública por diseño: la seguridad la ponen las reglas
   // RLS de la base (supabase/migraciones). La llave secreta NUNCA va en el código.
-  // Aún sin usar: la web sigue en modoDatos 'demo' hasta el paso de conexión.
   supabase: {
     url: 'https://sgcxjurhxycnhmsiqeid.supabase.co',
     llavePublica: 'sb_publishable_DAq2QDwfNAOCo4rb6pRtbg_X8GOIxpo'

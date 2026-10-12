@@ -10,6 +10,13 @@ export const ESTADOS_INSCRIPCION = {
   finalizado: 'Finalizado'
 };
 
+/** Categorías de la galería (chips), en orden. Las fotos vienen de la base o de data/galeria.js. */
+export const CATEGORIAS_GALERIA = [
+  { id: 'formaciones', nombre: 'Formaciones' },
+  { id: 'alumnas', nombre: 'Trabajos de alumnas' },
+  { id: 'propios', nombre: 'Trabajos propios' }
+];
+
 /** Minúsculas y sin acentos, para buscar sin importar cómo se escriba. */
 export function normalizar(texto) {
   return String(texto ?? '')

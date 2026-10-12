@@ -1,5 +1,7 @@
-// Cursos del sitio (modo demo).
-// Las páginas NUNCA leen este archivo directamente: piden los datos a js/datos.js.
+// Cursos SOLO para el modo demo (capturas en el espacio de trabajo).
+// La web publicada lee la tabla "cursos" de Supabase (cargada desde aquí con la
+// migración cargar_cursos_y_galeria). Si cambias un curso aquí, cámbialo también
+// en la base. Las páginas NUNCA leen este archivo: piden los datos a js/datos.js.
 // Cursos reales de Verónica. Los finalizados (ediciones pasadas) se agregan
 // cuando llegue su información.
 // En la fase 2 estos datos vienen de Supabase con la misma forma.
@@ -61,13 +63,8 @@
  * @property {number} semanas
  * @property {number} totalClases
  * @property {number} cupos           Cupos totales.
- * @property {number} inscritasFuera  Cupos ya ocupados por inscritas confirmadas que NO están
- *                                   en la lista de la web (inscritas por WhatsApp antes de
- *                                   abrir la web, por ejemplo). js/datos.js le suma las
- *                                   inscripciones confirmadas en el panel y entrega el total
- *                                   como `inscritas`. En los cursos finalizados es el total.
- * @property {number} [inscritas]     Total de inscritas confirmadas. NO va en este archivo:
- *                                   lo calcula js/datos.js (inscritasFuera + confirmadas).
+ * @property {number} [inscritas]     Inscripciones confirmadas. NO va en este archivo: lo
+ *                                   calcula la fuente de datos (solo cuentan las confirmadas).
  * @property {string} descripcion
  * @property {string[]} dirigidoA
  * @property {{titulo: string, items: string[], cierre?: string}} [destacados]
@@ -124,7 +121,6 @@ export const CURSOS = [
       { fecha: '2026-12-05', texto: 'Exposiciones, certificaciones y brindis', destacada: true }
     ],
     cupos: 10,
-    inscritasFuera: 0,
     descripcion: 'Un programa de formación integral y práctico diseñado para transformarte de cero a profesional en el arte de las extensiones de pestañas. No solo aprendes técnicas, también construyes tu independencia económica.',
     dirigidoA: [],
     destacados: {

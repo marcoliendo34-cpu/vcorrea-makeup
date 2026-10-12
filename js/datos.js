@@ -1,29 +1,34 @@
 // Acceso a datos centralizado. Las páginas SOLO piden datos aquí.
 //
-// Todas las funciones devuelven promesas, aunque en modo demo los datos
-// sean locales: así, en la fase 2, la fuente Supabase entra aquí con las
-// mismas funciones y las páginas no cambian.
-//
-// Fase 1: CONFIG.modoDatos = 'demo' → /data/cursos.js
-// Fase 2: se agrega la fuente 'supabase'. El modo demo se mantiene siempre.
+// Fuente según js/modo.js:
+//   - Web publicada (siempre): Supabase → js/datos-supabase.js
+//   - Espacio de trabajo (capturas): data/*.js + localStorage → js/demo/datos-demo.js
+// Las dos tienen la misma forma; aquí vive la lógica común (búsqueda, orden,
+// filtros y armado del panel), así las páginas no cambian según la fuente.
 
-import { CONFIG } from './config.js';
-import { CURSOS } from '../data/cursos.js';
-import { GALERIA, CATEGORIAS_GALERIA } from '../data/galeria.js';
-import { usuarioActual, esAdmin, almacen, CLAVES } from './sesion.js';
+import { MODO_DEMO } from './modo.js';
+import { usuarioActual, esAdmin } from './sesion.js';
 import { calcularCupos } from './cupos.js';
-import { normalizar, ESTADOS_INSCRIPCION } from './textos.js';
+import { normalizar, ESTADOS_INSCRIPCION, CATEGORIAS_GALERIA } from './textos.js';
 
 /** @typedef {import('../data/cursos.js').Curso} Curso */
 /** @typedef {import('../data/galeria.js').FotoGaleria} FotoGaleria */
 
 /**
  * @typedef {Object} FiltrosCursos
- * @property {string} [categoria]  Ej. "Automaquillaje".
- * @property {string} [nivel]      'Básico' | 'Intermedio' | 'Avanzado'
+ * @property {string} [categoria]  Ej. "Pestañas".
+ * @property {string} [nivel]
  * @property {string} [modalidad]  'Presencial' | 'Online'
  * @property {'vigente'|'finalizado'|'todos'} [estado='vigente']
  */
+
+/* ------------------------------------------------------------------ */
+/* Fuente                                                              */
+/* ------------------------------------------------------------------ */
+
+let motor = null;
+/** Carga la fuente una sola vez (import dinámico: la web publicada nunca baja la demo). */
+const fuente = () => (motor ??= MODO_DEMO ? import('./demo/datos-demo.js') : import('./datos-supabase.js'));
 
 /* ------------------------------------------------------------------ */
 /* Utilidades                                                          */
@@ -32,9 +37,7 @@ import { normalizar, ESTADOS_INSCRIPCION } from './textos.js';
 // normalizar() y ESTADOS_INSCRIPCION viven en js/textos.js (sin dependencias)
 export { normalizar, ESTADOS_INSCRIPCION };
 
-/** Copia profunda para que ninguna página modifique los datos de origen. */
 const copiar = (valor) => structuredClone(valor);
-
 const porFechaAsc = (a, b) => a.fechaInicio.localeCompare(b.fechaInicio);
 const porFechaDesc = (a, b) => b.fechaInicio.localeCompare(a.fechaInicio);
 
@@ -42,93 +45,45 @@ const porFechaDesc = (a, b) => b.fechaInicio.localeCompare(a.fechaInicio);
 function textoBuscable(curso) {
   return normalizar([
     curso.nombre, curso.subtitulo, curso.categoria, curso.nivel, curso.modalidad,
-    curso.ubicacion, curso.dias, curso.descripcion.replace('[EJEMPLO]', ''),
-    ...curso.dirigidoA,
-    ...curso.pensum.flatMap((s) => [s.titulo, ...s.temas])
+    curso.ubicacion, curso.dias, String(curso.descripcion || '').replace('[EJEMPLO]', ''),
+    ...(curso.dirigidoA || []),
+    ...(curso.pensum || []).flatMap((s) => [s.titulo, ...(s.temas || [])])
   ].join(' '));
 }
 
-/* ------------------------------------------------------------------ */
-/* Fuente demo (datos locales)                                         */
-/* ------------------------------------------------------------------ */
-
-const fuenteDemo = {
-  /** Cursos con `inscritas` = inscritasFuera + inscripciones confirmadas (localStorage). */
-  async cursos() {
-    const confirmadas = {};
-    leerInscripciones()
-      .filter((i) => i.estado === 'confirmada')
-      .forEach((i) => { confirmadas[i.cursoSlug] = (confirmadas[i.cursoSlug] || 0) + 1; });
-    return copiar(CURSOS).map((c) => ({
-      ...c,
-      inscritas: (c.inscritasFuera || 0) + (c.estado === 'finalizado' ? 0 : confirmadas[c.slug] || 0)
-    }));
-  },
-  async galeria() {
-    return copiar(GALERIA);
-  }
-};
-
-// Fase 2: const fuenteSupabase = { async cursos() { … } };
-
-function fuente() {
-  switch (CONFIG.modoDatos) {
-    case 'demo':
-      return fuenteDemo;
-    default:
-      console.warn(`[datos] Modo "${CONFIG.modoDatos}" no disponible; se usa el modo demo.`);
-      return fuenteDemo;
-  }
-}
+const todosLosCursos = async () => (await fuente()).cursos();
 
 /* ------------------------------------------------------------------ */
-/* API pública                                                         */
+/* Cursos                                                              */
 /* ------------------------------------------------------------------ */
 
-/**
- * Cursos vigentes, del más próximo al más lejano.
- * @returns {Promise<Curso[]>}
- */
+/** Cursos vigentes, del más próximo al más lejano. @returns {Promise<Curso[]>} */
 export async function obtenerCursosVigentes() {
-  const cursos = await fuente().cursos();
-  return cursos.filter((c) => c.estado === 'vigente').sort(porFechaAsc);
+  return (await todosLosCursos()).filter((c) => c.estado === 'vigente').sort(porFechaAsc);
 }
 
-/**
- * Un curso por su slug (vigente o finalizado). null si no existe.
- * @param {string} slug
- * @returns {Promise<Curso|null>}
- */
+/** Un curso por su slug (vigente o finalizado). null si no existe. */
 export async function obtenerCursoPorSlug(slug) {
   const buscado = normalizar(slug).replace(/\/+$/, '');
-  const cursos = await fuente().cursos();
-  return cursos.find((c) => c.slug === buscado) ?? null;
+  return (await todosLosCursos()).find((c) => c.slug === buscado) ?? null;
 }
 
-/**
- * Cursos finalizados, del más reciente al más antiguo.
- * @returns {Promise<Curso[]>}
- */
+/** Cursos finalizados, del más reciente al más antiguo. */
 export async function obtenerCursosAnteriores() {
-  const cursos = await fuente().cursos();
-  return cursos.filter((c) => c.estado === 'finalizado').sort(porFechaDesc);
+  return (await todosLosCursos()).filter((c) => c.estado === 'finalizado').sort(porFechaDesc);
 }
 
 /**
  * Busca cursos por texto (sin importar mayúsculas ni acentos) y filtros.
- * Cada palabra del texto debe aparecer en el curso.
- * Sin texto ni filtros devuelve todos los vigentes.
+ * Cada palabra del texto debe aparecer en el curso. Sin texto ni filtros: todos los vigentes.
  * @param {string} [texto]
  * @param {FiltrosCursos} [filtros]
- * @returns {Promise<Curso[]>}
  */
 export async function buscarCursos(texto = '', filtros = {}) {
   const { categoria, nivel, modalidad, estado = 'vigente' } = filtros;
   const palabras = normalizar(texto).split(' ').filter(Boolean);
   const igual = (a, b) => !b || normalizar(a) === normalizar(b);
-
-  const cursos = await fuente().cursos();
-  return cursos
+  return (await todosLosCursos())
     .filter((c) => estado === 'todos' || c.estado === estado)
     .filter((c) => igual(c.categoria, categoria) && igual(c.nivel, nivel) && igual(c.modalidad, modalidad))
     .filter((c) => {
@@ -139,10 +94,7 @@ export async function buscarCursos(texto = '', filtros = {}) {
     .sort(estado === 'finalizado' ? porFechaDesc : porFechaAsc);
 }
 
-/**
- * Valores disponibles para los filtros del buscador (según los cursos vigentes).
- * @returns {Promise<{categorias:string[], niveles:string[], modalidades:string[]}>}
- */
+/** Valores disponibles para los filtros del buscador (según los cursos vigentes). */
 export async function obtenerOpcionesDeFiltro() {
   const vigentes = await obtenerCursosVigentes();
   const unicos = (campo) => [...new Set(vigentes.map((c) => c[campo]))];
@@ -154,11 +106,11 @@ export async function obtenerOpcionesDeFiltro() {
   };
 }
 
-/**
- * Rutas de una foto de la galería (convención en data/galeria.js).
- * @param {FotoGaleria} f
- * @returns {FotoGaleria & {miniatura: string|null, grande: string|null}}
- */
+/* ------------------------------------------------------------------ */
+/* Galería                                                             */
+/* ------------------------------------------------------------------ */
+
+/** Rutas de una foto: /fotos/galeria/{archivo}-600.webp y -1200.webp. */
 function conRutas(f) {
   return {
     ...f,
@@ -170,12 +122,13 @@ function conRutas(f) {
 /**
  * Fotos de la galería, con sus rutas de miniatura (600 px) y grande (1200 px).
  * @param {object} [op]
- * @param {boolean} [op.soloDestacadas]  Solo las marcadas para el avance de Inicio.
- * @param {string} [op.categoria]        'social' | 'novias' | 'editorial' | 'alumnas'
+ * @param {boolean} [op.soloDestacadas]  Avance de Inicio.
+ * @param {boolean} [op.soloAnteriores]  Página Cursos anteriores.
+ * @param {string} [op.categoria]        'formaciones' | 'alumnas' | 'propios'
  * @param {number} [op.limite]
  */
 export async function obtenerGaleria({ soloDestacadas = false, soloAnteriores = false, categoria, limite } = {}) {
-  const fotos = (await fuente().galeria())
+  const fotos = (await (await fuente()).galeria())
     .filter((f) => !soloDestacadas || f.destacada)
     .filter((f) => !soloAnteriores || f.enAnteriores)
     .filter((f) => !categoria || categoria === 'todas' || f.categoria === categoria)
@@ -191,37 +144,29 @@ export async function obtenerCategoriasGaleria() {
 /* ------------------------------------------------------------------ */
 /* Inscripciones de la alumna con sesión                               */
 /* ------------------------------------------------------------------ */
-// Demo: se guardan en localStorage (ver js/sesion.js). Fase 2: tabla
-// "inscripciones" en Supabase con las mismas funciones.
 
 /**
  * @typedef {Object} Inscripcion
  * @property {string} id
  * @property {string} alumnaId
  * @property {string} cursoSlug
- * @property {'pendiente'|'confirmada'|'cancelada'} estado
- *           ('finalizado' solo se muestra: lo calcula obtenerMisInscripciones)
+ * @property {'pendiente'|'confirmada'|'cancelada'|'finalizado'} estado
  * @property {string} creada  Fecha ISO.
  */
 
-
-function leerInscripciones() { return almacen.leer(CLAVES.inscripciones, []); }
-
 /**
- * Inscripciones de la alumna con sesión, con su curso, ordenadas por fecha de
- * inicio. Si el curso ya terminó, el estado visible pasa a 'finalizado'.
- * @returns {Promise<Array<Inscripcion & {curso: Curso|null, estadoVisible: string}>>}
+ * Inscripciones de la alumna con sesión, con su curso, por fecha de inicio.
+ * Si el curso ya terminó, el estado visible pasa a 'finalizado'.
  */
 export async function obtenerMisInscripciones() {
   const usuario = await usuarioActual();
   if (!usuario) return [];
-  const cursos = await fuente().cursos();
-  return leerInscripciones()
-    .filter((i) => i.alumnaId === usuario.id)
+  const [mias, cursos] = await Promise.all([(await fuente()).inscripcionesDe(usuario.id), todosLosCursos()]);
+  return mias
     .map((i) => {
       const curso = cursos.find((c) => c.slug === i.cursoSlug) || null;
       const estadoVisible = curso?.estado === 'finalizado' && i.estado === 'confirmada' ? 'finalizado' : i.estado;
-      return { ...copiar(i), curso, estadoVisible };
+      return { ...i, curso, estadoVisible };
     })
     .sort((a, b) => (a.curso?.fechaInicio || '').localeCompare(b.curso?.fechaInicio || ''));
 }
@@ -230,7 +175,7 @@ export async function obtenerMisInscripciones() {
 export async function obtenerInscripcion(cursoSlug) {
   const usuario = await usuarioActual();
   if (!usuario) return null;
-  return leerInscripciones().find((i) => i.alumnaId === usuario.id && i.cursoSlug === cursoSlug) || null;
+  return (await (await fuente()).inscripcionesDe(usuario.id)).find((i) => i.cursoSlug === cursoSlug) || null;
 }
 
 /**
@@ -241,35 +186,15 @@ export async function crearInscripcion(cursoSlug) {
   const usuario = await usuarioActual();
   if (!usuario) return { inscripcion: null, nueva: false, error: 'sin-sesion' };
   if (esAdmin(usuario)) return { inscripcion: null, nueva: false, error: 'admin' };
-  const todas = leerInscripciones();
-  const existente = todas.find((i) => i.alumnaId === usuario.id && i.cursoSlug === cursoSlug);
-  if (existente?.estado === 'cancelada') {
-    // Si la habían cancelado y vuelve a pedirla, queda pendiente otra vez.
-    existente.estado = 'pendiente';
-    existente.creada = new Date().toISOString();
-    if (!almacen.escribir(CLAVES.inscripciones, todas)) return { inscripcion: null, nueva: false, error: 'almacenamiento' };
-    return { inscripcion: existente, nueva: true, error: null };
-  }
-  if (existente) return { inscripcion: existente, nueva: false, error: null };
-  const inscripcion = {
-    id: `insc-${Date.now().toString(36)}`,
-    alumnaId: usuario.id,
-    cursoSlug,
-    estado: 'pendiente',
-    creada: new Date().toISOString()
-  };
-  if (!almacen.escribir(CLAVES.inscripciones, [...todas, inscripcion])) {
-    return { inscripcion: null, nueva: false, error: 'almacenamiento' };
-  }
-  return { inscripcion, nueva: true, error: null };
+  return (await fuente()).crearInscripcion(usuario, cursoSlug);
 }
 
 /* ------------------------------------------------------------------ */
 /* Panel de administradora (/admin)                                    */
 /* ------------------------------------------------------------------ */
-// Solo para la cuenta con rol "admin". Demo: lee y escribe localStorage.
-// Fase 2: consultas a Supabase protegidas con RLS (solo el rol admin puede
-// leer todas las inscripciones y cambiar su estado).
+// En la web publicada, las reglas RLS de Supabase son las que impiden que
+// alguien sin rol admin lea o cambie estos datos; exigirAdmin() solo evita
+// consultas inútiles.
 
 /**
  * @typedef {Object} AlumnaPanel
@@ -283,37 +208,30 @@ export async function crearInscripcion(cursoSlug) {
  * @property {string} creada
  */
 
-/**
- * @typedef {Inscripcion & {alumna: AlumnaPanel|null, curso: Curso|null}} InscripcionPanel
- */
+/** @typedef {Inscripcion & {alumna: AlumnaPanel|null, curso: Curso|null}} InscripcionPanel */
 
 async function exigirAdmin() {
   if (!esAdmin(await usuarioActual())) throw new Error('[datos] Esta función es solo para la administradora.');
 }
 
-const leerAlumnas = () => almacen.leer(CLAVES.alumnas, []).filter((a) => a.rol !== 'admin');
-
 const porFechaSolicitud = (a, b) => (a.creada || '').localeCompare(b.creada || '');
 
 /** Une cada inscripción con su alumna y su curso. */
 async function inscripcionesCompletas() {
-  const [cursos, alumnas] = [await fuente().cursos(), leerAlumnas()];
-  return leerInscripciones().map((i) => ({
-    ...copiar(i),
+  const f = await fuente();
+  const [inscripciones, cursos, alumnas] = await Promise.all([f.todasLasInscripciones(), f.cursos(), f.alumnas()]);
+  return inscripciones.map((i) => ({
+    ...i,
     alumna: alumnas.find((a) => a.id === i.alumnaId) || null,
     curso: cursos.find((c) => c.slug === i.cursoSlug) || null
   })).filter((i) => i.alumna && i.curso);
 }
 
-/**
- * Cursos para el panel: vigentes (del más próximo) y luego finalizados, con
- * sus conteos y el cálculo de cupos.
- * @returns {Promise<Array<Curso & {conteo:{confirmadas:number, pendientes:number, canceladas:number, fuera:number}, cuposCalc: ReturnType<typeof calcularCupos>}>>}
- */
+/** Cursos para el panel: vigentes (del más próximo) y luego finalizados, con conteos y cupos. */
 export async function obtenerCursosAdmin() {
   await exigirAdmin();
-  const cursos = await fuente().cursos();
-  const inscripciones = leerInscripciones();
+  const f = await fuente();
+  const [cursos, inscripciones] = await Promise.all([f.cursos(), f.todasLasInscripciones()]);
   const contar = (slug, estado) => inscripciones.filter((i) => i.cursoSlug === slug && i.estado === estado).length;
   const conDatos = (c) => ({
     ...c,
@@ -321,7 +239,7 @@ export async function obtenerCursosAdmin() {
       confirmadas: c.estado === 'finalizado' ? 0 : contar(c.slug, 'confirmada'),
       pendientes: c.estado === 'finalizado' ? 0 : contar(c.slug, 'pendiente'),
       canceladas: contar(c.slug, 'cancelada'),
-      fuera: c.inscritasFuera || 0
+      fuera: 0   // ya no hay cupos "por fuera": se cargan como inscripciones confirmadas
     },
     cuposCalc: calcularCupos(c.inscritas, c.cupos)
   });
@@ -331,10 +249,7 @@ export async function obtenerCursosAdmin() {
   ].map(conDatos);
 }
 
-/**
- * Los 4 indicadores del resumen (solo cursos vigentes).
- * @returns {Promise<{cursosVigentes:number, confirmadas:number, pendientes:number, cuposLibres:number}>}
- */
+/** Los 4 indicadores del resumen (solo cursos vigentes). */
 export async function obtenerResumenAdmin() {
   const vigentes = (await obtenerCursosAdmin()).filter((c) => c.estado === 'vigente');
   return {
@@ -345,10 +260,7 @@ export async function obtenerResumenAdmin() {
   };
 }
 
-/**
- * Solicitudes pendientes de los cursos vigentes, de la más antigua a la más nueva.
- * @returns {Promise<InscripcionPanel[]>}
- */
+/** Solicitudes pendientes de los cursos vigentes, de la más antigua a la más nueva. */
 export async function obtenerPendientes() {
   await exigirAdmin();
   return (await inscripcionesCompletas())
@@ -356,10 +268,7 @@ export async function obtenerPendientes() {
     .sort(porFechaSolicitud);
 }
 
-/**
- * Inscritas de un curso (todas las de la web, cualquier estado), la más nueva primero.
- * @returns {Promise<InscripcionPanel[]>}
- */
+/** Inscritas de un curso (todas las de la web, cualquier estado), la más nueva primero. */
 export async function obtenerInscritasDeCurso(cursoSlug) {
   await exigirAdmin();
   return (await inscripcionesCompletas())
@@ -367,42 +276,36 @@ export async function obtenerInscritasDeCurso(cursoSlug) {
     .sort((a, b) => porFechaSolicitud(b, a));
 }
 
-/**
- * Todas las alumnas con cuenta, por nombre, con sus inscripciones.
- * @returns {Promise<Array<AlumnaPanel & {inscripciones: InscripcionPanel[]}>>}
- */
+/** Todas las alumnas con cuenta, por nombre, con sus inscripciones. */
 export async function obtenerAlumnas() {
   await exigirAdmin();
-  const inscripciones = await inscripcionesCompletas();
-  return leerAlumnas()
-    .map((a) => ({ ...copiar(a), inscripciones: inscripciones.filter((i) => i.alumnaId === a.id) }))
+  const [inscripciones, alumnas] = await Promise.all([inscripcionesCompletas(), (await fuente()).alumnas()]);
+  return alumnas
+    .map((a) => ({ ...a, inscripciones: inscripciones.filter((i) => i.alumnaId === a.id) }))
     .sort((a, b) => `${a.nombre} ${a.apellido}`.localeCompare(`${b.nombre} ${b.apellido}`, 'es'));
 }
 
 /**
- * Confirma o cancela una inscripción (o la vuelve a confirmar).
+ * Confirma o cancela una inscripción (o la vuelve a dejar pendiente).
  * Al confirmar se ocupa un cupo: el % del curso sube en todo el sitio.
  * @param {string} id
  * @param {'confirmada'|'cancelada'|'pendiente'} estado
- * @returns {Promise<{inscripcion: Inscripcion|null, error: null|'no-existe'|'sin-cupos'|'curso-finalizado'|'almacenamiento'}>}
+ * @returns {Promise<{inscripcion: Inscripcion|null, error: null|'no-existe'|'sin-cupos'|'curso-finalizado'|'almacenamiento'|'servidor'}>}
  */
 export async function cambiarEstadoInscripcion(id, estado) {
   await exigirAdmin();
   if (!['confirmada', 'cancelada', 'pendiente'].includes(estado)) throw new Error(`[datos] Estado inválido: ${estado}`);
-  const todas = leerInscripciones();
-  const inscripcion = todas.find((i) => i.id === id);
+  const f = await fuente();
+  const inscripcion = (await f.todasLasInscripciones()).find((i) => i.id === id);
   if (!inscripcion) return { inscripcion: null, error: 'no-existe' };
-  if (inscripcion.estado === estado) return { inscripcion: copiar(inscripcion), error: null };
-
-  const curso = (await fuente().cursos()).find((c) => c.slug === inscripcion.cursoSlug);
+  if (inscripcion.estado === estado) return { inscripcion, error: null };
+  const curso = (await f.cursos()).find((c) => c.slug === inscripcion.cursoSlug);
   if (!curso || curso.estado === 'finalizado') return { inscripcion: null, error: 'curso-finalizado' };
   if (estado === 'confirmada' && calcularCupos(curso.inscritas, curso.cupos).restantes === 0) {
     return { inscripcion: null, error: 'sin-cupos' };
   }
-  inscripcion.estado = estado;
-  inscripcion.actualizada = new Date().toISOString();
-  if (!almacen.escribir(CLAVES.inscripciones, todas)) return { inscripcion: null, error: 'almacenamiento' };
-  return { inscripcion: copiar(inscripcion), error: null };
+  return f.cambiarEstado(id, estado, curso);
 }
 
-export const modo = () => CONFIG.modoDatos;
+/** 'demo' (capturas en el espacio de trabajo) o 'supabase' (web publicada). */
+export const modo = () => (MODO_DEMO ? 'demo' : 'supabase');

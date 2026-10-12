@@ -17,7 +17,8 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
   - Proyecto **VCORREA MAKEUP** (`sgcxjurhxycnhmsiqeid`, us-east-1, plan gratuito): https://sgcxjurhxycnhmsiqeid.supabase.co
   - Migraciones en `supabase/migraciones/` (mismo nombre y versión que en la base). Pruebas de reglas en `supabase/pruebas/`.
   - Tablas: `perfiles`, `cursos`, `inscripciones`, `galeria`. Buckets públicos `cursos` y `galeria`.
-  - La web sigue en `modoDatos: 'demo'` hasta el paso de conexión. URL y llave publicable en `js/config.js`; la llave secreta nunca va en el código.
+  - **La web publicada usa Supabase** (desde el 11 oct 2026): sesión con Supabase Auth y datos de las tablas. URL y llave publicable en `js/config.js`; la llave secreta nunca va en el código.
+  - Cursos y galería se editan **en la base**. `data/cursos.js` y `data/galeria.js` quedan solo para las capturas y para `generar_cursos.py` (páginas por curso y Open Graph): si cambia un curso, se cambia en los dos lados.
 - **Referencia de estructura:** hipereventos.com (capturas en `/referencias`).
   - **Sí tomamos:** hero con imagen grande, buscador, tarjetas de "Próximos cursos" con fecha, datos clave, barra de inscripción en % y botón "Inscribirme".
   - **No tomamos:** sus colores oscuros ni su tipografía gruesa. Nuestra estética es **clara, minimalista y elegante**.
@@ -54,13 +55,19 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 ├── css/
 │   └── estilos.css          tokens y componentes
 ├── js/
-│   ├── config.js            contacto, redes, WhatsApp, métodos de pago
+│   ├── config.js            contacto, redes, WhatsApp, métodos de pago, URL y llave pública de Supabase
+│   ├── modo.js              decide demo (solo localhost) o Supabase (siempre en la web publicada)
+│   ├── supabase.js          cliente supabase-js v2 (módulo ES desde jsDelivr)
 │   ├── componentes.js       header, footer y botón flotante de WhatsApp
 │   ├── iconos.js            íconos SVG propios
-│   ├── datos.js             acceso a datos centralizado (demo / Supabase)
+│   ├── datos.js             acceso a datos centralizado; usa datos-supabase.js o demo/datos-demo.js
+│   ├── datos-supabase.js    consultas a las tablas de Supabase
 │   ├── cupos.js             cálculo de % y etiquetas de cupos
 │   ├── fechas.js            formato de fechas
-│   ├── sesion.js            sesión simulada con localStorage
+│   ├── sesion.js            sesión: misma API para las páginas; usa sesion-supabase.js o demo/sesion-demo.js
+│   ├── sesion-base.js       piezas comunes (claves, errores, evento)
+│   ├── sesion-supabase.js   Supabase Auth + tabla perfiles
+│   ├── demo/                sesión y datos de ejemplo (SOLO capturas en localhost)
 │   ├── inscripcion.js       flujo "Inscribirme" → WhatsApp
 │   ├── detalle-curso.js     secciones de la ficha del curso reutilizables (ficha y cursos anteriores)
 │   ├── visor.js             visor de fotos a pantalla completa (galería y cursos anteriores)
@@ -92,12 +99,13 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 
 - **Header, footer y botón de WhatsApp** se dibujan desde `js/componentes.js`, para que sean idénticos en todas las páginas. Ninguna página los escribe a mano.
 - **Acceso a datos centralizado en `js/datos.js`.** Las páginas nunca leen `data/*.js` directamente; siempre piden a `datos.js`. En la fase 2 se cambia la fuente a Supabase sin tocar las páginas.
-- **Modo demo permanente:** aunque exista Supabase, siempre debe haber un modo demo con datos locales para poder hacer capturas en el espacio de trabajo.
-- **Sesión de alumna simulada** con `localStorage` en `js/sesion.js`, con la misma forma que tendrá Supabase: `registrar(datos)`, `ingresar(correo, contrasena)`, `salir()`, `usuarioActual()` y el evento `cambio-de-sesion`. En la demo no se guardan contraseñas. Cuentas demo (contraseña demo1234):
-  - alumna@demo.com, rol `alumna`.
-  - admin@demo.com, rol `admin`.
+- **Modo demo solo para capturas:** `js/modo.js` lo activa únicamente en localhost/127.0.0.1 (servidor del espacio de trabajo). En cualquier dominio publicado la web usa Supabase siempre; los módulos de la demo ni se descargan. En local, `?supabase=1` prueba el código de Supabase y `?demo=1` vuelve a la demo.
+- **Pruebas de punta a punta:** `python3 herramientas/prueba_flujos.py demo|supabase` (registro, cédula y correo repetidos, ingreso, Mi cuenta, inscripción, panel y redirecciones). En modo supabase usa un cliente falso (`herramientas/supabase_falso.js`) porque el espacio de trabajo no tiene red.
+- **Sesión:** `js/sesion.js` da a las páginas `registrar(datos)`, `ingresar(correo, contrasena)`, `salir()`, `usuarioActual()`, `usuarioEnCache()`, `existeCedula()`, `existeCorreo()` y el evento `cambio-de-sesion`. En la web publicada es Supabase Auth; el perfil se copia en el navegador solo para pintar el header al instante.
+  - Registro: antes de crear la cuenta se consulta `cedula_registrada()` y `correo_registrado()` para dar los mismos avisos amables de la vista previa.
+  - Cuentas de la demo (solo capturas en localhost, contraseña demo1234): alumna@demo.com y admin@demo.com.
 - **Roles:** `alumna` (por defecto), `admin` (Verónica) y `superadmin` (desarrollador: cursos, galería y fotos). Las cuentas nuevas siempre son de alumna. **Los roles solo se cambian desde la base de datos**, nunca desde la web. En la demo el rol vive en el navegador; en la fase 2 Supabase lo hace cumplir con RLS.
-- **Datos de ejemplo** (8 alumnas e inscripciones ficticias) en `js/sesion.js`. Se recargan al subir `VERSION_SEMILLA`, y el panel tiene el botón "Restablecer datos de ejemplo".
+- **Datos de ejemplo de la demo** (8 alumnas e inscripciones ficticias) en `js/demo/sesion-demo.js`. Se recargan al subir `VERSION_SEMILLA`. El aviso "Restablecer datos de ejemplo" del panel solo aparece en la demo.
 - **Datos de contacto, redes y métodos de pago** solo en `js/config.js`. Ningún número, usuario de red o dato de pago escrito en otro archivo.
 - **Franja "Vista previa · Los cursos y datos son de ejemplo"** arriba de todo el sitio, incluido el panel. Se controla con `MODO_VISTA_PREVIA` en `js/config.js`:
   - Después de cambiarlo se corre `herramientas/generar_paginas.py`, que la escribe en el HTML para que no haya salto al cargar.

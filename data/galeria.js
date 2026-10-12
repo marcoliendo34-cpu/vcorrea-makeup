@@ -1,4 +1,5 @@
-// Galería (modo demo): fotos reales de formaciones y ejemplos que aún no tienen foto.
+// Galería SOLO para el modo demo (capturas en el espacio de trabajo).
+// La web publicada lee la tabla "galeria" de Supabase (misma información).
 // Las páginas NUNCA leen este archivo directamente: piden los datos a js/datos.js.
 //
 // Fotos: cada foto se guarda en dos tamaños WebP dentro de /fotos/galeria/
@@ -8,12 +9,8 @@
 // `ancho` y `alto` son la proporción de la foto original: reservan su espacio
 // en el mosaico para que la página no salte mientras cargan.
 
-/** Categorías de los chips, en orden. */
-export const CATEGORIAS_GALERIA = [
-  { id: 'formaciones', nombre: 'Formaciones' },
-  { id: 'alumnas', nombre: 'Trabajos de alumnas' },
-  { id: 'propios', nombre: 'Trabajos propios' }
-];
+/** Categorías de los chips: viven en js/textos.js (las usa también la base). */
+export { CATEGORIAS_GALERIA } from '../js/textos.js';
 
 /**
  * @typedef {Object} FotoGaleria

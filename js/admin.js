@@ -16,7 +16,7 @@
 import { esc, boton, insignia, logo, abrirVentana, avisar, urlWhatsAppA, asegurarFranjaVistaPrevia } from './componentes.js';
 import { icono } from './iconos.js';
 import {
-  usuarioEnCache, salir, esAdmin, inicialDe, telefonoVisible, restablecerInscripcionesDemo, EVENTO
+  usuarioEnCache, usuarioActual, salir, esAdmin, inicialDe, telefonoVisible, restablecerInscripcionesDemo, esModoDemo, EVENTO
 } from './sesion.js';
 import {
   obtenerResumenAdmin, obtenerCursosAdmin, obtenerPendientes, obtenerInscritasDeCurso,
@@ -188,11 +188,11 @@ async function vistaResumen() {
           : vacio('No hay solicitudes pendientes', 'Cuando una alumna toque "Inscribirme", aparecerá aquí.')}
       </section>
 
-      <div class="nota-demo">
+      ${esModoDemo() ? `<div class="nota-demo">
         ${icono('informacion', { tamano: 18 })}
-        <p>Vista previa con datos de ejemplo. Los cambios se guardan solo en este navegador.
+        <p>Datos de ejemplo (solo capturas). Los cambios se guardan solo en este navegador.
           <button class="boton boton--texto" type="button" data-restablecer>Restablecer datos de ejemplo</button></p>
-      </div>`
+      </div>` : ''}`
   };
 }
 
@@ -556,8 +556,9 @@ function iniciar() {
       vista.querySelectorAll('[data-filtro]').forEach((b) => b.setAttribute('aria-pressed', String(b === t)));
       pintarInscritas();
     } else if (t.matches('[data-restablecer]')) {
-      restablecerInscripcionesDemo();
-      pintar().then(() => avisar('Listo: los datos de ejemplo volvieron al inicio.'));
+      restablecerInscripcionesDemo()
+        .then(() => pintar())
+        .then(() => avisar('Listo: los datos de ejemplo volvieron al inicio.'));
     } else if (t.matches('[data-salir]')) {
       saliendo = true;
       salir().then(() => location.assign('/'));
@@ -585,6 +586,15 @@ function iniciar() {
   pintar();
 }
 
+// Redirección rápida con la sesión guardada en el navegador y luego confirmación
+// con el servidor (sesión vencida o rol cambiado). Los datos en sí los protegen
+// las reglas RLS de Supabase: sin rol admin, la base no entrega nada.
 if (!usuario) location.replace('/ingresar?volver=/admin');
 else if (!esAdmin(usuario)) location.replace('/');
-else iniciar();
+else {
+  iniciar();
+  usuarioActual().then((u) => {
+    if (!u) location.replace('/ingresar?volver=/admin');
+    else if (!esAdmin(u)) location.replace('/');
+  });
+}
