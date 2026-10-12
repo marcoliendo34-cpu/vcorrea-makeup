@@ -1,8 +1,7 @@
-// Página: admin.html — panel de la administradora (Verónica).
+// Página: admin.html — panel de administración.
 //
-// VISTA PREVIA: funciona con los datos de ejemplo guardados en este navegador
-// (ver js/sesion.js y js/datos.js). El control de acceso de aquí es solo de
-// interfaz; en la fase 2 lo hace cumplir Supabase (rol admin + RLS).
+// Datos de Supabase (en localhost, los de ejemplo: ver js/modo.js). El control
+// de acceso de aquí es solo de interfaz: lo hace cumplir la base (rol + RLS).
 //
 // Rutas (con #, para que el botón Atrás funcione):
 //   #resumen          indicadores y "Pendientes por confirmar"
@@ -10,13 +9,16 @@
 //   #cursos/[slug]    inscritas de un curso (filtro, buscador, exportar CSV)
 //   #alumnas          listado general de alumnas
 //
-// La carga y edición de cursos la hace el desarrollador (fase 2): los botones
-// "Crear curso" y "Editar curso" solo muestran un aviso.
+// Roles:
+//   - admin (Verónica): todo lo de arriba. NO ve ningún botón de edición.
+//   - superadmin (Marco): además crea, edita, publica, finaliza y archiva
+//     cursos y gestiona la galería. Esas vistas y botones viven en
+//     js/admin-editor.js, que solo se descarga para ese rol.
 
 import { esc, boton, insignia, logo, abrirVentana, avisar, urlWhatsAppA, asegurarFranjaVistaPrevia } from './componentes.js';
 import { icono } from './iconos.js';
 import {
-  usuarioEnCache, usuarioActual, salir, esAdmin, inicialDe, telefonoVisible, restablecerInscripcionesDemo, esModoDemo, EVENTO
+  usuarioEnCache, usuarioActual, salir, esAdmin, esSuperadmin, inicialDe, telefonoVisible, restablecerInscripcionesDemo, esModoDemo, EVENTO
 } from './sesion.js';
 import {
   obtenerResumenAdmin, obtenerCursosAdmin, obtenerPendientes, obtenerInscritasDeCurso,
@@ -30,6 +32,9 @@ import { formatearFecha } from './fechas.js';
 
 const usuario = usuarioEnCache();
 // (la decisión se toma al final del archivo, cuando todo está definido)
+
+/** Herramientas del superadmin (js/admin-editor.js). null para Verónica. */
+let editor = null;
 
 /* ------------------------------------------------------------------ */
 /* Textos y formatos                                                   */
@@ -145,15 +150,6 @@ function cabeza({ etiqueta, titulo, meta = '', botones = '' }) {
     </header>`;
 }
 
-function avisoDesarrollador() {
-  abrirVentana({
-    icono: 'informacion',
-    titulo: 'La carga de cursos la gestiona tu desarrollador',
-    texto: '<p>Para publicar un curso nuevo o cambiar uno existente, envíale los datos (nombre, fechas, cupos, precio y fotos) y él lo actualiza en la web.</p>',
-    acciones: boton({ texto: 'Entendido', tamano: 'grande', bloque: true, atributos: { 'data-cerrar-ventana': '' } })
-  });
-}
-
 /* ------------------------------------------------------------------ */
 /* Vistas                                                              */
 /* ------------------------------------------------------------------ */
@@ -196,11 +192,12 @@ async function vistaResumen() {
   };
 }
 
-async function vistaCursos() {
-  const cursos = await obtenerCursosAdmin();
-  const fila = (c) => {
+/** Una fila de la lista de cursos. */
+function filaCurso(c) {
     const finalizado = c.estado === 'finalizado';
-    const estado = finalizado ? insignia('finalizado', 'Finalizado')
+    const estado = c.archivado ? insignia('borrador', 'Archivado')
+      : c.publicado === false ? insignia('borrador', 'Sin publicar')
+      : finalizado ? insignia('finalizado', 'Finalizado')
       : insignia(c.cuposCalc.estado === 'disponible' ? 'disponible' : c.cuposCalc.estado, ESTADO_CUPOS[c.cuposCalc.estado]);
     const ocupadas = Math.min(c.inscritas, c.cupos);
     return `
@@ -218,27 +215,30 @@ async function vistaCursos() {
           <span class="curso-panel__flecha" aria-hidden="true">${icono('chevron-derecha', { tamano: 20 })}</span>
         </a>
       </li>`;
-  };
+}
+
+async function vistaCursos() {
+  const cursos = await obtenerCursosAdmin();
   const lista = (titulo, items) => (items.length ? `
     <section class="bloque-panel" aria-label="${esc(titulo)}">
       <h2 class="vista__subtitulo">${esc(titulo)}</h2>
       ${titulosFilas(['Curso', 'Inicio', 'Cupos', 'Inscritas', 'Ocupación', 'Estado', ''], 'filas__titulos--cursos')}
-      <ul class="cursos-panel">${items.map(fila).join('')}</ul>
+      <ul class="cursos-panel">${items.map(filaCurso).join('')}</ul>
     </section>` : '');
   return {
     titulo: 'Cursos',
     html: `
-      ${cabeza({
-        etiqueta: 'Cursos', titulo: 'Cursos',
-        botones: boton({ texto: 'Crear curso', iconoIzquierda: 'mas', variante: 'secundario', clase: 'boton--compacto', atributos: { 'data-aviso-desarrollador': '' } })
-      })}
+      ${cabeza({ etiqueta: 'Cursos', titulo: 'Cursos', botones: editor ? editor.botonCrearCurso() : '' })}
+      ${cursos.length ? '' : vacio('Todavía no hay cursos', editor ? 'Crea el primero con "Crear curso".' : '')}
       ${lista('Vigentes', cursos.filter((c) => c.estado === 'vigente'))}
-      ${lista('Finalizados', cursos.filter((c) => c.estado === 'finalizado'))}`
+      ${lista('Finalizados', cursos.filter((c) => c.estado === 'finalizado'))}
+      ${editor ? await editor.htmlArchivados(filaCurso) : ''}`
   };
 }
 
 async function vistaCurso(slug) {
-  const curso = (await obtenerCursosAdmin()).find((c) => c.slug === slug);
+  const curso = (await obtenerCursosAdmin()).find((c) => c.slug === slug)
+    || (editor ? (await obtenerCursosAdmin({ archivados: true })).find((c) => c.slug === slug) : null);
   if (!curso) {
     return {
       titulo: 'Curso no encontrado',
@@ -271,10 +271,9 @@ async function vistaCurso(slug) {
         etiqueta: 'Inscritas por curso',
         titulo: curso.nombre,
         meta: `${finalizado ? 'Inició' : 'Inicia'} el ${esc(formatearFecha(curso.fechaInicio))} · ${esc(curso.modalidad)}`,
-        botones: `
-          ${boton({ texto: 'Editar curso', iconoIzquierda: 'editar', variante: 'secundario', clase: 'boton--compacto', atributos: { 'data-aviso-desarrollador': '' } })}
-          ${boton({ texto: 'Exportar lista', iconoIzquierda: 'descargar', clase: 'boton--compacto', desactivado: !inscritas.length, atributos: { 'data-exportar': '' } })}`
+        botones: boton({ texto: 'Exportar lista', iconoIzquierda: 'descargar', clase: 'boton--compacto', desactivado: !inscritas.length, atributos: { 'data-exportar': '' } })
       })}
+      ${editor ? editor.htmlHerramientasCurso(curso) : ''}
 
       <div class="ocupacion-curso">
         <div class="ocupacion-curso__cifras">
@@ -472,10 +471,11 @@ function htmlEstructura() {
         <button class="boton boton--secundario boton--icono" type="button" data-salir aria-label="Cerrar sesión">${icono('salir', { tamano: 20 })}</button>
       </div>
       <nav class="panel__nav" aria-label="Secciones del panel">
-        <ul>
+        <ul style="--columnas:${editor ? 4 : 3}">
           ${enlaceNav('resumen', 'nivel', 'Resumen')}
           ${enlaceNav('cursos', 'clases', 'Cursos')}
           ${enlaceNav('alumnas', 'usuarias', 'Alumnas')}
+          ${editor ? enlaceNav('galeria', 'imagen', 'Galería') : ''}
         </ul>
       </nav>
       <div class="panel__usuario">
@@ -483,7 +483,7 @@ function htmlEstructura() {
           <span class="cuenta__inicial" aria-hidden="true">${esc(inicialDe(usuario))}</span>
           <span class="panel__persona-textos">
             <span class="panel__persona-nombre">${esc(nombreCompleto(usuario))}</span>
-            <span class="panel__persona-rol">Administradora</span>
+            <span class="panel__persona-rol">${editor ? esc(editor.NOMBRE_ROL) : 'Administradora'}</span>
           </span>
         </div>
         <a class="panel__enlace-lateral" href="/">${icono('ojo', { tamano: 18 })}<span>Ver el sitio</span></a>
@@ -495,8 +495,12 @@ function htmlEstructura() {
 
 function ruta() {
   const [nombre = 'resumen', slug = null] = decodeURIComponent(location.hash.slice(1)).split('/');
-  return ['resumen', 'cursos', 'alumnas'].includes(nombre) ? [nombre, slug] : ['resumen', null];
+  const validas = ['resumen', 'cursos', 'alumnas', ...(editor ? Object.keys(editor.RUTAS) : [])];
+  return validas.includes(nombre) ? [nombre, slug] : ['resumen', null];
 }
+
+/** Sección del menú que se marca: las vistas de edición cuelgan de Cursos. */
+const SECCION = { 'curso-nuevo': 'cursos', editar: 'cursos', finalizar: 'cursos' };
 
 /**
  * Dibuja la vista de la ruta actual.
@@ -508,7 +512,9 @@ async function pintar({ enfocar = false, foco = null } = {}) {
   const [nombre, slug] = ruta();
   if (slug !== estado.slug) { estado.slug = slug; estado.filtro = 'todas'; estado.texto = ''; }
 
-  const v = nombre === 'cursos' && slug ? await vistaCurso(slug)
+  editor?.alSalirDeVista();
+  const v = editor?.RUTAS[nombre] ? await editor.RUTAS[nombre](slug)
+    : nombre === 'cursos' && slug ? await vistaCurso(slug)
     : nombre === 'cursos' ? await vistaCursos()
     : nombre === 'alumnas' ? await vistaAlumnas()
     : await vistaResumen();
@@ -517,7 +523,7 @@ async function pintar({ enfocar = false, foco = null } = {}) {
   v.despues?.();
   document.title = `${v.titulo} · Panel · Verónica Correa Makeup`;
   zona.querySelectorAll('[data-nav]').forEach((a) => {
-    if (a.dataset.nav === nombre) a.setAttribute('aria-current', 'page');
+    if (a.dataset.nav === (SECCION[nombre] || nombre)) a.setAttribute('aria-current', 'page');
     else a.removeAttribute('aria-current');
   });
   const pendientes = (await obtenerResumenAdmin()).pendientes;
@@ -537,11 +543,16 @@ async function pintar({ enfocar = false, foco = null } = {}) {
 
 const zona = document.querySelector('[data-panel]');
 
-function iniciar() {
+async function iniciar() {
   asegurarFranjaVistaPrevia();
+  // Solo el superadmin descarga las herramientas de edición
+  if (esSuperadmin(usuario)) {
+    editor = await import('./admin-editor.js');
+  }
   zona.innerHTML = htmlEstructura();
   zona.hidden = false;
   vista = zona.querySelector('[data-vista]');
+  editor?.instalar({ zona, vista: () => vista, pintar: () => pintar() });
 
   // Clics de toda la vista (las listas se vuelven a dibujar, por eso se delega)
   zona.addEventListener('click', (e) => {
@@ -549,7 +560,6 @@ function iniciar() {
     if (!t) return;
     if (t.matches('[data-accion="confirmar"]')) confirmar(t.dataset.id, t.dataset.nombre);
     else if (t.matches('[data-accion="cancelar"]')) preguntarCancelacion(t.dataset.id, t.dataset.nombre);
-    else if (t.matches('[data-aviso-desarrollador]')) avisoDesarrollador();
     else if (t.matches('[data-exportar]') && !t.disabled) exportarLista();
     else if (t.matches('[data-filtro]')) {
       estado.filtro = t.dataset.filtro;
@@ -586,6 +596,15 @@ function iniciar() {
   pintar();
 }
 
+/** Recarga para tomar el rol nuevo (una sola vez por pestaña, por si no se puede guardar la copia). */
+function recargarUnaVez() {
+  try {
+    if (sessionStorage.getItem('vcorrea:recarga-rol')) return;
+    sessionStorage.setItem('vcorrea:recarga-rol', '1');
+  } catch { return; }
+  location.reload();
+}
+
 // Redirección rápida con la sesión guardada en el navegador y luego confirmación
 // con el servidor (sesión vencida o rol cambiado). Los datos en sí los protegen
 // las reglas RLS de Supabase: sin rol admin, la base no entrega nada.
@@ -596,5 +615,6 @@ else {
   usuarioActual().then((u) => {
     if (!u) location.replace('/ingresar?volver=/admin');
     else if (!esAdmin(u)) location.replace('/');
+    else if (esSuperadmin(u) !== esSuperadmin(usuario)) recargarUnaVez();   // el rol cambió en la base
   });
 }

@@ -7,7 +7,7 @@
 // filtros y armado del panel), así las páginas no cambian según la fuente.
 
 import { MODO_DEMO } from './modo.js';
-import { usuarioActual, esAdmin } from './sesion.js';
+import { usuarioActual, esAdmin, esSuperadmin } from './sesion.js';
 import { calcularCupos } from './cupos.js';
 import { normalizar, ESTADOS_INSCRIPCION, CATEGORIAS_GALERIA } from './textos.js';
 
@@ -52,6 +52,10 @@ function textoBuscable(curso) {
 }
 
 const todosLosCursos = async () => (await fuente()).cursos();
+/** Lo que ve el público: publicados y no archivados. (La base ya oculta los no
+ *  publicados a quien no es admin; esto evita que Verónica los vea en la web.) */
+const esPublico = (c) => c.publicado !== false && !c.archivado;
+const cursosPublicos = async () => (await todosLosCursos()).filter(esPublico);
 
 /* ------------------------------------------------------------------ */
 /* Cursos                                                              */
@@ -59,10 +63,14 @@ const todosLosCursos = async () => (await fuente()).cursos();
 
 /** Cursos vigentes, del más próximo al más lejano. @returns {Promise<Curso[]>} */
 export async function obtenerCursosVigentes() {
-  return (await todosLosCursos()).filter((c) => c.estado === 'vigente').sort(porFechaAsc);
+  return (await cursosPublicos()).filter((c) => c.estado === 'vigente').sort(porFechaAsc);
 }
 
-/** Un curso por su slug (vigente o finalizado). null si no existe. */
+/**
+ * Un curso por su slug (vigente o finalizado). null si no existe.
+ * Puede venir sin publicar: solo la administración lo recibe de la base, y la
+ * ficha lo muestra como vista previa.
+ */
 export async function obtenerCursoPorSlug(slug) {
   const buscado = normalizar(slug).replace(/\/+$/, '');
   return (await todosLosCursos()).find((c) => c.slug === buscado) ?? null;
@@ -70,7 +78,7 @@ export async function obtenerCursoPorSlug(slug) {
 
 /** Cursos finalizados, del más reciente al más antiguo. */
 export async function obtenerCursosAnteriores() {
-  return (await todosLosCursos()).filter((c) => c.estado === 'finalizado').sort(porFechaDesc);
+  return (await cursosPublicos()).filter((c) => c.estado === 'finalizado').sort(porFechaDesc);
 }
 
 /**
@@ -83,7 +91,7 @@ export async function buscarCursos(texto = '', filtros = {}) {
   const { categoria, nivel, modalidad, estado = 'vigente' } = filtros;
   const palabras = normalizar(texto).split(' ').filter(Boolean);
   const igual = (a, b) => !b || normalizar(a) === normalizar(b);
-  return (await todosLosCursos())
+  return (await cursosPublicos())
     .filter((c) => estado === 'todos' || c.estado === estado)
     .filter((c) => igual(c.categoria, categoria) && igual(c.nivel, nivel) && igual(c.modalidad, modalidad))
     .filter((c) => {
@@ -110,8 +118,16 @@ export async function obtenerOpcionesDeFiltro() {
 /* Galería                                                             */
 /* ------------------------------------------------------------------ */
 
-/** Rutas de una foto: /fotos/galeria/{archivo}-600.webp y -1200.webp. */
+/**
+ * Rutas de una foto:
+ *   - Fotos de la web: /fotos/galeria/{archivo}-600.webp y -1200.webp.
+ *   - Subidas desde el panel: `archivo` es la URL pública de la versión de
+ *     1200 px (…-1200.webp o .jpg); la de 600 px tiene el mismo nombre con -600.
+ */
 function conRutas(f) {
+  if (/^https?:/.test(f.archivo || '')) {
+    return { ...f, grande: f.archivo, miniatura: f.archivo.replace(/-1200(\.\w+)$/, '-600$1') };
+  }
   return {
     ...f,
     miniatura: f.archivo ? `/fotos/galeria/${f.archivo}-600.webp` : null,
@@ -129,6 +145,7 @@ function conRutas(f) {
  */
 export async function obtenerGaleria({ soloDestacadas = false, soloAnteriores = false, categoria, limite } = {}) {
   const fotos = (await (await fuente()).galeria())
+    .filter((f) => f.publicado !== false)
     .filter((f) => !soloDestacadas || f.destacada)
     .filter((f) => !soloAnteriores || f.enAnteriores)
     .filter((f) => !categoria || categoria === 'todas' || f.categoria === categoria)
@@ -237,21 +254,27 @@ async function inscripcionesCompletas() {
   })).filter((i) => i.alumna && i.curso);
 }
 
-/** Cursos para el panel: vigentes (del más próximo) y luego finalizados, con conteos y cupos. */
-export async function obtenerCursosAdmin() {
+/**
+ * Cursos para el panel: vigentes (del más próximo) y luego finalizados, con
+ * conteos y cupos. Los archivados quedan fuera (ver obtenerCursosArchivados).
+ * Las inscritas se cuentan aquí: la función pública de cupos solo cubre los publicados.
+ */
+export async function obtenerCursosAdmin({ archivados = false } = {}) {
   await exigirAdmin();
   const f = await fuente();
-  const [cursos, inscripciones] = await Promise.all([f.cursos(), f.todasLasInscripciones()]);
+  const [todos, inscripciones] = await Promise.all([f.cursos(), f.todasLasInscripciones()]);
+  const cursos = todos.filter((c) => Boolean(c.archivado) === archivados);
   const contar = (slug, estado) => inscripciones.filter((i) => i.cursoSlug === slug && i.estado === estado).length;
   const conDatos = (c) => ({
     ...c,
+    inscritas: c.estado === 'finalizado' ? (c.egresadas || 0) : contar(c.slug, 'confirmada'),
     conteo: {
       confirmadas: c.estado === 'finalizado' ? 0 : contar(c.slug, 'confirmada'),
       pendientes: c.estado === 'finalizado' ? 0 : contar(c.slug, 'pendiente'),
       canceladas: contar(c.slug, 'cancelada'),
       fuera: 0   // ya no hay cupos "por fuera": se cargan como inscripciones confirmadas
     },
-    cuposCalc: calcularCupos(c.inscritas, c.cupos)
+    cuposCalc: calcularCupos(c.estado === 'finalizado' ? (c.egresadas || 0) : contar(c.slug, 'confirmada'), c.cupos)
   });
   return [
     ...cursos.filter((c) => c.estado === 'vigente').sort(porFechaAsc),
@@ -259,9 +282,9 @@ export async function obtenerCursosAdmin() {
   ].map(conDatos);
 }
 
-/** Los 4 indicadores del resumen (solo cursos vigentes). */
+/** Los 4 indicadores del resumen (solo cursos vigentes y publicados). */
 export async function obtenerResumenAdmin() {
-  const vigentes = (await obtenerCursosAdmin()).filter((c) => c.estado === 'vigente');
+  const vigentes = (await obtenerCursosAdmin()).filter((c) => c.estado === 'vigente' && c.publicado !== false);
   return {
     cursosVigentes: vigentes.length,
     confirmadas: vigentes.reduce((s, c) => s + Math.min(c.inscritas, c.cupos), 0),
@@ -315,6 +338,159 @@ export async function cambiarEstadoInscripcion(id, estado) {
     return { inscripcion: null, error: 'sin-cupos' };
   }
   return f.cambiarEstado(id, estado, curso);
+}
+
+/* ------------------------------------------------------------------ */
+/* Superadmin (Marco): cursos, fotos y galería                         */
+/* ------------------------------------------------------------------ */
+// La base solo deja escribir al rol superadmin (RLS en cursos, galeria y
+// storage). Aquí se evita la consulta si la cuenta no lo es. En la demo no
+// hay edición: responde { error: 'solo-supabase' }.
+// Errores: 'permiso' | 'solo-supabase' | 'no-existe' | 'slug-repetido' | 'datos' | 'servidor' | 'muy-grande'
+
+/** Fuente con escritura, o el código de error si no se puede. */
+async function fuenteSuperadmin() {
+  if (!esSuperadmin(await usuarioActual())) return { error: 'permiso' };
+  const f = await fuente();
+  return f.guardarCurso ? { f } : { error: 'solo-supabase' };
+}
+
+/** Todos los cursos tal como están en la base (incluye borradores y archivados). */
+async function cursosCrudos(f) {
+  f.olvidarCopias?.();
+  return f.cursos();
+}
+
+/** Curso para el editor (cualquier estado). null si no existe. */
+export async function obtenerCursoEditable(slug) {
+  const { f, error } = await fuenteSuperadmin();
+  if (error) return null;
+  return (await cursosCrudos(f)).find((c) => c.slug === slug) ?? null;
+}
+
+/** ¿Ese slug ya lo usa otro curso? */
+export async function slugOcupado(slug, idPropio = null) {
+  const { f, error } = await fuenteSuperadmin();
+  if (error) return false;
+  return (await cursosCrudos(f)).some((c) => c.slug === slug && c.id !== idPropio);
+}
+
+/**
+ * Crea (sin id) o guarda (con id) un curso con todos sus campos.
+ * @returns {Promise<{curso: Curso|null, error: string|null}>}
+ */
+export async function guardarCurso(curso) {
+  const { f, error } = await fuenteSuperadmin();
+  if (error) return { curso: null, error };
+  const { inscritas, conteo, cuposCalc, actualizado, ...limpio } = curso;
+  return f.guardarCurso(limpio);
+}
+
+async function cambiarCursoPorSlug(slug, cambios) {
+  const { f, error } = await fuenteSuperadmin();
+  if (error) return { curso: null, error };
+  const curso = (await cursosCrudos(f)).find((c) => c.slug === slug);
+  if (!curso) return { curso: null, error: 'no-existe' };
+  return f.cambiarCurso(curso.id, typeof cambios === 'function' ? cambios(curso) : cambios);
+}
+
+/** Copia un curso como borrador nuevo (sin publicar, vigente, sin egresadas ni fotos). */
+export async function duplicarCurso(slug) {
+  const { f, error } = await fuenteSuperadmin();
+  if (error) return { curso: null, error };
+  const todos = await cursosCrudos(f);
+  const original = todos.find((c) => c.slug === slug);
+  if (!original) return { curso: null, error: 'no-existe' };
+  const base = `${original.slug}-copia`;
+  let nuevo = base;
+  for (let n = 2; todos.some((c) => c.slug === nuevo); n += 1) nuevo = `${base}-${n}`;
+  const { id, inscritas, actualizado, ...resto } = original;
+  return f.guardarCurso({
+    ...resto, slug: nuevo, nombre: `${original.nombre} (copia)`,
+    publicado: false, archivado: false, estado: 'vigente', egresadas: null, galeria: []
+  });
+}
+
+/** Publica o despublica. Un curso archivado no se publica. */
+export async function publicarCurso(slug, publicar) {
+  return cambiarCursoPorSlug(slug, (c) => (publicar && c.archivado ? { publicado: false } : { publicado: Boolean(publicar) }));
+}
+
+/** Archiva (y despublica) o saca del archivo (queda como borrador). */
+export async function archivarCurso(slug, archivar) {
+  return cambiarCursoPorSlug(slug, archivar ? { archivado: true, publicado: false } : { archivado: false });
+}
+
+/**
+ * Pasa el curso a finalizado con sus egresadas y fotos: aparece en Cursos anteriores.
+ * @param {{egresadas: number, galeria: {src: string, miniatura?: string, alt: string, ancho?: number, alto?: number}[]}} datos
+ */
+export async function finalizarCurso(slug, { egresadas, galeria }) {
+  return cambiarCursoPorSlug(slug, { estado: 'finalizado', egresadas, galeria });
+}
+
+/** Vuelve a vigente un curso finalizado por error (conserva egresadas y fotos). */
+export async function reabrirCurso(slug) {
+  return cambiarCursoPorSlug(slug, { estado: 'vigente' });
+}
+
+/** Sube una imagen ya comprimida al bucket ('cursos' o 'galeria'). */
+export async function subirFoto(bucket, ruta, blob) {
+  const { f, error } = await fuenteSuperadmin();
+  if (error) return { url: null, error };
+  return f.subirArchivo(bucket, ruta, blob);
+}
+
+/** Fotos de la galería para el panel (todas, en su orden). */
+export async function obtenerGaleriaAdmin() {
+  const { f, error } = await fuenteSuperadmin();
+  if (error) return [];
+  f.olvidarCopias?.();
+  return (await f.galeria()).map(conRutas).sort((a, b) => (a.orden ?? 0) - (b.orden ?? 0));
+}
+
+/** Agrega una foto al final de la galería. */
+export async function agregarFotoGaleria(foto) {
+  const { f, error } = await fuenteSuperadmin();
+  if (error) return { error };
+  const fotos = await obtenerGaleriaAdmin();
+  const orden = fotos.reduce((m, x) => Math.max(m, x.orden ?? 0), 0) + 1;
+  return f.crearFoto({ destacada: false, enAnteriores: false, publicado: true, ...foto, orden });
+}
+
+/** Cambia categoría, texto alternativo, destacada o "Cursos anteriores". */
+export async function cambiarFotoGaleria(id, cambios) {
+  const { f, error } = await fuenteSuperadmin();
+  if (error) return { error };
+  return f.cambiarFoto(id, cambios);
+}
+
+/** Sube (-1) o baja (+1) una foto un lugar. Renumera el orden 1, 2, 3… */
+export async function moverFotoGaleria(id, paso) {
+  const { f, error } = await fuenteSuperadmin();
+  if (error) return { error };
+  const fotos = await obtenerGaleriaAdmin();
+  const i = fotos.findIndex((x) => x.id === id);
+  const j = i + paso;
+  if (i < 0 || j < 0 || j >= fotos.length) return { error: null };
+  [fotos[i], fotos[j]] = [fotos[j], fotos[i]];
+  for (const [k, foto] of fotos.entries()) {
+    if (foto.orden === k + 1) continue;
+    const r = await f.cambiarFoto(foto.id, { orden: k + 1 });
+    if (r.error) return r;
+  }
+  return { error: null };
+}
+
+/** Borra la foto de la galería y, si se subió desde el panel, sus archivos. */
+export async function borrarFotoGaleria(id) {
+  const { f, error } = await fuenteSuperadmin();
+  if (error) return { error };
+  const foto = (await obtenerGaleriaAdmin()).find((x) => x.id === id);
+  if (!foto) return { error: 'no-existe' };
+  const r = await f.borrarFoto(id);
+  if (!r.error && /^https?:/.test(foto.archivo || '')) await f.borrarArchivos('galeria', [foto.grande, foto.miniatura]);
+  return r;
 }
 
 /** 'demo' (capturas en el espacio de trabajo) o 'supabase' (web publicada). */

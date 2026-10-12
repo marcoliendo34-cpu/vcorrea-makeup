@@ -2662,7 +2662,7 @@ body.pagina-panel[data-pagina] { padding-top: var(--alto-franja); background: va
   background: var(--blanco);
   box-shadow: 0 -8px 24px rgba(43, 38, 34, 0.04);
 }
-.panel__nav ul { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
+.panel__nav ul { display: grid; grid-template-columns: repeat(var(--columnas, 3), minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
 .panel__nav-enlace {
   position: relative;
   display: flex;
@@ -2996,6 +2996,119 @@ body.pagina-panel[data-pagina] { padding-top: var(--alto-franja); background: va
 .nota-demo { display: flex; align-items: flex-start; gap: var(--e-3); padding: var(--e-4); border: 1px dashed var(--beige); border-radius: var(--radio-tarjeta); color: var(--gris-calido); font-size: var(--t-pequeno); }
 .nota-demo > svg { flex-shrink: 0; margin-top: 2px; color: var(--dorado-profundo); }
 .nota-demo .boton--texto { min-height: var(--tactil); font-size: var(--t-pequeno); }
+
+/* ---- Herramientas del superadmin (js/admin-editor.js) ----
+   Solo las ve el rol superadmin. Formulario por secciones en tarjetas,
+   barra de guardar pegada abajo (sobre las pestañas en el celular). */
+.insignia--borrador { background: var(--blanco); color: var(--gris-calido); border: 1px dashed var(--gris-calido); }
+.insignia--borrador::before { display: none; }
+.vista__meta-sep { margin-inline: var(--e-1); }
+.vista__meta .insignia { vertical-align: middle; }
+
+.herramientas-curso { display: grid; gap: var(--e-3); margin-bottom: var(--e-6); padding: var(--e-4); border: 1px dashed var(--dorado); border-radius: var(--radio-tarjeta); }
+.herramientas-curso__cabeza { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--e-2); }
+.herramientas-curso__cabeza .vista__subtitulo { margin: 0; }
+.herramientas-curso__botones { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+
+.editor { display: grid; gap: var(--e-5); }
+.editor__seccion { display: grid; gap: var(--e-4); padding: var(--e-5) var(--e-4); border: var(--borde); border-radius: var(--radio-tarjeta); background: var(--blanco); }
+.editor__titulo { font-size: var(--t-h4); line-height: 1.2; outline: none; }
+.editor__ayuda { margin-top: calc(var(--e-2) * -1); color: var(--gris-calido); font-size: var(--t-pequeno); }
+.editor__fila { display: grid; gap: var(--e-4); align-items: start; }
+.editor__fila--subir { align-items: end; }
+.editor__grupo { display: grid; gap: var(--e-3); padding-top: var(--e-4); border-top: var(--borde); }
+.editor .campo__control--area { min-height: 0; }
+.panel select.campo__control { appearance: none; padding-right: 44px; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 24 24' fill='none' stroke='%237A5C30' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 14px center; }
+.casilla__ayuda { display: block; color: var(--gris-calido); font-size: var(--t-pequeno); }
+
+.editor__errores { padding: var(--e-4); border: 2px solid var(--dorado-profundo); border-radius: var(--radio-tarjeta); background: var(--crema); outline: none; }
+.editor__errores-titulo { display: flex; align-items: center; gap: var(--e-2); margin-bottom: var(--e-2); color: var(--dorado-profundo); font-weight: 500; }
+.editor__errores ul { display: grid; gap: var(--e-1); margin: 0; padding-left: var(--e-6); font-size: var(--t-pequeno); }
+.editor__errores a { color: var(--tinta); text-underline-offset: 0.2em; }
+
+.editor__barra {
+  position: sticky;
+  bottom: calc(60px + env(safe-area-inset-bottom));
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-2) var(--e-4);
+  margin-inline: calc(var(--margen-lateral) * -1);
+  padding: var(--e-3) var(--margen-lateral);
+  border-top: var(--borde);
+  background: var(--blanco);
+  box-shadow: 0 -8px 24px rgba(43, 38, 34, 0.04);
+}
+.editor__estado { color: var(--gris-calido); font-size: var(--t-pequeno); }
+.editor__acciones { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: var(--e-2); margin-left: auto; }
+/* Celular: una sola fila de botones; "Vista previa" queda solo con el ojo y el
+   estado se anuncia a los lectores de pantalla sin ocupar lugar. */
+@media (max-width: 639px) {
+  .editor__estado { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .editor__acciones { flex-wrap: nowrap; width: 100%; }
+  .editor__acciones .boton { flex: 1 1 auto; padding-inline: var(--e-3); }
+  .editor__acciones [data-ed="vista-previa"] { flex: 0 0 var(--tactil); width: var(--tactil); padding: 0; }
+  .editor__acciones [data-ed="vista-previa"] span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+}
+
+.lista-ed { display: grid; gap: var(--e-3); justify-items: start; }
+.lista-ed__items { display: grid; gap: var(--e-3); width: 100%; margin: 0; padding: 0; list-style: none; }
+.lista-ed__item { display: grid; gap: var(--e-3); padding: var(--e-3) var(--e-3) var(--e-4); border: var(--borde); border-radius: var(--radio-boton); background: color-mix(in srgb, var(--crema) 45%, var(--blanco)); }
+.lista-ed__item--simple { grid-template-columns: minmax(0, 1fr); padding: var(--e-2); }
+.lista-ed__cabeza { display: flex; align-items: center; justify-content: space-between; gap: var(--e-2); }
+.lista-ed__titulo { color: var(--dorado-profundo); font-size: var(--t-etiqueta); font-weight: 500; letter-spacing: 0.16em; text-transform: uppercase; }
+.lista-ed__campos { display: grid; gap: var(--e-3); }
+.lista-ed__botones { display: flex; align-items: center; justify-content: flex-end; gap: 2px; }
+.boton-mini { color: var(--gris-calido); }
+.boton-mini:hover:not(:disabled) { color: var(--dorado-profundo); }
+.boton-mini:disabled { opacity: 0.35; }
+.boton--texto.boton-mini { padding: 0; }
+
+.portada-ed { display: grid; gap: var(--e-4); }
+.portada-ed__vista { width: min(100%, 220px); overflow: hidden; border: var(--borde); border-radius: var(--radio-boton); background: var(--crema); }
+.portada-ed__vista img { display: block; width: 100%; height: auto; }
+.portada-ed__datos { display: grid; gap: var(--e-3); align-content: start; min-width: 0; }
+.portada-ed__botones { display: flex; flex-wrap: wrap; gap: var(--e-2); }
+
+.fotos-ed { display: grid; gap: var(--e-3); margin: 0; padding: 0; list-style: none; }
+.fotos-ed__item { display: grid; grid-template-columns: 88px minmax(0, 1fr); gap: var(--e-3); padding: var(--e-3); border: var(--borde); border-radius: var(--radio-boton); background: var(--blanco); }
+.fotos-ed__img { width: 88px; height: 88px; object-fit: cover; border-radius: 8px; background: var(--crema); }
+.fotos-ed__datos { display: grid; gap: var(--e-3); min-width: 0; }
+.fotos-ed__casillas { display: flex; flex-wrap: wrap; gap: 0 var(--e-5); }
+.fotos-ed__orden { margin-right: auto; color: var(--gris-calido); font-size: var(--t-etiqueta); }
+
+@media (min-width: 768px) {
+  .editor__seccion { padding: var(--e-6); }
+  .editor__fila { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .lista-ed__item--simple { grid-template-columns: minmax(0, 1fr) auto; align-items: center; }
+  .portada-ed { grid-template-columns: 220px minmax(0, 1fr); }
+  .fotos-ed__item { grid-template-columns: 140px minmax(0, 1fr); }
+  .fotos-ed__img { width: 140px; height: 140px; }
+  .fotos-ed--galeria .fotos-ed__datos { grid-template-columns: minmax(0, 2fr) minmax(0, 1fr); }
+  .fotos-ed--galeria .fotos-ed__casillas, .fotos-ed--galeria .lista-ed__botones { grid-column: 1 / -1; }
+}
+@media (min-width: 1024px) {
+  .editor__barra { bottom: 0; margin-inline: 0; padding-inline: var(--e-4); border: var(--borde); border-radius: var(--radio-tarjeta) var(--radio-tarjeta) 0 0; }
+}
+
+/* Ficha de un curso sin publicar (vista previa del superadmin o de Verónica) */
+.aviso-borrador {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--e-2) var(--e-4);
+  margin: var(--e-4) var(--margen-lateral) 0;
+  padding: var(--e-3) var(--e-4);
+  border: 1px dashed var(--dorado-profundo);
+  border-radius: var(--radio-boton);
+  background: var(--crema);
+  color: var(--tinta);
+  font-size: var(--t-pequeno);
+}
+.aviso-borrador__enlace { display: inline-flex; align-items: center; min-height: var(--tactil); color: var(--dorado-profundo); font-weight: 500; text-underline-offset: 0.2em; }
 
 /* -------------------------------------------------------------------------
    36. Franja "Vista previa"

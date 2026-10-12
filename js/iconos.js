@@ -41,7 +41,13 @@ const TRAZOS = {
   nivel: '<path d="M6 19.5v-4"/><path d="M12 19.5v-8"/><path d="M18 19.5v-12"/>',
   tarjeta: '<rect x="3" y="5.75" width="18" height="12.5" rx="2.25"/><path d="M3 9.75h18"/><path d="M6.5 14.75h4"/>',
   descargar: '<path d="M12 3.75v11"/><path d="m7.5 10.5 4.5 4.5 4.5-4.5"/><path d="M4.75 15.5v2.75c0 .97.78 1.75 1.75 1.75h11c.97 0 1.75-.78 1.75-1.75V15.5"/>',
-  billete: '<rect x="3" y="6.5" width="18" height="11" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 9.5v.01"/><path d="M17.5 14.5v.01"/>'
+  billete: '<rect x="3" y="6.5" width="18" height="11" rx="2"/><circle cx="12" cy="12" r="2.5"/><path d="M6.5 9.5v.01"/><path d="M17.5 14.5v.01"/>',
+  // Panel del superadmin
+  'chevron-arriba': '<path d="m6 15 6-6 6 6"/>',
+  papelera: '<path d="M4.5 6.75h15"/><path d="M9.25 6.75V4.75h5.5v2"/><path d="M6.5 6.75l.9 12.1c.07.9.82 1.65 1.75 1.65h5.7c.93 0 1.68-.75 1.75-1.65l.9-12.1"/><path d="M10 10.5v6"/><path d="M14 10.5v6"/>',
+  copiar: '<rect x="8.25" y="8.25" width="12" height="12" rx="2"/><path d="M15.75 8.25V5.75c0-1.1-.9-2-2-2h-8c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h2.5"/>',
+  archivar: '<rect x="3.25" y="4.5" width="17.5" height="4.25" rx="1.25"/><path d="M4.75 8.75v9c0 1.1.9 2 2 2h10.5c1.1 0 2-.9 2-2v-9"/><path d="M10 12.5h4"/>',
+  subir: '<path d="M12 15.25v-11"/><path d="m7.5 8.5 4.5-4.5 4.5 4.5"/><path d="M4.75 15.5v2.75c0 .97.78 1.75 1.75 1.75h11c.97 0 1.75-.78 1.75-1.75V15.5"/>'
 };
 
 /**

@@ -10,9 +10,9 @@ Cada archivo de `migraciones/` es una migración aplicada, con la misma versión
 | Tabla | Qué guarda | Lectura | Escritura desde la web |
 |---|---|---|---|
 | `perfiles` | Datos de cada usuaria (nombre, apellido, cédula única, teléfono, correo, instagram, fecha de nacimiento, rol) | Cada una el suyo; admin y superadmin, todos | Cada una edita solo nombre, apellido, teléfono, instagram y fecha de nacimiento del suyo. **Nunca** rol, cédula ni correo |
-| `cursos` | Todos los campos de `data/cursos.js` + `publicado`. La foto o flyer va en `portada` (jsonb: src, miniatura, og, ancho, alto, flyer, alt). `imagen_portada` e `imagen_portada_alt` quedaron sin uso y se borran en una limpieza | Público: solo publicados. Admin: todos | Solo superadmin |
+| `cursos` | Todos los campos de `data/cursos.js` + `publicado` y `archivado` (un archivado nunca está publicado). La foto o flyer va en `portada` (jsonb: src, miniatura, og, ancho, alto, flyer, alt). `imagen_portada` e `imagen_portada_alt` quedaron sin uso y se borran en una limpieza | Público: solo publicados. Admin: todos | Solo superadmin |
 | `inscripciones` | curso, alumna, estado, nota, fechas. Una por alumna y curso | Cada alumna las suyas; admin y superadmin, todas | La alumna crea las suyas (siempre `pendiente`) y puede volver a pedir una cancelada. Admin y superadmin cambian estado y nota |
-| `galeria` | Fotos de la galería (imagen, categoría, texto alternativo, orden, destacada, en_anteriores) | Público: solo publicadas | Solo superadmin |
+| `galeria` | Fotos de la galería (imagen, categoría, texto alternativo, orden, destacada, en_anteriores). `imagen` es el nombre base de `/fotos/galeria` o, si se subió desde el panel, la URL pública de la versión de 1200 px (la de 600 px tiene el mismo nombre con `-600`) | Público: solo publicadas | Solo superadmin |
 
 ## Reglas clave
 
@@ -25,7 +25,12 @@ Cada archivo de `migraciones/` es una migración aplicada, con la misma versión
 
 ## Datos cargados
 
-La migración `cargar_cursos_y_galeria` copió Visión Lash y las 8 fotos reales de la galería desde `data/*.js`. Las fotos siguen en `/fotos` de la web (`galeria.imagen` = nombre base). Subirlas a los buckets queda para cuando haya panel de carga.
+La migración `cargar_cursos_y_galeria` copió Visión Lash y las 8 fotos reales de la galería desde `data/*.js`. Esas fotos siguen en `/fotos` de la web (`galeria.imagen` = nombre base).
+
+Desde el 12 oct 2026 el superadmin carga cursos y fotos desde el panel (`/admin`). Las fotos se comprimen en el navegador y van a los buckets:
+- `cursos/portadas/[slug]/…-1200.webp` y `-600.webp`: portada del curso (`cursos.portada`).
+- `cursos/fotos/[slug]/…`: fotos de un curso finalizado (`cursos.galeria`).
+- `galeria/[categoría]/…`: fotos de la galería.
 
 ## Pruebas
 

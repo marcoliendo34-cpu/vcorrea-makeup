@@ -415,7 +415,13 @@ if (!curso) {
   ].join('');
   const ids = INDICE.map((x) => x.id).filter((id) => secciones.includes(`id="${id}"`));
 
+  // Borrador o archivado: solo la administración lo recibe de la base (RLS).
+  const borrador = curso.publicado === false || curso.archivado;
   main.innerHTML = `
+    ${borrador ? `<div class="aviso-borrador" role="status">
+      <p><strong>Vista previa.</strong> ${curso.archivado ? 'Este curso está archivado' : 'Este curso todavía no está publicado'}: solo la administración puede verlo.</p>
+      <a class="aviso-borrador__enlace" href="/admin#cursos/${encodeURIComponent(curso.slug)}">Volver al panel</a>
+    </div>` : ''}
     ${htmlPortada(curso, est)}
     ${htmlIndice(ids)}
     <div class="contenedor curso-cuerpo">

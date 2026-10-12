@@ -102,6 +102,9 @@ if (typeof window !== 'undefined') {
 /** ¿La cuenta es de administradora? (admin o superadmin) */
 export const esAdmin = (usuario) => usuario?.rol === 'admin' || usuario?.rol === 'superadmin';
 
+/** Solo el desarrollador: crea y edita cursos, galería y fotos. La base lo hace cumplir (RLS). */
+export const esSuperadmin = (usuario) => usuario?.rol === 'superadmin';
+
 /** Inicial para el círculo de "Mi cuenta". */
 export const inicialDe = (usuario) => (usuario?.nombre || '').trim().charAt(0).toUpperCase();
 

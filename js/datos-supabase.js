@@ -49,6 +49,8 @@ function aCurso(r, confirmadas) {
     galeria: r.galeria || [],
     egresadas: r.egresadas,
     publicado: r.publicado,
+    archivado: Boolean(r.archivado),
+    actualizado: r.actualizado_en,
     // Solo cuentan las confirmadas. En los finalizados se muestran las egresadas.
     inscritas: r.estado === 'finalizado' ? (r.egresadas || 0) : (confirmadas || 0)
   };
@@ -100,7 +102,9 @@ export async function galeria() {
       ancho: f.ancho || 4,
       alto: f.alto || 3,
       destacada: f.destacada,
-      enAnteriores: f.en_anteriores
+      enAnteriores: f.en_anteriores,
+      orden: f.orden,
+      publicado: f.publicado
     })))
     .catch((e) => { galeriaEnCurso = null; throw e; });
   return structuredClone(await galeriaEnCurso);
@@ -191,3 +195,109 @@ export async function cambiarEstado(id, estado) {
   cursosEnCurso = null;   // los cupos cambiaron
   return { inscripcion: aInscripcion(data), error: null };
 }
+
+/* ------------------------- superadmin (Marco) ------------------------- */
+// Solo el rol superadmin puede escribir en cursos, galeria y los buckets: lo
+// imponen las reglas RLS. Aquí solo se traducen las formas y los errores.
+
+/** Campo de la web → columna de "cursos". */
+const COLUMNAS_CURSO = {
+  slug: 'slug', nombre: 'nombre', nombreCorto: 'nombre_corto', subtitulo: 'subtitulo',
+  categoria: 'categoria', nivel: 'nivel', modalidad: 'modalidad', ubicacion: 'ubicacion',
+  imagenPortada: 'portada', fechaInicio: 'fecha_inicio', fechaFin: 'fecha_fin', dias: 'dias',
+  horario: 'horario', semanas: 'semanas', totalClases: 'total_clases', calendario: 'calendario',
+  cupos: 'cupos', descripcion: 'descripcion', dirigidoA: 'dirigido_a', destacados: 'destacados',
+  incluye: 'incluye', pensum: 'pensum', practicas: 'practicas', requisitos: 'requisitos',
+  certificado: 'certificado', precioUSD: 'precio_usd', condicionesPago: 'condiciones_pago',
+  preguntas: 'preguntas', estado: 'estado', galeria: 'galeria', egresadas: 'egresadas',
+  publicado: 'publicado', archivado: 'archivado'
+};
+
+/** Curso (o parte de él) → fila. Solo copia los campos presentes. */
+function aFila(cambios) {
+  const fila = {};
+  for (const [web, columna] of Object.entries(COLUMNAS_CURSO)) {
+    if (cambios[web] === undefined) continue;
+    let v = cambios[web];
+    if (web === 'imagenPortada') v = v?.src ? v : null;
+    fila[columna] = v;
+  }
+  return fila;
+}
+
+/** Error de la base al guardar un curso → código para el panel. */
+function errorDeCurso(e) {
+  if (e?.code === '23505') return 'slug-repetido';
+  if (e?.code === '23514' || e?.code === '22P02' || e?.code === '23502') return 'datos';
+  if (e?.code === '42501') return 'permiso';
+  return 'servidor';
+}
+
+/** Crea (sin id) o actualiza (con id) un curso completo. */
+export async function guardarCurso(curso) {
+  const fila = aFila(curso);
+  const consulta = curso.id
+    ? supabase.from('cursos').update(fila).eq('id', curso.id)
+    : supabase.from('cursos').insert(fila);
+  const { data, error } = await consulta.select('*').maybeSingle();
+  cursosEnCurso = null;
+  if (error) return { curso: null, error: errorDeCurso(error), detalle: error.message };
+  if (!data) return { curso: null, error: 'permiso' };   // RLS: ninguna fila cambió
+  return { curso: aCurso(data, 0), error: null };
+}
+
+/** Cambia solo algunos campos (publicar, archivar, finalizar…). */
+export async function cambiarCurso(id, cambios) {
+  return guardarCurso({ ...cambios, id });
+}
+
+/** Sube un archivo a un bucket público y devuelve su URL pública. */
+export async function subirArchivo(bucket, ruta, blob) {
+  const { error } = await supabase.storage.from(bucket)
+    .upload(ruta, blob, { contentType: blob.type, cacheControl: '31536000', upsert: false });
+  if (error) {
+    const t = `${error.statusCode || ''} ${error.message || ''}`;
+    return { url: null, error: /413|large|size/i.test(t) ? 'muy-grande' : /403|policy|security/i.test(t) ? 'permiso' : 'servidor' };
+  }
+  return { url: supabase.storage.from(bucket).getPublicUrl(ruta).data.publicUrl, error: null };
+}
+
+/** Borra archivos del bucket a partir de sus URLs públicas (las demás se ignoran). */
+export async function borrarArchivos(bucket, urls) {
+  const marca = `/storage/v1/object/public/${bucket}/`;
+  const rutas = urls.filter((u) => typeof u === 'string' && u.includes(marca))
+    .map((u) => decodeURIComponent(u.split(marca)[1].split('?')[0]));
+  if (!rutas.length) return { error: null };
+  const { error } = await supabase.storage.from(bucket).remove(rutas);
+  return { error: error ? 'servidor' : null };
+}
+
+/** Foto de la galería (forma de la web) → fila. */
+function aFilaFoto(f) {
+  const mapa = { archivo: 'imagen', categoria: 'categoria', alt: 'texto_alternativo', ancho: 'ancho', alto: 'alto',
+    destacada: 'destacada', enAnteriores: 'en_anteriores', orden: 'orden', publicado: 'publicado' };
+  return Object.fromEntries(Object.entries(mapa).filter(([w]) => f[w] !== undefined).map(([w, c]) => [c, f[w]]));
+}
+
+export async function crearFoto(foto) {
+  const { error } = await supabase.from('galeria').insert(aFilaFoto(foto));
+  galeriaEnCurso = null;
+  return { error: error ? (error.code === '42501' ? 'permiso' : 'servidor') : null };
+}
+
+export async function cambiarFoto(id, cambios) {
+  const { data, error } = await supabase.from('galeria').update(aFilaFoto(cambios)).eq('id', id).select('id');
+  galeriaEnCurso = null;
+  if (error) return { error: 'servidor' };
+  return { error: data?.length ? null : 'permiso' };
+}
+
+export async function borrarFoto(id) {
+  const { data, error } = await supabase.from('galeria').delete().eq('id', id).select('id');
+  galeriaEnCurso = null;
+  if (error) return { error: 'servidor' };
+  return { error: data?.length ? null : 'permiso' };
+}
+
+/** Olvida la copia de cursos y galería (el panel quiere ver lo último). */
+export function olvidarCopias() { cursosEnCurso = null; galeriaEnCurso = null; }

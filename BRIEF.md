@@ -18,7 +18,7 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
   - Migraciones en `supabase/migraciones/` (mismo nombre y versión que en la base). Pruebas de reglas en `supabase/pruebas/`.
   - Tablas: `perfiles`, `cursos`, `inscripciones`, `galeria`. Buckets públicos `cursos` y `galeria`.
   - **La web publicada usa Supabase** (desde el 11 oct 2026): sesión con Supabase Auth y datos de las tablas. URL y llave publicable en `js/config.js`; la llave secreta nunca va en el código.
-  - Cursos y galería se editan **en la base**. `data/cursos.js` y `data/galeria.js` quedan solo para las capturas y para `generar_cursos.py` (páginas por curso y Open Graph): si cambia un curso, se cambia en los dos lados.
+  - Cursos y galería se editan **desde el panel** (`/admin`, solo superadmin), que escribe en la base. `data/cursos.js` y `data/galeria.js` quedan solo para las capturas y para `generar_cursos.py` (páginas por curso con Open Graph propio). Un curso creado en el panel funciona sin página generada (reescritura `/cursos/:slug`), con la imagen para compartir de la marca.
 - **Referencia de estructura:** hipereventos.com (capturas en `/referencias`).
   - **Sí tomamos:** hero con imagen grande, buscador, tarjetas de "Próximos cursos" con fecha, datos clave, barra de inscripción en % y botón "Inscribirme".
   - **No tomamos:** sus colores oscuros ni su tipografía gruesa. Nuestra estética es **clara, minimalista y elegante**.
@@ -72,7 +72,9 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 │   ├── detalle-curso.js     secciones de la ficha del curso reutilizables (ficha y cursos anteriores)
 │   ├── visor.js             visor de fotos a pantalla completa (galería y cursos anteriores)
 │   ├── formularios.js       validación en vivo y ayudas de formularios (registro, ingreso)
-│   ├── admin.js             panel de la administradora (rutas con #)
+│   ├── admin.js             panel de administración (rutas con #)
+│   ├── admin-editor.js      herramientas del superadmin: cursos, fotos y galería (solo se descarga para ese rol)
+│   ├── imagenes.js          compresión de fotos en el navegador antes de subirlas (WebP 1200 y 600 px)
 │   ├── textos.js            estados de inscripción y normalizar(), sin dependencias
 │   └── <un archivo por página>   ej. inicio.js, cursos.js, curso.js…
 ├── data/
@@ -101,10 +103,11 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 - **Acceso a datos centralizado en `js/datos.js`.** Las páginas nunca leen `data/*.js` directamente; siempre piden a `datos.js`. En la fase 2 se cambia la fuente a Supabase sin tocar las páginas.
 - **Modo demo solo para capturas:** `js/modo.js` lo activa únicamente en localhost/127.0.0.1 (servidor del espacio de trabajo). En cualquier dominio publicado la web usa Supabase siempre; los módulos de la demo ni se descargan. En local, `?supabase=1` prueba el código de Supabase y `?demo=1` vuelve a la demo.
 - **Pruebas de punta a punta:** `python3 herramientas/prueba_flujos.py demo|supabase` (registro, cédula y correo repetidos, ingreso, Mi cuenta, inscripción, panel y redirecciones). En modo supabase usa un cliente falso (`herramientas/supabase_falso.js`) porque el espacio de trabajo no tiene red.
+- **Prueba del panel por rol:** `python3 herramientas/prueba_panel.py [--capturas]` (admin sin botones de edición; superadmin crea, edita, sube fotos, publica, duplica, archiva, finaliza y gestiona la galería). Cuenta de superadmin del cliente falso: super@demo.com / demo1234.
 - **Sesión:** `js/sesion.js` da a las páginas `registrar(datos)`, `ingresar(correo, contrasena)`, `salir()`, `usuarioActual()`, `usuarioEnCache()`, `existeCedula()`, `existeCorreo()` y el evento `cambio-de-sesion`. En la web publicada es Supabase Auth; el perfil se copia en el navegador solo para pintar el header al instante.
   - Registro: antes de crear la cuenta se consulta `cedula_registrada()` y `correo_registrado()` para dar los mismos avisos amables de la vista previa.
   - Cuentas de la demo (solo capturas en localhost, contraseña demo1234): alumna@demo.com y admin@demo.com.
-- **Roles:** `alumna` (por defecto), `admin` (Verónica) y `superadmin` (desarrollador: cursos, galería y fotos). Las cuentas nuevas siempre son de alumna. **Los roles solo se cambian desde la base de datos**, nunca desde la web. En la demo el rol vive en el navegador; en la fase 2 Supabase lo hace cumplir con RLS.
+- **Roles:** `alumna` (por defecto), `admin` (Verónica) y `superadmin` (Marco, desarrollador: cursos, galería y fotos). Las cuentas nuevas siempre son de alumna. **Los roles solo se cambian desde la base de datos**, nunca desde la web. En la demo el rol vive en el navegador; en Supabase lo hacen cumplir las reglas RLS.
 - **Datos de ejemplo de la demo** (8 alumnas e inscripciones ficticias) en `js/demo/sesion-demo.js`. Se recargan al subir `VERSION_SEMILLA`. El aviso "Restablecer datos de ejemplo" del panel solo aparece en la demo.
 - **Datos de contacto, redes y métodos de pago** solo en `js/config.js`. Ningún número, usuario de red o dato de pago escrito en otro archivo.
 - **Franja "Vista previa · Los cursos y datos son de ejemplo"** arriba de todo el sitio, incluido el panel. Se controla con `MODO_VISTA_PREVIA` en `js/config.js`:
@@ -244,8 +247,8 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 
 ### Panel de administradora (`/admin`)
 
-- **Acceso:** sin sesión lleva a `/ingresar?volver=/admin`; una cuenta sin rol admin va al inicio.
-- **Secciones:**
+- **Acceso:** sin sesión lleva a `/ingresar?volver=/admin`; una cuenta sin rol admin ni superadmin va al inicio.
+- **Secciones (admin y superadmin):**
   - **Resumen:** cursos vigentes, inscritas confirmadas, pendientes por confirmar, cupos libres y la lista "Pendientes por confirmar".
   - **Cursos:** la lista de cursos. Cada curso abre sus inscritas, con filtro por estado, buscador por nombre o cédula y "Exportar lista".
   - **Alumnas:** listado general con buscador.
@@ -255,7 +258,15 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
   - "Cancelar" pide confirmación.
   - Confirmar o cancelar cambia el % en todo el sitio.
 - **CSV:** UTF-8 con BOM, separado por `;` y con fechas dd/mm/aaaa, para Excel en español. Lleva solo las inscritas de la web.
-- **Crear y editar cursos** lo hace el desarrollador. En el panel, esos botones solo muestran "La carga de cursos la gestiona tu desarrollador".
+- **Los botones de edición NO se muestran a Verónica (admin).** Su panel no tiene "Crear curso", "Editar", publicar, archivar ni Galería, y su navegador ni descarga `js/admin-editor.js`.
+- **Superadmin (Marco), además** (`js/admin-editor.js`, decidido el 12 oct 2026):
+  - **Crear y editar cursos** (`#curso-nuevo`, `#editar/[slug]`) con formulario completo: datos generales, dirección (slug, se arma sola desde el nombre), portada, fechas, horario, calendario, cupos, precio y condiciones, "Qué incluye", pensum (agregar, quitar y reordenar; por semanas o por módulos), prácticas, requisitos, certificado y preguntas frecuentes. Los cupos no pueden quedar por debajo de las confirmadas.
+  - Un curso nuevo se guarda como **borrador** (sin publicar). **Vista previa** guarda y abre la ficha en otra pestaña con el aviso "Este curso todavía no está publicado". **Publicar / Despublicar** desde el curso o "Guardar y publicar" en el formulario.
+  - **Duplicar** crea una copia en borrador (`[slug]-copia`). **Archivar** despublica y lo pasa a "Archivados" (columna `archivado`; los cursos no se borran porque tienen inscripciones).
+  - **Finalizar** (`#finalizar/[slug]`): número de egresadas y fotos del curso. Pasa a `finalizado`, se publica y aparece en Cursos anteriores. "Volver a vigente" lo deshace.
+  - **Galería** (`#galeria`): subir (con categoría), cambiar descripción y categoría, marcar "Avance del inicio" y "Cursos anteriores", ordenar y eliminar (también borra sus archivos del bucket).
+  - **Fotos:** se comprimen en el navegador (`js/imagenes.js`) a WebP de 1200 y 600 px (JPEG si el navegador no sabe WebP) antes de subirlas a los buckets `cursos` (portadas y fotos de cursos) y `galeria`.
+  - Con cambios sin guardar, el panel pregunta antes de salir del formulario.
 - **Diseño:** misma identidad, más compacta. En móvil tiene barra superior y pestañas abajo; desde 1024px, menú lateral. Las listas se ven como tabla desde 1280px.
 
 ### Registro

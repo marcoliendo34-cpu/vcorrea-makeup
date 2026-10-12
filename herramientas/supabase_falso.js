@@ -19,7 +19,7 @@ function semilla() {
     cupos: c.cupos, descripcion: c.descripcion, dirigido_a: c.dirigidoA ?? [], destacados: c.destacados ?? null,
     incluye: c.incluye, pensum: c.pensum, practicas: c.practicas, requisitos: c.requisitos, certificado: c.certificado,
     precio_usd: String(c.precioUSD), condiciones_pago: c.condicionesPago, preguntas: c.preguntas ?? [],
-    estado: c.estado, galeria: c.galeria ?? [], egresadas: c.egresadas, publicado: true,
+    estado: c.estado, galeria: c.galeria ?? [], egresadas: c.egresadas, publicado: true, archivado: false,
     creado_en: new Date().toISOString(), actualizado_en: new Date().toISOString()
   }));
   const galeria = GALERIA.filter((f) => f.archivo).map((f, i) => ({
@@ -28,13 +28,15 @@ function semilla() {
   }));
   const usuarios = [
     { id: uuid(), email: 'alumna@demo.com', password: 'demo1234' },
-    { id: uuid(), email: 'admin@demo.com', password: 'demo1234' }
+    { id: uuid(), email: 'admin@demo.com', password: 'demo1234' },
+    { id: uuid(), email: 'super@demo.com', password: 'demo1234' }
   ];
   const perfiles = [
     { id: usuarios[0].id, nombre: 'María', apellido: 'Pérez', cedula: 'V-12345678', telefono: '+584121234567', correo: 'alumna@demo.com', instagram: null, fecha_nacimiento: null, rol: 'alumna', creado_en: new Date().toISOString() },
-    { id: usuarios[1].id, nombre: 'Verónica', apellido: 'Correa', cedula: 'V-99999999', telefono: '+584145897775', correo: 'admin@demo.com', instagram: null, fecha_nacimiento: null, rol: 'admin', creado_en: new Date().toISOString() }
+    { id: usuarios[1].id, nombre: 'Verónica', apellido: 'Correa', cedula: 'V-99999999', telefono: '+584145897775', correo: 'admin@demo.com', instagram: null, fecha_nacimiento: null, rol: 'admin', creado_en: new Date().toISOString() },
+    { id: usuarios[2].id, nombre: 'Marco', apellido: 'Liendo', cedula: 'V-88888888', telefono: '+584120000000', correo: 'super@demo.com', instagram: null, fecha_nacimiento: null, rol: 'superadmin', creado_en: new Date().toISOString() }
   ];
-  return { cursos, galeria, usuarios, perfiles, inscripciones: [], sesion: null };
+  return { cursos, galeria, usuarios, perfiles, inscripciones: [], sesion: null, archivos: [] };
 }
 
 const leerDB = () => { try { return JSON.parse(localStorage.getItem(CLAVE_DB)) || semilla(); } catch { return semilla(); } };
@@ -50,6 +52,7 @@ class Consulta {
   order(c) { this.orden = c; return this; }
   insert(obj) { this.op = 'insert'; this.datos = obj; return this; }
   update(obj) { this.op = 'update'; this.datos = obj; return this; }
+  delete() { this.op = 'delete'; return this; }
   single() { this.uno = 'single'; return this; }
   maybeSingle() { this.uno = 'maybe'; return this; }
   forma(db, fila) {
@@ -63,9 +66,38 @@ class Consulta {
   ejecutar() {
     const db = leerDB();
     const filas = db[this.tabla];
+    const yoPerfil = db.perfiles.find((p) => p.id === db.sesion?.user?.id);
+    const esAdmin = yoPerfil && (yoPerfil.rol === 'admin' || yoPerfil.rol === 'superadmin');
+    const esSuper = yoPerfil?.rol === 'superadmin';
+    const publicas = ['cursos', 'galeria'].includes(this.tabla);
     let res;
-    if (this.op === 'select') {
-      res = filas.filter((f) => this.filtros.every((fn) => fn(f)));
+    // RLS de cursos y galeria: lectura de lo publicado (admin ve todo); escritura solo superadmin
+    if (publicas && this.op !== 'select') {
+      if (this.op === 'insert' && !esSuper) return { data: null, error: { code: '42501', message: 'new row violates row-level security policy' } };
+      if (this.op === 'insert') {
+        const fila = { id: uuid(), creado_en: new Date().toISOString(), ...(this.tabla === 'cursos' ? { publicado: false, archivado: false, galeria: [], calendario: [], preguntas: [] } : { publicado: true }), ...this.datos };
+        if (this.tabla === 'cursos' && filas.some((c) => c.slug === fila.slug)) return { data: null, error: { code: '23505', message: 'duplicate key value violates unique constraint "cursos_slug_key"' } };
+        if (fila.archivado && fila.publicado) return { data: null, error: { code: '23514', message: 'check constraint cursos_archivado_no_publicado' } };
+        filas.push(fila); guardarDB(db);
+        res = [fila];
+      } else {
+        const blanco = esSuper ? filas.filter((x) => this.filtros.every((fn) => fn(x))) : [];
+        if (this.op === 'delete') {
+          db[this.tabla] = filas.filter((x) => !blanco.includes(x));
+        } else {
+          for (const f of blanco) {
+            const nuevo = { ...f, ...this.datos };
+            if (this.tabla === 'cursos' && filas.some((c) => c !== f && c.slug === nuevo.slug)) return { data: null, error: { code: '23505', message: 'duplicate key value violates unique constraint "cursos_slug_key"' } };
+            if (nuevo.archivado && nuevo.publicado) return { data: null, error: { code: '23514', message: 'check constraint cursos_archivado_no_publicado' } };
+            Object.assign(f, this.datos, this.tabla === 'cursos' ? { actualizado_en: new Date().toISOString() } : {});
+          }
+        }
+        guardarDB(db);
+        res = blanco;
+      }
+    } else if (this.op === 'select') {
+      res = filas.filter((f) => this.filtros.every((fn) => fn(f)))
+        .filter((f) => !publicas || esAdmin || f.publicado);
       if (this.orden) res.sort((a, b) => (a[this.orden] > b[this.orden] ? 1 : -1));
     } else if (this.op === 'insert') {
       const yo = db.sesion?.user?.id;
@@ -119,9 +151,28 @@ class Consulta {
 const oyentes = new Set();
 const avisar = (evento, sesion) => oyentes.forEach((cb) => cb(evento, sesion));
 
-export function createClient() {
+export function createClient(url) {
   return {
     from: (t) => new Consulta(t),
+    // Storage: guarda solo la ruta (prueba_flujos.py sirve una foto cualquiera en la URL pública)
+    storage: {
+      from: (bucket) => ({
+        async upload(ruta, blob) {
+          const db = leerDB();
+          const yo = db.perfiles.find((x) => x.id === db.sesion?.user?.id);
+          if (yo?.rol !== 'superadmin') return demora({ data: null, error: { statusCode: '403', message: 'new row violates row-level security policy' } });
+          if (blob.size > 5242880) return demora({ data: null, error: { statusCode: '413', message: 'The object exceeded the maximum allowed size' } });
+          db.archivos.push({ bucket, ruta, tipo: blob.type, peso: blob.size }); guardarDB(db);
+          return demora({ data: { path: ruta }, error: null });
+        },
+        getPublicUrl(ruta) { return { data: { publicUrl: `${url}/storage/v1/object/public/${bucket}/${ruta}` } }; },
+        async remove(rutas) {
+          const db = leerDB();
+          db.archivos = db.archivos.filter((a) => !(a.bucket === bucket && rutas.includes(a.ruta))); guardarDB(db);
+          return demora({ data: rutas.map((r) => ({ name: r })), error: null });
+        }
+      })
+    },
     rpc: async (nombre, args) => {
       const db = leerDB();
       if (nombre === 'cupos_de_cursos') {
