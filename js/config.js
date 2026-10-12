@@ -60,7 +60,7 @@ export const CONFIG = {
   //     en el panel de Vercel → proyecto → Analytics).
   medicion: {
     metaPixelId: null,
-    vercelAnalytics: true
+    vercelAnalytics: false   // se enciende cuando Analytics esté activado en Vercel (si no, el script da 404)
   },
 
   // Métodos de pago (confirmados el 11 oct 2026). Se muestran tal cual en la ficha del curso.
