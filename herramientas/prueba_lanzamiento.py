@@ -38,7 +38,7 @@ with sync_playwright() as p:
     def sitio(r):
         url = r.request.url.replace(SITIO, base)
         if urlparse(url).path == '/js/config.js':
-            texto = (RAIZ / 'js/config.js').read_text().replace('metaPixelId: null', f"metaPixelId: '{PIXEL_ID}'")
+            texto = (RAIZ / 'js/config.js').read_text().replace('metaPixelId: null', f"metaPixelId: '{PIXEL_ID}'").replace('vercelAnalytics: false', 'vercelAnalytics: true')
             return r.fulfill(status=200, content_type='application/javascript', body=texto)
         if urlparse(url).path == '/_vercel/insights/script.js':
             vercel.append(1)
