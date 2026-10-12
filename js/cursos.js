@@ -17,7 +17,7 @@ if (consulta) {
 try {
   const cursos = consulta ? await buscarCursos(consulta) : await obtenerCursosVigentes();
   rejilla.innerHTML = cursos.length
-    ? cursos.map((c) => `<li>${tarjetaCurso(c, { nivelTitulo: 2 })}</li>`).join('')
+    ? cursos.map((c, i) => `<li>${tarjetaCurso(c, { nivelTitulo: 2, inmediata: i === 0 })}</li>`).join('')
     : `<li class="sin-resultados">
          <p>${consulta ? 'No encontramos próximos cursos con esa búsqueda.' : 'Por ahora no hay cursos abiertos.'}</p>
          ${consulta ? boton({ texto: 'Ver todos los cursos', href: '/cursos', variante: 'texto', icono: 'flecha-derecha' }) : ''}

@@ -1201,7 +1201,7 @@ a.pie__red:hover { border-color: var(--dorado); color: var(--dorado-profundo); }
 
 .tarjeta-curso__media {
   position: relative;
-  aspect-ratio: 4 / 3;
+  aspect-ratio: var(--proporcion-media, 4 / 3);   /* la foto puede traer su proporción (ej. flyer 4:5) */
   overflow: hidden;
   border-radius: calc(var(--radio-tarjeta) - 1px) calc(var(--radio-tarjeta) - 1px) 0 0;
   background: var(--crema);
@@ -1575,7 +1575,7 @@ main:has(> .seccion--cierre:last-child) ~ .pie { margin-top: 0; }
 .curso-portada__media {
   position: relative;
   margin-inline: calc(var(--margen-lateral) * -1);
-  aspect-ratio: 4 / 3;
+  aspect-ratio: var(--proporcion-media, 4 / 3);
   overflow: hidden;
   background: var(--crema);
 }
@@ -1599,11 +1599,14 @@ main:has(> .seccion--cierre:last-child) ~ .pie { margin-top: 0; }
 @media (min-width: 768px) {
   .curso-portada { padding-top: var(--e-8); }
   .curso-portada__media { margin-inline: 0; border-radius: var(--radio-tarjeta); }
+  /* Flyer vertical: tamaño contenido para que no ocupe toda la pantalla */
+  .curso-portada__media--vertical { width: 100%; max-width: 480px; justify-self: center; }
 }
 @media (min-width: 1024px) {
   .curso-portada { padding-block: var(--e-12) var(--e-10); }
   .curso-portada__grid { grid-template-columns: 6fr 5fr; gap: var(--e-12); align-items: center; }
   .curso-portada__media { order: 2; }
+  .curso-portada__media--vertical { justify-self: end; }
 }
 
 /* 2. Índice: chips desplazables, fijos bajo el header */

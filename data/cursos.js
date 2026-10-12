@@ -10,6 +10,11 @@
  * @typedef {Object} Foto
  * @property {string|null} src  Ruta en /fotos (WebP) o null mientras falte la foto.
  * @property {string} alt       Descripción de la foto (alt y texto del placeholder).
+ * @property {string} [miniatura] Versión de 600 px para las tarjetas.
+ * @property {boolean} [flyer]    true si la imagen es un flyer con texto (fecha incluida).
+ * @property {string} [og]        JPEG para la vista previa al compartir (WhatsApp, redes). Si falta, se usa src.
+ * @property {number} [ancho]     Tamaño real de la foto: la tarjeta y la ficha toman su
+ * @property {number} [alto]      proporción (ej. un flyer 4:5 se ve completo, sin recortes).
  */
 
 /**
@@ -87,7 +92,6 @@ export const CURSOS = [
   /* VIGENTES                                                           */
   /* ================================================================== */
   // Primer curso real (información de Verónica, 11 oct 2026).
-  // Pendiente de Verónica: foto de portada.
   {
     slug: 'vision-lash',
     nombre: 'Visión Lash',
@@ -96,7 +100,14 @@ export const CURSOS = [
     nivel: 'De cero a profesional',
     modalidad: 'Presencial',
     ubicacion: 'Caracas, Venezuela',
-    imagenPortada: { src: null, alt: 'Extensiones de pestañas pelo a pelo' },
+    imagenPortada: {
+      src: '/fotos/cursos/vision-lash-1080.webp',
+      miniatura: '/fotos/cursos/vision-lash-600.webp',
+      og: '/fotos/cursos/vision-lash-og.jpg',   // JPEG para la vista previa al compartir (864×1080)
+      ancho: 1080, alto: 1350,
+      flyer: true,   // ya trae la fecha: la tarjeta no le pone encima su insignia de fecha
+      alt: 'Flyer de Visión Lash con Verónica Correa: inicia el 4 de noviembre, 6 clases en 3 semanas, presencial en Caracas'
+    },
     fechaInicio: '2026-11-04',
     fechaFin: '2026-12-05',
     dias: 'Miércoles y viernes',

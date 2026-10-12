@@ -74,8 +74,14 @@ def bloque_og(curso, dominio):
     url = f'{dominio}/cursos/{curso["slug"]}'
     foto = curso.get('imagenPortada') or {}
     if foto.get('src'):
-        imagen = dominio + '/' + foto['src'].lstrip('/')
+        imagen = dominio + '/' + (foto.get('og') or foto['src']).lstrip('/')
         dimensiones = ''
+        ruta_img = RAIZ / (foto.get('og') or foto['src']).lstrip('/')
+        if ruta_img.exists():
+            from PIL import Image
+            with Image.open(ruta_img) as im:
+                dimensiones = (f'\n  <meta property="og:image:width" content="{im.width}">'
+                               f'\n  <meta property="og:image:height" content="{im.height}">')
         alt_imagen = foto.get('alt') or curso['nombre']
     else:
         imagen = f'{dominio}/{IMAGEN_MARCA}'

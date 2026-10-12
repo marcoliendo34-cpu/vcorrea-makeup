@@ -213,6 +213,7 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 - `pensum` sin número de semana: se muestra por módulos con el título "Qué aprenderás".
 - `destacados`: lista extra en "Sobre el curso" (ej. "Porque tu éxito es nuestra meta") con una frase de remate.
 - `preguntas`: preguntas frecuentes propias del curso. Si no tiene, la sección no aparece.
+- `imagenPortada` con `ancho` y `alto`: la tarjeta y la ficha toman la proporción de la foto (un flyer 4:5 se ve completo, sin recortes). `flyer: true` quita la insignia de fecha de la tarjeta (el flyer ya la trae). `og`: JPEG para la vista previa al compartir. Flyers en `/fotos/cursos/` (600 y 1080 px).
 - Datos que aún no da Verónica van con **[POR DEFINIR]** (en la tarjeta se ocultan las marcas).
 
 ### Precio

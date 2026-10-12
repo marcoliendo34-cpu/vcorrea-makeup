@@ -92,8 +92,10 @@ function acciones(curso, est, lugar) {
 
 function htmlPortada(curso, est) {
   const foto = curso.imagenPortada || { src: null, alt: curso.nombre };
+  const vertical = foto.src && foto.ancho && foto.alto && foto.alto > foto.ancho;
+  const proporcion = foto.src && foto.ancho && foto.alto ? ` style="--proporcion-media: ${foto.ancho} / ${foto.alto}"` : '';
   const media = foto.src
-    ? `<img src="${esc(foto.src)}" alt="${esc(foto.alt)}" width="1200" height="900" fetchpriority="high" decoding="async">`
+    ? `<img src="${esc(foto.src)}"${foto.miniatura ? ` srcset="${esc(foto.miniatura)} 600w, ${esc(foto.src)} ${foto.ancho || 1200}w" sizes="(min-width: 768px) 480px, 100vw"` : ''} alt="${esc(foto.alt)}" width="${foto.ancho || 1200}" height="${foto.alto || 900}" fetchpriority="high" decoding="async">`
     : placeholderFoto({ descripcion: foto.alt, proporcion: '4 / 3', sinBorde: true });
   const fecha = est.finalizado
     ? `Se realizó del <strong>${esc(rangoFechas(curso.fechaInicio, curso.fechaFin))}</strong>`
@@ -102,7 +104,7 @@ function htmlPortada(curso, est) {
   return `
   <section class="curso-portada" aria-labelledby="curso-nombre">
     <div class="contenedor curso-portada__grid">
-      <div class="curso-portada__media${est.abierto ? '' : ' curso-portada__media--cerrado'}">
+      <div class="curso-portada__media${vertical ? ' curso-portada__media--vertical' : ''}${est.abierto ? '' : ' curso-portada__media--cerrado'}"${proporcion}>
         ${media}
         ${est.insignia ? `<span class="curso-portada__insignia">${insignia(est.insignia)}</span>` : ''}
       </div>

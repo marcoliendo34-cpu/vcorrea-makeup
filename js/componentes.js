@@ -220,8 +220,9 @@ export const formatearPrecio = (monto) => `$${Number(monto).toLocaleString('es-V
  * @param {import('../data/cursos.js').Curso} curso
  * @param {object} [op]
  * @param {number} [op.nivelTitulo=3]
+ * @param {boolean} [op.inmediata=false] true si la tarjeta sale en la primera pantalla (foto sin carga diferida)
  */
-export function tarjetaCurso(curso, { nivelTitulo = 3 } = {}) {
+export function tarjetaCurso(curso, { nivelTitulo = 3, inmediata = false } = {}) {
   const c = cuposDeCurso(curso);
   const url = `/cursos/${encodeURIComponent(curso.slug)}`;
   const idNombre = `curso-${curso.slug}`;
@@ -229,8 +230,10 @@ export function tarjetaCurso(curso, { nivelTitulo = 3 } = {}) {
   const h = `h${nivelTitulo}`;
   const foto = curso.imagenPortada || { src: null, alt: curso.nombre };
 
+  // Con ancho y alto, la foto se muestra completa en su proporción (ej. flyer 4:5).
+  const proporcion = foto.src && foto.ancho && foto.alto ? ` style="--proporcion-media: ${foto.ancho} / ${foto.alto}"` : '';
   const media = foto.src
-    ? `<img src="${esc(foto.src)}" alt="${esc(foto.alt)}" width="600" height="450" loading="lazy" decoding="async">`
+    ? `<img src="${esc(foto.miniatura || foto.src)}"${foto.miniatura ? ` srcset="${esc(foto.miniatura)} 600w, ${esc(foto.src)} ${foto.ancho || 1200}w" sizes="(min-width: 1024px) 380px, (min-width: 768px) 50vw, 100vw"` : ''} alt="${esc(foto.alt)}" width="600" height="${foto.ancho && foto.alto ? Math.round(600 * foto.alto / foto.ancho) : 450}" loading="${inmediata ? 'eager' : 'lazy'}" decoding="async">`
     : placeholderFoto({ descripcion: foto.alt, proporcion: '4 / 3', sinBorde: true });
 
   const accion = c.estado === 'agotado'
@@ -242,13 +245,13 @@ export function tarjetaCurso(curso, { nivelTitulo = 3 } = {}) {
 
   return `
     <article class="tarjeta-curso tarjeta-curso--${c.estado}" aria-labelledby="${esc(idNombre)}" data-curso="${esc(curso.slug)}">
-      <div class="tarjeta-curso__media">
+      <div class="tarjeta-curso__media"${proporcion}>
         ${media}
         ${c.estado === 'disponible' ? '' : `<span class="tarjeta-curso__insignia">${insignia(c.estado)}</span>`}
-        <span class="tarjeta-curso__fecha">
+        ${foto.src && foto.flyer ? '' : `<span class="tarjeta-curso__fecha">
           <span class="tarjeta-curso__dia">${dia}</span>
           <span class="tarjeta-curso__mes">${esc(mesAnio)}</span>
-        </span>
+        </span>`}
       </div>
       <div class="tarjeta-curso__cuerpo">
         <p class="tarjeta-curso__meta">${esc(curso.modalidad)} · ${esc(sinMarcas(curso.ubicacion))}</p>
