@@ -30,7 +30,7 @@ import { formatearFecha } from './fechas.js';
 /* Acceso: sin sesión → ingresar; sin rol admin → inicio               */
 /* ------------------------------------------------------------------ */
 
-const usuario = usuarioEnCache();
+let usuario = usuarioEnCache();
 // (la decisión se toma al final del archivo, cuando todo está definido)
 
 /** Herramientas del superadmin (js/admin-editor.js). null para Verónica. */
@@ -610,6 +610,12 @@ function recargarUnaVez() {
 // Redirección rápida con la sesión guardada en el navegador y luego confirmación
 // con el servidor (sesión vencida o rol cambiado). Los datos en sí los protegen
 // las reglas RLS de Supabase: sin rol admin, la base no entrega nada.
+// Si la copia del navegador dice que NO es admin, puede estar vieja (el rol se
+// asignó después de que entró): se pregunta al servidor antes de echarla.
+if (usuario && !esAdmin(usuario)) {
+  const fresco = await usuarioActual().catch(() => null);
+  if (esAdmin(fresco)) usuario = fresco;
+}
 if (!usuario) location.replace('/ingresar?volver=/admin');
 else if (!esAdmin(usuario)) location.replace('/');
 else {

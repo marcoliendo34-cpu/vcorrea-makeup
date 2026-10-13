@@ -91,6 +91,10 @@ with sync_playwright() as p:
     paso('Admin: #editar no existe para ella (va al resumen)', 'Hola, Verónica' in texto('[data-vista]'))
     paso('Admin: nunca descarga admin-editor.js', not any('admin-editor' in u for u in pedidos))
     paso('Admin: rol "Administradora"', 'ADMINISTRADORA' in texto('.panel__usuario').upper())
+    # Copia vieja en el navegador (registrada como alumna y luego hecha admin en la base)
+    pg.evaluate("(() => { const k='vcorrea:perfil'; const u = JSON.parse(localStorage.getItem(k)); u.rol = 'alumna'; localStorage.setItem(k, JSON.stringify(u)); })()")
+    ir('/admin', 1800)
+    paso('Admin con copia vieja de "alumna": igual entra al panel', '/admin' in pg.url and 'Hola, Verónica' in texto('[data-vista]'), pg.url.replace(base, ''))
 
     # ---------------------------- superadmin ----------------------------
     entrar('super@demo.com')
