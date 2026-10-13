@@ -182,6 +182,24 @@ export async function cambiarContrasena(nueva) {
   return { usuario: usuarioEnCacheDemo(), error: null };
 }
 
+export async function actualizarPerfil(d) {
+  const yo = usuarioEnCacheDemo();
+  if (!yo) return { usuario: null, error: ERRORES.credenciales() };
+  const todas = alumnas();
+  const fila = todas.find((a) => a.id === yo.id);
+  Object.assign(fila, {
+    nombre: String(d.nombre).trim(), apellido: String(d.apellido).trim(), telefono: d.telefono,
+    instagram: d.instagram ? String(d.instagram).replace(/^@/, '').trim() : null, fechaNacimiento: d.fechaNacimiento || null
+  });
+  if (!escribir(CLAVES.alumnas, todas)) return { usuario: null, error: ERRORES.almacenamiento() };
+  avisarCambio(fila);
+  return { usuario: fila, error: null };
+}
+export async function cambiarContrasenaConActual(actual, nueva) {
+  if (String(actual || '').length < MIN_CONTRASENA) return { usuario: null, error: { codigo: 'contrasena-actual', mensaje: 'Tu contraseña actual no es correcta.' } };
+  return cambiarContrasena(nueva);
+}
+
 /* ------------------- Acceso de bajo nivel para js/demo/datos-demo.js ------------------- */
 
 export const almacen = { leer, escribir };

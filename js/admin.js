@@ -468,6 +468,7 @@ function htmlEstructura() {
       </div>
       <div class="panel__acciones-movil">
         <a class="boton boton--secundario boton--icono" href="/" aria-label="Ver el sitio">${icono('ojo', { tamano: 20 })}</a>
+        <a class="boton boton--secundario boton--icono" href="/mi-cuenta#datos" aria-label="Mis datos y contraseña">${icono('usuario', { tamano: 20 })}</a>
         <button class="boton boton--secundario boton--icono" type="button" data-salir aria-label="Cerrar sesión">${icono('salir', { tamano: 20 })}</button>
       </div>
       <nav class="panel__nav" aria-label="Secciones del panel">
@@ -487,6 +488,7 @@ function htmlEstructura() {
           </span>
         </div>
         <a class="panel__enlace-lateral" href="/">${icono('ojo', { tamano: 18 })}<span>Ver el sitio</span></a>
+        <a class="panel__enlace-lateral" href="/mi-cuenta#datos">${icono('usuario', { tamano: 18 })}<span>Mis datos y contraseña</span></a>
         <button class="panel__enlace-lateral" type="button" data-salir>${icono('salir', { tamano: 18 })}<span>Cerrar sesión</span></button>
       </div>
     </aside>

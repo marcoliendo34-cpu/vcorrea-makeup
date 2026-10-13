@@ -80,6 +80,12 @@ export async function prepararRecuperacion() { return (await cargar()).prepararR
 /** Guarda la contraseña nueva y deja la sesión iniciada. */
 export async function cambiarContrasena(nueva) { return (await cargar()).cambiarContrasena(nueva); }
 
+/** Mi cuenta: guarda nombre, apellido, teléfono, Instagram y fecha de nacimiento. */
+export async function actualizarPerfil(datos) { return (await cargar()).actualizarPerfil(datos); }
+
+/** Mi cuenta: cambia la contraseña comprobando primero la actual. */
+export async function cambiarContrasenaConActual(actual, nueva) { return (await cargar()).cambiarContrasenaConActual(actual, nueva); }
+
 /** Solo capturas: vuelve a poner las inscripciones de ejemplo (en la web publicada no hace nada). */
 export async function restablecerInscripcionesDemo() {
   if (MODO_DEMO) (await cargar()).restablecerInscripcionesDemo();

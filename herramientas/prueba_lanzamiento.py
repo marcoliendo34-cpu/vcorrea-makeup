@@ -38,7 +38,7 @@ with sync_playwright() as p:
     def sitio(r):
         url = r.request.url.replace(SITIO, base)
         if urlparse(url).path == '/js/config.js':
-            texto = (RAIZ / 'js/config.js').read_text().replace('metaPixelId: null', f"metaPixelId: '{PIXEL_ID}'").replace('vercelAnalytics: false', 'vercelAnalytics: true')
+            texto = (RAIZ / 'js/config.js').read_text().replace('metaPixelId: null', f"metaPixelId: '{PIXEL_ID}'").replace('vercelAnalytics: false', 'vercelAnalytics: true').replace('activos: false', 'activos: true')
             return r.fulfill(status=200, content_type='application/javascript', body=texto)
         if urlparse(url).path == '/_vercel/insights/script.js':
             vercel.append(1)
@@ -141,6 +141,22 @@ with sync_playwright() as p:
     clave = pg.evaluate("JSON.parse(localStorage.getItem('falso:db')).usuarios.find(x => x.email === 'alumna@demo.com').password")
     paso('Nueva contraseña: guarda y entra a Mi cuenta', clave == 'nueva12345' and '/mi-cuenta' in pg.url, pg.url.replace(SITIO, ''))
 
+    # Mi cuenta → Mis datos
+    ir('/mi-cuenta#datos', 1500)
+    paso('Mis datos: pestaña abierta por #datos', pg.locator('#panel-datos').is_visible() and not pg.locator('#panel-cursos').is_visible())
+    pg.fill('#datos-instagram', 'maria.lashes'); pg.select_option('#datos-operadora', '0424'); pg.fill('#datos-telefono', '7654321')
+    pg.click('[data-form-datos] button[type="submit"]'); pg.wait_for_timeout(900)
+    perfil = pg.evaluate("JSON.parse(localStorage.getItem('falso:db')).perfiles.find(x => x.correo === 'alumna@demo.com')")
+    paso('Mis datos: guarda Instagram y teléfono', perfil['instagram'] == 'maria.lashes' and perfil['telefono'] == '+584247654321', f"{perfil['instagram']} {perfil['telefono']}")
+    foto('mis-datos')
+    pg.fill('#clave-actual', 'equivocada1'); pg.fill('#clave-nueva', 'otra123456'); pg.fill('#clave-confirmar', 'otra123456')
+    pg.click('[data-form-clave] button[type="submit"]'); pg.wait_for_timeout(900)
+    paso('Contraseña: rechaza la actual equivocada', 'no es correcta' in pg.locator('[data-error-clave]').inner_text())
+    pg.fill('#clave-actual', 'nueva12345')
+    pg.click('[data-form-clave] button[type="submit"]'); pg.wait_for_timeout(1200)
+    clave = pg.evaluate("JSON.parse(localStorage.getItem('falso:db')).usuarios.find(x => x.email === 'alumna@demo.com').password")
+    paso('Contraseña: la cambia con la actual correcta', clave == 'otra123456', clave)
+
     # Inscribirme → Contact
     pixel.clear()
     ir('/cursos/vision-lash')
@@ -159,6 +175,8 @@ with sync_playwright() as p:
     ir('/admin', 1500)
     paso('Panel: abre con la cuenta admin', '/admin' in pg.url and pg.locator('[data-panel]').is_visible(), pg.url.replace(SITIO, ''))
     paso('Panel: sin Pixel ni Analytics', not pixel and not vercel)
+    ir('/mi-cuenta', 1500)
+    paso('Admin en Mi cuenta: solo "Mis datos" y botón al panel', pg.locator('#pestana-cursos').count() == 0 and pg.locator('#panel-datos').is_visible() and pg.locator('a[href="/admin"]').count() >= 1)
     ctx.close(); nav.close()
 srv.shutdown()
 print('\nerrores:', json.dumps(errores, ensure_ascii=False, indent=1) if errores else 'ninguno')

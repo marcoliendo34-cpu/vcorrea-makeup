@@ -58,7 +58,7 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
 ├── js/
 │   ├── config.js            contacto, redes, WhatsApp, métodos de pago, URL y llave pública de Supabase
 │   ├── modo.js              decide demo (solo localhost) o Supabase (siempre en la web publicada)
-│   ├── supabase.js          cliente supabase-js v2 (módulo ES desde jsDelivr)
+│   ├── supabase.js          cliente supabase-js 2.117.3 (versión FIJA, módulo ES desde jsDelivr)
 │   ├── componentes.js       header, footer y botón flotante de WhatsApp
 │   ├── iconos.js            íconos SVG propios
 │   ├── datos.js             acceso a datos centralizado; usa datos-supabase.js o demo/datos-demo.js
@@ -123,6 +123,9 @@ Reglas permanentes del proyecto. Todo cambio de código debe respetar este docum
   - Pixel de Meta (`metaPixelId`): `PageView` en cada página, `Contact` al tocar "Inscribirme" y `CompleteRegistration` al terminar el registro. Sin datos personales.
   - Vercel Web Analytics (`vercelAnalytics: true`): script `/_vercel/insights/script.js`; se activa en el panel de Vercel.
 - **Correos de cuenta (Supabase Auth + Resend por SMTP):** confirmación de cuenta (el enlace lleva a `/ingresar?confirmada=1`, que entra directo) y "¿Olvidaste tu contraseña?" (enlace a `/nueva-contrasena`). Si el enlace vence, se ofrece otro. Plantillas en `supabase/correos/`.
+- **Supabase gratuito se pausa tras 7 días sin actividad:** `.github/workflows/mantener-supabase.yml` hace una consulta pública dos veces por semana (lunes y jueves). Se borra si pasan a Supabase Pro.
+- **Versión fija de supabase-js** (`js/supabase.js`): para actualizar, cambiar el número y probar el recorrido completo.
+- **SQL pendiente de correr a mano:** `supabase/pendiente/` (lo que el conector no puede aprobar, como borrados).
 - **Prueba de lanzamiento:** `python3 herramientas/prueba_lanzamiento.py [--capturas]` simula la web publicada (dominio que no es localhost): sin franja, noindex correcto, Pixel, Analytics, confirmación de correo y cambio de contraseña.
 
 ### Vercel
@@ -285,7 +288,8 @@ Ningún color fuera de esta paleta sin aprobación. Nada de fondos oscuros.
 - **Opcionales:** Instagram y fecha de nacimiento.
 - **Una cuenta por cédula y una por correo.**
 - **Confirmación por correo:** con "Confirm email" activo en Supabase, al crear la cuenta se ve "Revisa tu correo" (con "Reenviar el correo"). Ingresar con un correo sin confirmar también ofrece reenviarlo.
-- **Contraseña olvidada:** en `/ingresar`, "¿Olvidaste tu contraseña?" manda el enlace (mismo mensaje exista o no la cuenta).
+- **Contraseña olvidada:** en `/ingresar`, "¿Olvidaste tu contraseña?" manda el enlace (mismo mensaje exista o no la cuenta). Mientras `CONFIG.correos.activos` sea `false` (Resend sin configurar), en cambio ofrece pedir ayuda a Verónica por WhatsApp.
+- **Mi cuenta → Mis datos (`/mi-cuenta#datos`):** la alumna edita nombre, apellido, teléfono, Instagram y fecha de nacimiento, y cambia su contraseña (pide la actual). Cédula y correo no se cambian. La administradora entra a Mi cuenta solo para esto (enlace "Mis datos y contraseña" en el panel).
 
 ### Pagos y contacto
 

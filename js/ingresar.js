@@ -4,7 +4,8 @@
 // - "¿Olvidaste tu contraseña?": manda el enlace a /nueva-contrasena.
 // - Correo sin confirmar: ofrece reenviar el correo de confirmación.
 // En la demo (localhost) cualquier contraseña de 8+ caracteres vale (js/sesion.js).
-import { iniciarPagina, esc } from './componentes.js';
+import { iniciarPagina, esc, boton as botonHtml, urlWhatsApp } from './componentes.js';
+import { CONFIG } from './config.js';
 import { icono } from './iconos.js';
 import { ingresar, usuarioEnCache, usuarioActual, enviarRecuperacion, reenviarConfirmacion, MIN_CONTRASENA } from './sesion.js';
 import { obtenerCursoPorSlug } from './datos.js';
@@ -54,12 +55,22 @@ const validar = validacionEnVivo(form, {
 const aviso = document.querySelector('[data-aviso-olvido]');
 const estadoOlvido = aviso.querySelector('[data-estado-olvido]');
 const botonEnlace = aviso.querySelector('[data-enviar-enlace]');
+// Sin correos configurados (CONFIG.correos.activos = false) la ayuda es por WhatsApp
+if (!CONFIG.correos?.activos) {
+  aviso.innerHTML = `
+    <p>Escríbele a Verónica por WhatsApp con el correo de tu cuenta y te ayuda a recuperar tu acceso.</p>
+    ${botonHtml({ texto: 'Pedir ayuda por WhatsApp', iconoIzquierda: 'whatsapp', variante: 'secundario', bloque: true, href: '#', atributos: { target: '_blank', rel: 'noopener', 'data-ayuda-whatsapp': '' } })}`;
+  aviso.querySelector('[data-ayuda-whatsapp]').addEventListener('click', (e) => {
+    const correo = form.correo.value.trim();
+    e.currentTarget.href = urlWhatsApp(`Hola Verónica, olvidé la contraseña de mi cuenta en la web.${correo ? ` Mi correo es ${correo}.` : ''}`);
+  });
+}
 document.querySelector('[data-olvido]').addEventListener('click', (e) => {
   aviso.hidden = false;
   e.currentTarget.setAttribute('aria-expanded', 'true');
-  if (!form.correo.value) form.correo.focus();
+  if (CONFIG.correos?.activos && !form.correo.value) form.correo.focus();
 });
-botonEnlace.addEventListener('click', async () => {
+botonEnlace?.addEventListener('click', async () => {
   const problema = reglas.correo(form.correo.value);
   if (problema) {
     validarTodos([form.correo], validar);

@@ -281,6 +281,57 @@ export async function cambiarContrasena(nueva) {
   }
 }
 
+/* ------------------------------ Mis datos ------------------------------ */
+
+/**
+ * Guarda los datos que la alumna puede cambiar. La base solo deja tocar estas
+ * columnas (nunca rol, cédula ni correo) y solo de su propio perfil.
+ * @param {{nombre:string, apellido:string, telefono:string, instagram:string|null, fechaNacimiento:string|null}} d
+ */
+export async function actualizarPerfil(d) {
+  try {
+    const { data: s } = await supabase.auth.getSession();
+    if (!s?.session) return { usuario: null, error: error('sin-sesion', 'Tu sesión venció. Vuelve a ingresar para guardar tus datos.') };
+    const { data, error: e } = await supabase.from('perfiles').update({
+      nombre: String(d.nombre || '').trim(),
+      apellido: String(d.apellido || '').trim(),
+      telefono: d.telefono,
+      instagram: d.instagram ? String(d.instagram).replace(/^@/, '').trim() : null,
+      fecha_nacimiento: d.fechaNacimiento || null
+    }).eq('id', s.session.user.id).select('*').single();
+    if (e) {
+      if (e.code === '23514' || e.code === '22007' || e.code === '22008') {
+        return { usuario: null, error: error('datos-invalidos', 'Revisa los datos: alguno no tiene el formato correcto.') };
+      }
+      return { usuario: null, error: traducir(e) };
+    }
+    const usuario = aUsuario(data);
+    olvidarPerfil();
+    actualizarCopia(usuario);
+    return { usuario, error: null };
+  } catch (e) {
+    return { usuario: null, error: traducir(e) };
+  }
+}
+
+/** Cambia la contraseña desde Mi cuenta: primero comprueba la actual. */
+export async function cambiarContrasenaConActual(actual, nueva) {
+  try {
+    const { data: s } = await supabase.auth.getSession();
+    const correo = s?.session?.user?.email;
+    if (!correo) return { usuario: null, error: error('sin-sesion', 'Tu sesión venció. Vuelve a ingresar.') };
+    const { error: e } = await supabase.auth.signInWithPassword({ email: correo, password: String(actual || '') });
+    if (e) {
+      return e.code === 'invalid_credentials' || /invalid login/i.test(String(e.message))
+        ? { usuario: null, error: error('contrasena-actual', 'Tu contraseña actual no es correcta.') }
+        : { usuario: null, error: traducir(e) };
+    }
+    return cambiarContrasena(nueva);
+  } catch (e) {
+    return { usuario: null, error: traducir(e) };
+  }
+}
+
 /** En la web publicada no hay datos de ejemplo que restablecer. */
 export function restablecerInscripcionesDemo() {}
 

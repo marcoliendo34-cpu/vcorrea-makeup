@@ -6,7 +6,9 @@
 // pública por diseño; lo que protege los datos son las reglas RLS de la base
 // (supabase/migraciones). La llave secreta NUNCA va en el código de la web.
 
-import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
+// Versión fija: la misma que ya funcionaba en la web (12 oct 2026). Para
+// actualizar, cambiar el número aquí y probar el recorrido completo.
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.3/+esm';
 import { CONFIG } from './config.js';
 
 export const supabase = createClient(CONFIG.supabase.url, CONFIG.supabase.llavePublica, {

@@ -52,6 +52,14 @@ export const CONFIG = {
 
   moneda: 'USD',
 
+  // Correos de cuenta (Supabase Auth). activos = false mientras Supabase no
+  // tenga Resend configurado: "¿Olvidaste tu contraseña?" manda a WhatsApp en
+  // vez de prometer un correo que no llegaría. Ponerlo en true después de
+  // configurar Resend (guía en supabase/correos/LEEME.md).
+  correos: {
+    activos: false
+  },
+
   // Medición (solo en la web publicada; nunca en localhost):
   //   metaPixelId: ID del Pixel de Meta (solo números). null = sin Pixel.
   //     Eventos: PageView en cada página, Contact al tocar "Inscribirme" y

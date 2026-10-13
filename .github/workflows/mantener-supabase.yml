@@ -1,0 +1,26 @@
+# Mantiene activo el proyecto de Supabase (plan gratuito): Supabase pausa los
+# proyectos sin actividad durante una semana, y con la base pausada la web se
+# queda sin cursos ni cuentas. Dos veces por semana hace una consulta liviana
+# y pública (los cupos de los cursos) con la llave PUBLICABLE, la misma que ya
+# está en js/config.js. No usa ninguna llave secreta.
+# Si pasan a Supabase Pro (sin pausas), este archivo se puede borrar.
+name: Mantener Supabase activo
+
+on:
+  schedule:
+    - cron: '23 13 * * 1,4'   # lunes y jueves, 9:23 a. m. de Caracas
+  workflow_dispatch:           # también se puede correr a mano desde GitHub → Actions
+
+jobs:
+  consulta:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Consultar los cupos (actividad en la base)
+        run: |
+          codigo=$(curl -s -o respuesta.json -w '%{http_code}' -X POST \
+            'https://sgcxjurhxycnhmsiqeid.supabase.co/rest/v1/rpc/cupos_de_cursos' \
+            -H 'apikey: sb_publishable_DAq2QDwfNAOCo4rb6pRtbg_X8GOIxpo' \
+            -H 'Content-Type: application/json' -d '{}')
+          echo "Respuesta HTTP $codigo"
+          cat respuesta.json
+          test "$codigo" = "200"
